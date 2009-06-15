@@ -1,0 +1,6 @@
+REGISTRA APERTURA
+
+La barra superior permite acceder a las distintas funciones del programa.
+
+Los botones inferiores permiten mostrar en esta ventana las ayudas generales y el Plan de Cuentas.
+

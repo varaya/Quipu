@@ -1,0 +1,10 @@
+# Archivos que debe ignorarse
+# Paquetes o respaldos comprimidos
+*.gz
+# Las bases de datos
+*.db3
+# Los informes generados
+*.pdf
+*.csv
+# Documento de trabajo OO
+*.od?

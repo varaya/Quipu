@@ -1,0 +1,42 @@
+REGISTRA DATOS DEL PERSONAL
+
+.nDescripción
+
+Esta función permite agregar o modificar los datos del personal
+de la empresa, asignándola a un Centro de Costo, si se usan.
+
+El recuadro superior muestra un listado de las personas que ya 
+están registradas; se utiliza para modificar los datos. 
+
+En el recuadro inferior es donde se registran los datos de cada
+persona, utilizando los siguientes formatos:
+
+- El RUT se escribe sin punto entre los número, pero sí se usa
+  el guíon y al final el dígito verificador. Ej.: 4844406-7. El
+  programa verifica si el RUT es correcto y si está registrado.
+- Las fechas se escribe como "DD/MM/AAAA" todo con números. Ej.
+  "10/02/2008"; el programa hace algunas validaciones de las
+  fechas.
+
+.nOperación
+
+Agregar
+
+a. Complete los datos en los campos respectivos. Son obligados
+   RUT, Nombre y Centro de Costo. El resto son opcionales.
+b. Cumplido el paso anterior, presione el botón 'Agrega'. El
+   programa realizará algunas validaciones; si todo va bien,
+   aparecerá RUT y Nombre en el recuadro superior.
+
+Modificar
+
+a. Con el puntero seleccione en la lista del recuadro superior
+   la persona cuyos datos quiere modificar; haga un doble click
+   y los datos aparecerán el recuadro inferior.
+
+b. Efectúe las modificaciones necesarias y presione el botón
+   'Registra'. El RUT no se puede modificar.
+
+Terminar
+
+Presione el botón 'Cancela' y se cerrará la ventana.

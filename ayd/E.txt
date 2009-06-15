@@ -1,0 +1,23 @@
+Características del Programa
+
+.nBásicas
+
+Este programa está basado en el registro y contabilización simultánea de los documentos legales y contables que dan cuenta de alguna transacción. Los tipos de documentos considerados son:
+
+- Facturas (de compra y venta)
+- Notas de Crédito y Débito (emitidas y recibidas)
+- Boletas de Honorarios.
+
+Cada documento está necesariamente asociado a un RUT, lo que permite control de cuentas individuales, que se resumen en una o varias cuentas de mayor. El registro de un documento genera automáticamente un Comprobante de Traspaso.
+
+El pago de los documentos se efectúa mediante un Comprobante de Ingreso o Egreso (según corresponda), registrándose el hecho en el documento respectivo. De esta manera se logra el control de los documentos impagos o pendientes.
+
+El programa está diseñado para llevar la contabilidad propiamente al día, pudiendo ver en pantalla o imprimir en cualquier momento los informes de rigor.
+
+.nOpcionales
+
+Opcionalmente se puede trabajar con Centros de Costos y realizar una conciliación bancaria simple
+
+Además incluye el registro del resumen diario de ventas con boletas, cuya centralización se debe efectuar mediante un Trasapaso.
+
+Estas funcionalidades se pueden definir en las opciones de configuración de la empresa.

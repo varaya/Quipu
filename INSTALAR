@@ -1,0 +1,16 @@
+Programa Quipu
+(c) Víctor Araya R., 2008
+
+Requisitos
+
++ Perl 5.8 o superior
++ Tk804
++ Módulos Perl 
+  - DBI-SQLite
+  - Tk::TableMatrix
+  - Date::Simple
+  - PDF::API2
+
+Instalación y Configuración
+
+

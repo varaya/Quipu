@@ -1,0 +1,8 @@
+Faltantes:
+
+- Conciliación Banco
+- Nulos: Comprobante, Documento (Cliente, Proveedor)
+- Impagos
+- Resultados por Centro de Costo
+- Otros listados
+- Cierre

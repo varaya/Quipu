@@ -1,0 +1,40 @@
+FUNCIONES DEL PROGRAMA
+
+.nRegistra
+
+Permite agregar, modificar o eliminar información de:
+  - la empresa;
+  - sus socios, proveedores o clientes [opción Terceros];
+  - el plan de cuentas (subgrupos y cuentas de mayor);
+  - el personal del empresa (si necesita controlar cuentas del 
+    personal);
+  - los tipos de documentos que se utilizarán;
+  - los centros de costos (si está definido trabajar con ellos)
+  - el resumen diario de la Boletas de Compraventa; y
+  - la primera apertura de saldos
+
+.nContabiliza
+
+Opciones para agregar, contabilizar y anular los siguientes tipos de documentos:
+  - Comprobantes (ingreso, egreso y traspaso)
+  - Facturas (ventas y compras)
+  - Boletas de honorarios
+  - Notas (de crédito y de débito)
+
+.nConsulta
+
+Para ver en pantalla la información contabilizada por:
+  - Cuenta de Mayor
+  - Comprobante
+  - Proveedor (cuenta individual)
+  - Cliente (cuenta individual)
+  - Documento (Factura, Boleta o Nota)
+
+.nProcesa
+
+Genera un archivo (PDF o CVS) para imprimir, exportar o ver en pantalla los siguientes informes:
+  - Libro Diario
+  - Libro Mayor
+  - Balance
+  - Libro Ventas
+  - Libro Compras

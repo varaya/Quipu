@@ -1,0 +1,17 @@
+Procedimiento Inicial
+
+1. Completar los datos de la empresa.
+2. Definir y registrar un Plan de Cuentas: sub grupos y 
+   cuentas de mayor. Los dos primeros dígitos identifican el
+   subgrupo y los dos siguientes las cuentas de mayor.
+3. Registrar los datos de terceros (proveedores, clientes y 
+   socios).
+4. Registrar datos del personal (si necesita contro de cuenta 
+   individual).
+5. Ingresar los saldos de apertura de las cuentas de mayor 
+6. Agregar otros tipos de documentos (si corresponde).
+
+Adicionalmente, para habilitar el control de cuentas corrientes individuales debe:
+
+7. Ingresar los saldos de apertura correspondientes.
+8. Registrar los documentos pendientes.

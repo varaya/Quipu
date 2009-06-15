@@ -1,0 +1,7 @@
+COMO EMPEZAR
+
+Seleccione la empresa presionando el botón 'e', en el extremo superior derecho de esta ventana.
+
+Elegida la empresa, se activará la barra superior que permite acceder a las distintas funciones del programa.
+
+Desde la barra inferior se puede seleccionar ayudas generales y el Plan de Cuentas, que se muestran en esta ventana.

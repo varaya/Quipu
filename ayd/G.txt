@@ -1,0 +1,16 @@
+AYUDA BASICA
+
+.nGeneral
+
+La barra superior permite acceder a las distintas funciones del programa.
+
+Al activar una función desde el menú, aparece otra ventana, que permite ingresar los datos. Desde esa ventana y presionando el botón "i" se accede a la ayuda específica para esa función.
+
+Desde la barra inferior se puede seleccionar diversas ayudas y el Plan de Cuentas, que se muestran en esta ventana.
+
+.nFormatos utilizados
+
+- Las fechas se escriben "DD/MM/AAA".
+- Para el RUT no usar punto, pero sí el guión antes del dígito 
+  verificador.
+
