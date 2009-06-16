@@ -96,7 +96,8 @@ $bd->do("CREATE TABLE Compras (
 	Nulo int(1),
 	Cuenta int(4),
 	TF char(1),
-	Orden int(2) )" );
+	Orden int(2),
+	IEspec int(8) )" );
 
 # Actualización de Pagada en F. Compras
 $bd->do("CREATE TRIGGER PagoFC AFTER UPDATE OF Abonos ON Compras
@@ -124,7 +125,8 @@ $bd->do("CREATE TABLE Ventas (
 	Nulo int(1),
 	Cuenta int(4),
 	TF char(1),
-	Orden int(2) )" );
+	Orden int(2),
+	IEspec int(8) )" );
 
 # Actualización de Pagada en F. Ventas
 $bd->do("CREATE TRIGGER PagoFV AFTER UPDATE OF Abonos ON Ventas

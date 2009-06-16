@@ -377,6 +377,7 @@ sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma ND
 		$rut->focus;
 		return;
 	}
+	$RUT = uc($RUT);
 	if ( not $ut->vRut($RUT) ) {
 		$Mnsj = "El RUT no es válido";
 		$rut->focus;
@@ -617,7 +618,7 @@ sub contabiliza ( )
 	}
 	my $ff = $ut->analizaFecha($Fecha) ;
 	$bd->grabaFct($TablaD, $RUT, $Documento, $ff, $Total, $Iva, $Afecto,
-		$Exento, $Numero, $TipoD, '', $fc,$CtaT,1);
+		$Exento, $Numero, $TipoD, '', $fc,$CtaT, 0, 0);
 
 	limpiaCampos();
 
@@ -628,6 +629,7 @@ sub contabiliza ( )
 	# Inicializa variables
 	inicializaV();
 	$Numero = $bd->numeroC() + 1;
+	$Documento = ($tpD eq "FV") ? $Documento + 1 : '' ; 
 	$glosa->delete(0,'end');
 	$documento->focus;
 }
@@ -655,7 +657,7 @@ sub fNula ( )
 	my $fc = $ut->analizaFecha($FechaC); 
 	# Graba Factura
 	$bd->grabaFct($TablaD, $RUT, $Documento, $fc, 0, 0, 0, 0,'', $TipoD, '', 
-		$fc, '', "M", $NmrI,1);
+		$fc, '', "M", $NmrI, 1, 0);
 
 	limpiaCampos();
 	$bCnt->configure(-state => 'disabled');

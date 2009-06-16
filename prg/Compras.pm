@@ -1,10 +1,11 @@
 #  Compras.pm - Consulta e imprime Libro Compras
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM : 14.06.2009 
 
 package Compras;
 
@@ -39,7 +40,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Compras");
-	$vnt->geometry("850x400+40+150"); 
+	$vnt->geometry("950x400+40+150"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white');
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -127,26 +128,28 @@ sub informe ( $ $ ) {
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	@datos = $bd->listaFct('Compras',$mes);
+	@datos = $bd->listaFct('Compras',$mes, 'FC');
 	$marco->delete('0.0','end');
 	$Mnsj = " ";
 	if (not @datos) { 
 		$Mnsj = "No hay datos para ese mes"; 
 		return;
 	}
-	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,@datosE);
-	my ($Tt,$Iva,$Aft,$Ext);
+	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE);
+	my ($Tt,$Iva,$Aft,$Ext,$IEsp);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
-
+	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
 	$marco->insert('end', "Libro Compras  $nMes $cnf[0]\n", 'negrita');
-	my $lin1 = "\nFecha       Factura RUT        Proveedor                          ";
-	$lin1 .= "      Afecto      Exento         IVA       Total";
-	my $lin2 = "-"x114;
+	my $lin1 = "\nNº  Fecha       Factura RUT        Proveedor                          ";
+	$lin1 .= "      Afecto      Exento         IVA     I.Espec.       Total";
+	my $lin2 = "-"x131;
+	# Muestra Facturas manuales
+	
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
-	$Tt = $Iva = $Aft = $Ext = 0;
+	$Tt = $Iva = $Aft = $Ext = $IEsp = 0;
 	foreach $algo ( @datos ) {
 		$fch = $ut->cFecha($algo->[0]); 
 		$nm = $algo->[1]; 
@@ -157,24 +160,29 @@ sub informe ( $ $ ) {
 		$aft = $pesos->format_number( $algo->[6] );
 		$ext = $pesos->format_number( $algo->[7] );
 		$nulo = $algo->[8]; 
+		$ie = $pesos->format_number( $algo->[9] );
+		$ni = $algo->[10];
 		if ( not $nulo ) {
-			$mov = sprintf("%10s %8s %10s %-35s %11s %11s %11s %11s", 
-				$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$tt ) ;
+			$mov = sprintf("%3s  %10s %8s %10s %-35s %11s %11s %11s %11s %11s", 
+				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt ) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[4] ;
 			$Iva += $algo->[5] ;
 			$Aft += $algo->[6] ;
 			$Ext += $algo->[7] ;
+			$IEsp += $algo->[9];
 		}
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%10s %8s %10s %-35s %11s %11s %11s %11s",'','','',
-		'Totales', $pesos->format_number( $Aft ) ,
+	$mov = sprintf("%4s %10s %8s %10s %-35s %11s %11s %11s %11s %11s",'','','',
+		'', 'Totales', $pesos->format_number( $Aft ) ,
 		$pesos->format_number( $Ext ),
 		$pesos->format_number( $Iva ),
+		$pesos->format_number( $IEsp ),
 		$pesos->format_number( $Tt ) );
 	$marco->insert('end', "$mov\n",'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
+	
 	$bImp->configure(-state => 'active');
 }
 

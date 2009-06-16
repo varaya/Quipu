@@ -1,10 +1,11 @@
 #  FcmpE.pm - Registra y contabiliza Factura caso especial
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Propiedad intelectual (c) Víctor Araya R., 2009
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
+#  UM: 16.06.2009
 
 package FcmpE;
 
@@ -149,7 +150,9 @@ sub crea {
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CtaIVA );
 	$nCtaIVA = $mDatosC->Label(	-textvariable => \$NombreCi, -font => $tp{mn});
-
+	$iEspec = $mDatosC->LabEntry(-label => "I.Espec.: ", -width => 5,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$IEspec );
 	$total = $mDatosC->LabEntry(-label => "Total:     ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Total );
@@ -197,6 +200,7 @@ sub crea {
 	$netoE->bind("<FocusOut>", sub { &totaliza() } );
 	$iva->bind("<FocusIn>", sub { $Iva = int( ($Neto + $NetoE) * $pIVA / 100 + 0.5) ;} );	
 	$iva->bind("<FocusOut>", sub { &totaliza() } );	
+	$iEspec->bind("<FocusOut>", sub { &totaliza() } );
 	$ctaIVA->bind("<FocusOut>", sub { 
 		&buscaCuenta($bd, \$CtaIVA, \$NombreCi, \$ctaIVA) } );
 	$ctaT->bind("<FocusOut>", sub { 
@@ -231,6 +235,7 @@ sub crea {
 	$netoE->grid(-row => 4, -column => 1, -sticky => 'nw');		
 	$iva->grid(-row => 5, -column => 0, -sticky => 'nw');
 	$ctaIVA->grid(-row => 5, -column => 1, -columnspan => 2, -sticky => 'nw');
+	$iEspec->grid(-row => 6, -column => 0, -sticky => 'nw');
 	$nCtaIVA->grid(-row => 6, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$total->grid(-row => 7, -column => 0, -sticky => 'nw'); 
 	$ctaT->grid(-row => 7, -column => 1, -columnspan => 2, -sticky => 'nw'); 
@@ -275,7 +280,7 @@ sub crea {
 # Funciones internas
 sub totaliza ( ) 
 {
-	$Total = $Neto + $NetoE + $Iva;
+	$Total = $Neto + $NetoE + $Iva + $IEspec;
 }
 
 sub validaFecha ($ $ $ $ ) 
@@ -580,16 +585,13 @@ sub contabiliza ( )
 		$bd->agregaItemT($CtaIVA,$det,$Iva,$DH,'','','', '',$Numero,'');
 	}
 	my $fc = $ut->analizaFecha($FechaC); 
-#	$fc =~ s/-//g ; # Convierte a formato AAAAMMDD
 	$bd->agregaItemT($CtaT,'',$Total,$CC,$RUT,$TipoD,$Dcmnt,'',$Numero,'');
 	$bd->agregaCmp($Numero, $fc, $Glosa, $Total, $TipoCmp);
 	# Graba Factura
 	my $ff = $ut->analizaFecha($Fecha) ;
-#	$ff =~ s/-//g ;
-	my $fv = $ut->analizaFecha($FechaV) if $FechaV ; 
-#	$fv =~ s/-//g if $fv ; 
+	my $fv = $ut->analizaFecha($FechaV) if $FechaV ;  
 	$bd->grabaFct($TablaD, $RUT, $Dcmnt, $ff, $Total, $Iva, $Neto, $NetoE,
-		$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI);
+		$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI, 0, $IEspec);
 
 	limpiaCampos();
 
@@ -631,7 +633,7 @@ sub limpiaCampos ( )
 
 sub inicializaV ( )
 {
-	$Monto = $TotalI = $Total = $Neto = $Iva = $NetoE = 0;
+	$Monto = $TotalI = $Total = $Neto = $Iva = $NetoE = $IEspec = 0;
 	$Codigo = $RUT = $Glosa = $Detalle = $NCCto = $CCto = $NmrI = '';
 	$NombreCi = $NombreCt = $Nombre = $Dcmnt = $Fecha = $FechaV = $SGrupo = '';
 }

@@ -975,16 +975,16 @@ sub datosFct( $ $ $ )
 	return @dts; 
 }
 
-sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
+sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 {
-	my ($esto,$tb,$rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$td,$fv,$fc,$cta,$tf,$no,$nl) = @_;	
+	my ($esto,$tb,$rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$td,$fv,$fc,$cta,$tf,$no,$nl,$ie) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my ($mnD, $mnH, $mes, $sql);
 
 	$mes = substr $fc,4,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
-	$sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,$mes,$nl,$cta,$tf,$no);
+	$sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,$mes,$nl,$cta,$tf,$no,$ie);
 	
 	# Actualiza cuenta individual
 	$mnD = $mnH = 0;
@@ -1023,16 +1023,17 @@ sub listaD( $ $ )
 	return @datos; 
 }	
 
-sub listaFct( $ $ )
+sub listaFct( $ $ $)
 {
-	my ($esto, $tabla, $mes) = @_;	
+	my ($esto, $tabla, $mes, $td) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT d.FechaE, d.Numero, d.RUT, t.Nombre,
-		d.Total, d.IVA, d.Afecto, d.Exento, d.Nulo FROM $tabla AS d, 
-		Terceros AS t WHERE d.RUT = t.RUT AND Mes = ? ORDER BY FechaE "); 
-	$sql->execute($mes);
+		d.Total, d.IVA, d.Afecto, d.Exento, d.Nulo, d.IEspec, d.Orden 
+		FROM $tabla AS d, Terceros AS t 
+		WHERE d.RUT = t.RUT AND Mes = ? AND Tipo = ? ORDER BY Orden "); 
+	$sql->execute($mes,$td);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
 		push @datos, \@fila;

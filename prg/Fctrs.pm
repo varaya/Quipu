@@ -17,12 +17,12 @@ use Number::Format;
 
 # Variables válidas dentro del archivo
 # Datos a registrar
-my ($Numero, $Id, $Glosa, $Fecha, $Neto, $IVA, $AE, $Especial, $Total) ;
+my ($Numero, $Id, $Glosa, $Fecha, $Neto, $IVA, $AE, $Total) ;
 my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Dcmnt, $Cuenta) ;
 my ($TipoCmp, $TipoD, $CtaIVA, $NombreCi, $NombreCt, $FechaV, $FechaC) ;
 my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj,$Nombre, $TipoF, $NmrI ); 
 # Campos
-my ($codigo, $detalle, $glosa, $fecha, $neto, $iva, $especial, $ctaIVA) ;
+my ($codigo, $detalle, $glosa, $fecha, $neto, $iva, $ctaIVA) ;
 my ($monto, $rut, $tipoD, $dcmnt, $numero, $cuenta, $nombre) ;
 my ($nCtaIVA, $total, $ctaT, $nCtaT, $fechaV, $fechaC, $fe, $fm);
 # Otros campos y datos opcionales
@@ -645,7 +645,7 @@ sub contabiliza ( )
 	my $ff = $ut->analizaFecha($Fecha) ;
 	my $fv = $ut->analizaFecha($FechaV) if $FechaV ; 
 	$bd->grabaFct($TablaD, $RUT, $Dcmnt, $ff, $Total, $Iva, $Afecto, $Exento,
-		$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI,0);
+		$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI, 0, 0);
 
 	limpiaCampos();
 
@@ -656,6 +656,7 @@ sub contabiliza ( )
 	# Inicializa variables
 	inicializaV();
 	$Numero = $bd->numeroC() + 1;
+	$Dcmnt = ($TipoD eq "FV") ? $Dcmnt + 1 : '' ; 
 	$glosa->delete(0,'end');
 	$dcmnt->focus;
 }
@@ -683,7 +684,7 @@ sub fNula ( )
 	my $fc = $ut->analizaFecha($FechaC); 
 	# Graba Factura
 	$bd->grabaFct($TablaD, $RUT, $Dcmnt, $fc, 0, 0, 0, 0,'', $TipoD, '', 
-		$fc, '', "M", $NmrI,1);
+		$fc, '', "M", $NmrI, 1, 0);
 
 	limpiaCampos();
 	$bCnt->configure(-state => 'disabled');
