@@ -459,14 +459,10 @@ sub muestraLista ( $ )
 	$listaS->delete(0,'end');
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
-		$mntD = $mntH = $pesos->format_number(0);
-		if ($algo->[3] eq "D") {
-			$mntD = $pesos->format_number( $algo->[2] ); 
-		} else {
-			$mntH = $pesos->format_number( $algo->[2] );
-		}
+		$mntD = $pesos->format_number( $algo->[2] ); 
+		$mntH = $pesos->format_number( $algo->[3] );
 		$mov = sprintf("%-5s %-30s %11s %11s", 
-			$cm, decode_utf8($algo->[8]), $cm, $mntD, $mntH ) ;
+			$cm, decode_utf8($algo->[10]), $mntD, $mntH ) ;
 		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
 	}
 	# Devuelve una lista de listas con datos de las cuentas

@@ -624,7 +624,7 @@ sub limpiaCampos ( )
 	$Cuenta = $NCCto = $CCto = '';
 	
 	# Activa o desactive el botón para contabilizar el comprobante
-	if ($Neto + $NetoE == $TotalI) {
+	if ($TotalI == $Neto + $NetoE + $IEspec ) {
 		$bCnt->configure(-state => 'active');
 	} else {
 		$bCnt->configure(-state => 'disabled');
