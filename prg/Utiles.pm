@@ -25,20 +25,20 @@ sub crea
 sub tipos ( )
 {
 	
-	my ($t1,$t2,$t3,$tb,$tm,$tf,%tp);
+	my ($t1, $t2 ,$t3, $tb, $tm, $tf, $fx,%tp);
 	$tb = "bitstream-vera-sans";
 	$tm = "bitstream-vera-sans-mono";
-	$tf = "Monospace 9";
-#	
+	$tf = "Courier 9";
+	$fx = "monospace 9";
 	($t1,$t2,$t3) = (11,10,9) ;
 	if ($^O eq 'MSWin32') {
 		$tb = "Arial";
 		$tm = "Courier";
-		$tf = "Courier 8";
+		$tf = $fx = "Courier 8";
 	}
 	if ($^O eq 'darwin') {
 		$tb = "Arial" ;
-		$tf = "fixed";
+		$tf = $fx = "fixed";
 		($t1,$t2,$t3) = (12,11,10) ;
 	}
 	%tp = ( 
@@ -46,7 +46,8 @@ sub tipos ( )
 		gr => "$tb $t2 bold" ,
 		cn => "$tb $t3" ,
 		tx => "$tm $t3" ,
-		mn => "$tf" ) ;
+		mn => "$tf" ,
+		fx => "$fx") ;
 
 	return %tp;	
 }

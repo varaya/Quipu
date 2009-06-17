@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 15.06.2009
+#  UM : 17.06.2009
 
 package NtsC;
 
@@ -17,16 +17,16 @@ use Number::Format;
 
 # Variables válidas dentro del archivo
 # Datos a registrar
-my ($Numero, $Id, $Glosa, $Fecha, $Neto, $IVA, $AE, $Especial, $Total,$Nombre) ;
+my ($Numero, $Id, $Glosa, $Fecha, $Neto, $Iva, $AE, $Total,$Nombre) ;
 my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Documento, $Cuenta) ;
 my ($TipoCmp, $TipoD, $CtaIVA, $NombreCi, $NombreCt) ;
-my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj, $FechaC, $TipoF, $NmrI); 
+my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj, $FechaC, $TipoF, $NmrI, $tpD );
 # Campos
 my ($codigo, $detalle, $glosa, $fecha, $neto, $iva, $especial, $ctaIVA) ;
 my ($monto, $rut, $tipoD, $documento, $numero, $cuenta, $nombre) ;
 my ($nCtaIVA, $total, $ctaT, $nCtaT, $fechaC);
 # Campos y datos opcionales para Centro de Costos
-my ($CCto, $cCto, $ncCto, $NCCto, $pIVA ) ;
+my ($CCto, $cCto, $ncCto, $NCCto, $pIVA, $SGrupo) ;
 # Botones
 my ($bReg, $bEle, $bNvo, $bCnt) ; 
 # Listas de datos	
@@ -54,7 +54,6 @@ sub crea {
 	$AE = 'A' ;
 	$TipoCmp = "T" ;
 	$TipoD = 'NC';
-	my $tpD ;
 	if ($tipoF eq 'Recibida') {
 		$TablaD = 'Compras'; # Donde se registra el documento
 		# como se contabiliza el detalle de la NC
@@ -110,7 +109,7 @@ sub crea {
 	
 	# Define Lista de datos (cuentas de cargo o de abono)
 	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -width => 60,
-		-selectmode => 'single', -orient => 'horizontal', -font => $tp{tx},
+		-selectmode => 'single', -orient => 'horizontal', -font => $tp{mn},
 		-command => sub { &modifica($esto) } );
 	$esto->{'vLista'} = $listaS;
 	
@@ -335,12 +334,12 @@ sub buscaCuenta ( $ $ $ $ )
 	}
 	# Busca código
 	@dCuenta = $bd->dtCuenta($$a);
-	my $nc = @dCuenta;
-	if ( $nc == 0 ) {
+	if ( not @dCuenta ) {
 		$Mnsj = "Ese código NO está registrado";
 		$$c->focus;
 	} else {
-		$$b = "  $dCuenta[0]";
+		$$b = substr decode_utf8(" $dCuenta[0]"),0,35;
+		$SGrupo = $dCuenta[2] ;
 	}
 }
 
@@ -348,7 +347,12 @@ sub buscaCC ( $ ) {
 
 	my ($bd) = @_;
 
-	$Mnsj = " ";
+#	$Mnsj = " ";
+	# La cuenta debe ser de Pérdida o Ganancia para aplicar C Costo
+	if (not $SGrupo =~ /^[34]/) { 
+		$Mnsj = "No aplica el Centro de Costo.";
+		return ; 
+	}
 	# Comprueba largo del código del Centro de Costo
 	if (length $CCto < 3) {
 		$Mnsj = "Código debe tener 3 dígitos";
@@ -444,6 +448,31 @@ sub datosF ( ) # Verifica los datos mínimos para anotar un item
 	$Detalle = "$TipoD# $Documento $RUT" ;
 }
 
+sub validaFechaC ( $ $)
+{
+	my ($ut, $bd) = @_;
+	
+	if ($FechaC eq '' ) {
+		$Mnsj = "Anote la fecha de contabilización.";
+		$fechaC->focus;
+		return;
+	}
+	# Valida fecha contabilización
+	if (not $FechaC =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Problema con formato fecha";
+		$fechaC->focus;
+		return ;
+	} elsif ( not $ut->analizaFecha($FechaC) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaC->focus ;
+		return ;
+	}
+	# Determina el número de ingreso
+	my $mes = substr $FechaC,3,2 ; # Extrae mes
+	$mes =~ s/^0// ; # Elimina '0' al inicio
+	$NmrI = $bd->numeroI($TablaD, $mes, $TipoD) + 1 ; 
+}
+
 sub muestraLista ( $ ) 
 {
 	my ($esto) = @_;
@@ -461,8 +490,9 @@ sub muestraLista ( $ )
 		$cm = $algo->[1];  # Código cuenta
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
-		$mov = sprintf("%-5s %-30s %11s %11s", 
-			$cm, decode_utf8($algo->[10]), $mntD, $mntH ) ;
+		$cta = substr decode_utf8($algo->[10]),0,25 ;
+		$mov = sprintf("%-4s %-25s %11s %11s", 
+			$cm, $cta, $mntD, $mntH ) ;
 		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
 	}
 	# Devuelve una lista de listas con datos de las cuentas
@@ -524,7 +554,7 @@ sub modifica ( )
 	
 	# Rellena campos
 	$Codigo = $sItem->[1];
-	$Monto = $sItem->[2];
+	$Monto = $sItem->[2] ? $sItem->[2] : $sItem->[3] ;
 	$Detalle = decode_utf8($sItem->[4]);
 	$Cuenta = $sItem->[8];	
 
@@ -689,6 +719,7 @@ sub limpiaCampos ( )
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
 	$Monto = 0;
+	$Cuenta = $NCCto = $CCto = '';
 	
 	# Activa o desactive el botón para contabilizar el comprobante
 	if ($Neto == $TotalI) {

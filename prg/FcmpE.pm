@@ -1,11 +1,13 @@
-#  FcmpE.pm - Registra y contabiliza Factura caso especial
+#  FcmpE.pm - Registra y contabiliza caso especial de Factura:
+#	incluyen montos afecto y exento; también el caso del
+#	impuesto específico a los combustibles
 #  Forma parte del programa Quipu
 #
 #  Propiedad intelectual (c) Víctor Araya R., 2009
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM: 16.06.2009
+#  UM: 17.06.2009
 
 package FcmpE;
 
@@ -100,7 +102,7 @@ sub crea {
 	
 	# Define Lista de datos (cuentas de cargo o de abono)
 	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -width => 60,
-		-selectmode => 'single', -orient => 'horizontal', -font => $tp{tx},
+		-selectmode => 'single', -orient => 'horizontal', -font => $tp{mn},
 		-command => sub { &modifica($esto) } );
 	$esto->{'vLista'} = $listaS;
 	
@@ -140,20 +142,20 @@ sub crea {
 	$neto = $mDatosC->LabEntry(-label => "Afecto: ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Neto);
-	$netoE = $mDatosC->LabEntry(-label => "Exento: ", -width => 12,
+	$netoE = $mDatosC->LabEntry(-label => "Exento: ", -width => 11,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$NetoE);
-	$iva = $mDatosC->LabEntry(-label => "IVA:   ", -width => 12,
+	$iva = $mDatosC->LabEntry(-label => "IVA:   ", -width => 11,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Iva );
 	$ctaIVA = $mDatosC->LabEntry(-label => "Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CtaIVA );
 	$nCtaIVA = $mDatosC->Label(	-textvariable => \$NombreCi, -font => $tp{mn});
-	$iEspec = $mDatosC->LabEntry(-label => "I.Espec.: ", -width => 5,
+	$iEspec = $mDatosC->LabEntry(-label => "IEC:   ", -width => 11,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-textvariable => \$IEspec );
-	$total = $mDatosC->LabEntry(-label => "Total:     ", -width => 12,
+		-justify => 'right', -textvariable => \$IEspec );
+	$total = $mDatosC->LabEntry(-label => "Total:   ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Total );
 	$ctaT = $mDatosC->LabEntry(-label => "Cuenta: ", -width => 5,
@@ -431,14 +433,15 @@ sub muestraLista ( $ )
 	my @data = $bd->datosItems($Numero);
 
 	# Completa TList con código, nombre cuenta, monto (d o h) 
-	my ($algo, $mov, $cm, $mntD, $mntH);
+	my ($algo, $mov, $cm, $mntD, $mntH, $cta);
 	$listaS->delete(0,'end');
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
+		$cta = substr decode_utf8($algo->[10]),0,30 ;
 		$mov = sprintf("%-5s %-30s %11s %11s", 
-			$cm, decode_utf8($algo->[10]), $mntD, $mntH ) ;
+			$cm, $cta, $mntD, $mntH ) ;
 		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
 	}
 	# Devuelve una lista de listas con datos de las cuentas

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 14.06.2009
+#  UM : 17.06.2009
 
 package Fctrs;
 
@@ -28,7 +28,7 @@ my ($nCtaIVA, $total, $ctaT, $nCtaT, $fechaV, $fechaC, $fe, $fm);
 # Otros campos y datos opcionales
 my ($CCto, $cCto, $ncCto, $NCCto, $SGrupo, $pIVA ) ;
 # Botones
-my ($bReg, $bEle, $bNvo, $bCnt) ; 
+my ($bReg, $bEle, $bNvo, $bCnt, $bNula) ; 
 # Listas de datos	
 my @dCuenta = () ;	# Cuenta de mayor
 my @datos = () ;	# Items del comprobante
@@ -110,7 +110,7 @@ sub crea {
 	
 	# Define Lista de datos (cuentas de cargo o de abono)
 	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -width => 60,
-		-selectmode => 'single', -orient => 'horizontal', -font => $tp{tx},
+		-selectmode => 'single', -orient => 'horizontal', -font => $tp{mn},
 		-command => sub { &modifica($esto) } );
 	$esto->{'vLista'} = $listaS;
 	
@@ -141,7 +141,7 @@ sub crea {
 	$rut = $mDatosC->LabEntry(-label => "RUT:  ", -width => 15,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'left', -textvariable => \$RUT);
-	$nombre = $mDatosC->Label(	-textvariable => \$Nombre, -font => $tp{mn});
+	$nombre = $mDatosC->Label(	-textvariable => \$Nombre, -font => $tp{tx});
 	$fecha = $mDatosC->LabEntry(-label => "Fecha Emisión:", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Fecha );
@@ -164,7 +164,7 @@ sub crea {
 	$ctaIVA = $mDatosC->LabEntry(-label => "Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CtaIVA );
-	$nCtaIVA = $mDatosC->Label(	-textvariable => \$NombreCi, -font => $tp{mn});
+	$nCtaIVA = $mDatosC->Label(	-textvariable => \$NombreCi, -font => $tp{tx});
 
 	$total = $mDatosC->LabEntry(-label => "Total:     ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
@@ -172,7 +172,7 @@ sub crea {
 	$ctaT = $mDatosC->LabEntry(-label => "Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CtaT );
-	$nCtaT = $mDatosC->Label( -textvariable => \$NombreCt, -font => $tp{mn});
+	$nCtaT = $mDatosC->Label( -textvariable => \$NombreCt, -font => $tp{tx});
 	$fechaC = $mDatosC->LabEntry(-label => "Contabilizada: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaC );
@@ -189,14 +189,14 @@ sub crea {
 	$codigo = $mItems->LabEntry(-label => " Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Codigo );
-	$cuenta = $mItems->Label(-textvariable => \$Cuenta, -font => $tp{mn});
+	$cuenta = $mItems->Label(-textvariable => \$Cuenta, -font => $tp{tx});
 	if ($ucc) {
 	  $cCto = $mItems->LabEntry(-label => " C.Costo: ", -width => 5,
-		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$CCto );	
-	  $nCCto = $mItems->Label(-textvariable => \$NCCto, -font => $tp{mn});	
+	  $nCCto = $mItems->Label(-textvariable => \$NCCto, -font => $tp{tx});	
 	}
-	$monto= $mItems->LabEntry(-label => " Monto:  ", -width => 12,
+	$monto= $mItems->LabEntry(-label => " Monto:  ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Monto); 
 		
@@ -207,7 +207,7 @@ sub crea {
 	# Habilita validación de datos
 	$fecha->bind("<FocusIn>", sub { &buscaDoc($esto) } );
 	$fechaV->bind("<FocusOut>", sub{ &validaFecha($ut,\$FechaV,\$fechaV,0)});
-	$glosa->bind("<FocusIn>", sub { &validaFecha($ut,\$Fecha,\$fecha,1) } );	
+	$glosa->bind("<FocusIn>", sub { &validaFecha($ut,\$Fecha,\$fecha,1) } );
 	$neto->bind("<FocusOut>", sub { &totaliza() } );
 	$iva->bind("<FocusIn>", sub { $Iva = int( $Neto * $pIVA / 100 + 0.5) ;} );
 	$iva->bind("<FocusOut>", sub { &totaliza() } );	
@@ -346,7 +346,7 @@ sub buscaCuenta ( $ $ $ $ )
 		$Mnsj = "Ese código NO está registrado";
 		$$c->focus;
 	} else {
-		$$b = decode_utf8(" $dCuenta[0]");
+		$$b = substr decode_utf8(" $dCuenta[0]"),0,35;
 		$SGrupo = $dCuenta[2] ;
 	}
 }
@@ -477,14 +477,15 @@ sub muestraLista ( $ )
 	my @data = $bd->datosItems($Numero);
 
 	# Completa TList con código, nombre cuenta, monto (d o h) 
-	my ($algo, $mov, $cm, $mntD, $mntH);
+	my ($algo, $mov, $cm, $mntD, $mntH, $cta);
 	$listaS->delete(0,'end');
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
-		$mov = sprintf("%-5s %-30s %11s %11s", 
-			$cm, decode_utf8($algo->[10]), $mntD, $mntH ) ;
+		$cta = substr decode_utf8($algo->[10]),0,30 ;
+		$mov = sprintf("%-4s %-30s %11s %11s", 
+			$cm, $cta, $mntD, $mntH ) ;
 		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
 	}
 	# Devuelve una lista de listas con datos de las cuentas
@@ -524,7 +525,7 @@ sub agrega ( )
 		$bCnt->configure(-state => 'disabled');
 	}
 	limpiaCampos();
-#	$codigo->focus;
+	$codigo->focus;
 }
 
 sub modifica ( )
@@ -549,7 +550,7 @@ sub modifica ( )
 	
 	# Rellena campos
 	$Codigo = $sItem->[1];
-	$Monto = $sItem->[2];
+	$Monto = $sItem->[2] ? $sItem->[2] : $sItem->[3] ;
 	$Detalle = decode_utf8($sItem->[4]);
 	$Cuenta = $sItem->[10];	
 	$CCto = $sItem->[8];
@@ -673,6 +674,11 @@ sub fNula ( )
 		$dcmnt->focus;
 		return;
 	}
+	if ($RUT) {
+		$Mnsj = "NO se puede dejar NULA si tiene datos.";
+		$rut->focus;
+		return ;
+	}
 	validaFechaC($ut,$bd);
 	# Ahora busca Factura
 	my $fct = $bd->buscaFct($TablaD, $RUT, $Dcmnt);
@@ -723,22 +729,6 @@ sub inicializaV ( )
 	$Monto = $TotalI = $Total = $Neto = $Iva = 0;
 	$Codigo = $RUT = $Glosa = $Detalle = $NCCto = $CCto = $NmrI = '';
 	$NombreCi = $NombreCt = $Nombre = $Fecha = $FechaV = $SGrupo = '';
-}
-
-sub algo 
-{
-	if ( not $Fecha ) {	
-		$Mnsj = "Debe colocar fecha de emisión";
-		$fecha->focus;
-		return ;
-	} 
-	if ( not $Fecha =~ m|\d+/\d+/\d+| ) {
-		$Mnsj = "Problema con formato. Debe ser dd/mm/aaa";
-		$fecha->focus;
-	} elsif ( not $ut->analizaFecha($Fecha) ) {
-		$Mnsj = "Fecha incorrecta";
-		$fecha->focus;
-	}		
 }
 
 # Fin del paquete

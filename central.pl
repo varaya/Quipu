@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 14.06.2009
+#  UM : 17.06.2009
 
 # use Data::Dumper; 
 
@@ -19,7 +19,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "v0.96 a Junio 2009";
+my $version = "v0.85 a Junio 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -157,8 +157,7 @@ sub opContabiliza {
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoF ,
 	-command => sub { require prg::Fctrs; 
 	Fctrs->crea($vp,$bd,$ut,$tipoF,$mt,$CCts,$iva);} ], qw/Ventas Compras/,],],
-['command' => "FC Especial", -command => sub { require prg::FcmpE; 
-	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ],
+ ['cascade' => "F. Especial", -tearoff => 0, -menuitems => opEspecial() ],
  ['command' => "B. Honorarios",	-command => sub { require prg::BltsH;
 	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },],
  ['cascade' => "N. Crédito", -tearoff => 0,
@@ -174,6 +173,13 @@ sub opContabiliza {
 	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt);}],
 		 qw/Ingreso Egreso Traspaso/,], ], "-",
 ['cascade' => "Nulos", -tearoff => 0,	-menuitems => opAnula() ] ]
+}
+
+sub opEspecial {
+[['command' => "Afecto y Exento", -command => sub { require prg::FcmpE; 
+	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
+ ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
+ 	FTrcrs->crea($vp, $mt, $bd, $ut);} ] ]
 }
 
 sub opConsulta {
@@ -199,7 +205,7 @@ sub opProcesa {
 	Diario->crea($vp, $mt, $bd, $ut, $Rut);} ], 
  ['command' => "Libro Mayor", -command => sub { require prg::Mayor;
 	Mayor->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
- ['command' => "+Libro Ventas", -command => sub { require prg::Ventas;
+ ['command' => "Libro Ventas", -command => sub { require prg::Ventas;
 	Ventas->crea($vp, $mt, $bd, $ut, $Rut);} ],
  ['command' => "Libro Compras",	-command => sub { require prg::Compras;
 	Compras->crea($vp, $mt, $bd, $ut, $Rut);} ],"-",

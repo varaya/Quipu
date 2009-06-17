@@ -15,6 +15,7 @@ use Number::Format;
 
 # Variables válidas dentro del archivo
 my ($Mnsj, $mes, $nMes, @cnf, $empr, $rutE) ;	# Variables
+my ($Tt,$Iva,$Aft,$Ext,$IEsp);
 my @lMeses = () ;
 my @datos = ();
 my ($bCan, $bImp) ; # Botones
@@ -40,12 +41,12 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Compras");
-	$vnt->geometry("950x400+40+150"); 
+	$vnt->geometry("950x450+40+150"); 
 	# Define marco para mostrar resultado
-	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white');
+	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
-	$mtA->tagConfigure('detalle', -font => $tp{mn}) ;
-	
+	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
+
 	# Define marcos
 	my $mBotonesC = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
@@ -86,6 +87,7 @@ sub crea {
 		-command => sub { $vnt->destroy();} );
 	
 	# Dibuja interfaz
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$tMes->pack(-side => "left", -anchor => "w");
 	$meses->pack(-side => "left", -anchor => "w");
 	$bMst->pack(-side => 'left', -expand => 0, -fill => 'none');
@@ -93,7 +95,6 @@ sub crea {
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$mBotonesC->pack();
 	$mtA->pack(-fill => 'both');
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 
 	$bImp->configure(-state => 'disabled');
 	$mt->delete('0.0','end');
@@ -128,25 +129,42 @@ sub informe ( $ $ ) {
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	@datos = $bd->listaFct('Compras',$mes, 'FC');
+	my $nf = $bd->cuentaDcm('Compras',$mes);
 	$marco->delete('0.0','end');
 	$Mnsj = " ";
-	if (not @datos) { 
+	if (not $nf) { 
 		$Mnsj = "No hay datos para ese mes"; 
 		return;
 	}
 	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE);
-	my ($Tt,$Iva,$Aft,$Ext,$IEsp);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
 	$marco->insert('end', "Libro Compras  $nMes $cnf[0]\n", 'negrita');
-	my $lin1 = "\nNº  Fecha       Factura RUT        Proveedor                          ";
-	$lin1 .= "      Afecto      Exento         IVA     I.Espec.       Total";
+	my $lin1 = "\nNº  Fecha        Número  RUT        Proveedor                          ";
+	$lin1 .= "      Afecto      Exento         IVA    I.Espec.       Total";
 	my $lin2 = "-"x131;
 	# Muestra Facturas manuales
+	detalles($marco,$lin1,$lin2,$ut,$bd,'FC','M', 'Facturas');	
+	# Facturas Electrónicas
+	detalles($marco,$lin1,$lin2,$ut,$bd,'FC','E', 'Facturas Electrónicas');	
+	# Notas de Crédito
+	detalles($marco,$lin1,$lin2,$ut,$bd,'NC','', 'Notas de Crédito');	
+	# Notas de Débito
+	detalles($marco,$lin1,$lin2,$ut,$bd,'ND','', 'Notas de Débito');	
+	$marco->insert('end', "\nFalta resumen", 'negrita');
+	$bImp->configure(-state => 'active');
+}
+
+sub detalles ( $ $ $ $)
+{
+	my ($marco,$lin1,$lin2,$ut,$bd,$td,$tf,$nmb) = @_;
 	
+	my @datos = $bd->listaFct('Compras',$mes, $td, $tf);
+	if ( not @datos ) {return ;}
+	
+	$marco->insert('end', "\n$nmb", 'negrita');
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$Tt = $Iva = $Aft = $Ext = $IEsp = 0;
@@ -172,7 +190,7 @@ sub informe ( $ $ ) {
 			$Ext += $algo->[7] ;
 			$IEsp += $algo->[9];
 		}
-	}
+	}	
 	$marco->insert('end',"$lin2\n",'detalle');
 	$mov = sprintf("%4s %10s %8s %10s %-35s %11s %11s %11s %11s %11s",'','','',
 		'', 'Totales', $pesos->format_number( $Aft ) ,
@@ -182,8 +200,7 @@ sub informe ( $ $ ) {
 		$pesos->format_number( $Tt ) );
 	$marco->insert('end', "$mov\n",'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	
-	$bImp->configure(-state => 'active');
+
 }
 
 sub txt ( $ )

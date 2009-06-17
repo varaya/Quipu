@@ -1,10 +1,11 @@
 #  BaseDatos.pm - Manejo de la base de datos en SQLite 3.2 o superior
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varayar@programmers.net]
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 17.06.2009
 
 package BaseDatos;
 
@@ -41,6 +42,7 @@ sub anexaBD
 	
 }
 
+
 # CONFIG: Rescata datos de configuración
 sub leeCnf( )
 {
@@ -64,6 +66,7 @@ sub grabaCnf($ $ )
 	$sql->execute($prd, $me);
 	$sql->finish();	 
 }
+
 
 # EMPRESAS: Lee y registra DatosE
 sub listaEmpresas( )
@@ -203,6 +206,7 @@ sub buscaP( $ )
 	return $dato; 
 }
 
+
 # TERCEROS: Lee, agrega y actualiza datos de Proveedores, Clientes o Socios
 sub datosT( )
 {
@@ -272,6 +276,7 @@ sub datosCI( $ )
 	
 	return @dts; 
 }	
+
 
 # SUBGRUPOS: Lee, agrega y actualiza tabla Grupos
 sub datosGrupos( )
@@ -478,6 +483,7 @@ sub ctaEsp( $ )
 	$sql->finish();
 	if (not $dato ) { return " "; } else { return $dato; }
 }
+
 
 # COMPROBANTES: Lee, agrega y actualiza tablas DatosC e ItemsC
 sub creaTemp( )
@@ -894,6 +900,7 @@ sub buscaB( )
 	return $dato; 
 }
 
+
 # DOCUMENTOS: tipos de documentos contable-tributarios
 sub datosDocs( )
 {
@@ -947,7 +954,21 @@ sub buscaDoc( $ )
 	return @dato; 
 }
 
+
 # FACTURAS Ventas o Compras; NOTAS emitidas o recibidas
+sub cuentaDcm ( $ $ )
+{
+	my ($esto, $tbl, $mes) = @_;
+	my $bd = $esto->{'baseDatos'};
+	
+	my $sql = $bd->prepare("SELECT count(*) FROM $tbl WHERE Mes = ?");
+	$sql->execute($mes);
+	my $dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return $dato; 
+}
+
 sub buscaFct( $ $ $ )
 {
 	my ($esto, $tbl, $rut, $doc) = @_;	
@@ -1023,16 +1044,19 @@ sub listaD( $ $ )
 	return @datos; 
 }	
 
-sub listaFct( $ $ $)
+sub listaFct( $ $ $ $)
 {
-	my ($esto, $tabla, $mes, $td) = @_;	
+	my ($esto, $tabla, $mes, $td, $tf) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
-
-	my $sql = $bd->prepare("SELECT d.FechaE, d.Numero, d.RUT, t.Nombre,
+# Problema con Nulos: no tienen RUT, por lo que son excluidos
+	my $sel = "SELECT d.FechaE, d.Numero, d.RUT, t.Nombre,
 		d.Total, d.IVA, d.Afecto, d.Exento, d.Nulo, d.IEspec, d.Orden 
-		FROM $tabla AS d, Terceros AS t 
-		WHERE d.RUT = t.RUT AND Mes = ? AND Tipo = ? ORDER BY Orden "); 
+		FROM $tabla AS d, Terceros AS t
+		WHERE d.RUT = t.RUT AND Mes = ? AND Tipo = ?" ;
+	$sel .= " AND TF = '$tf' " if $tf ;
+	$sel .= " ORDER BY Orden " ; 
+	my $sql = $bd->prepare($sel); 
 	$sql->execute($mes,$td);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -1089,6 +1113,7 @@ sub grabaBH( $ $ $ $ $ $ $ $ $ )
 	$sql->execute($t, $fch, $rut);	
 	$sql->finish();
 }
+
 
 # CENTROS: Lee, agrega y actualiza tabla CCostos
 sub datosCentros( )

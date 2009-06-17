@@ -1,20 +1,23 @@
 #  Ventas.pm - Consulta e imprime Libro Ventas
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM : 14.06.2009 
 
 package Ventas;
 
 use Tk::LabFrame;
 use Encode 'decode_utf8';
 use Number::Format;
-
+use Data::Dumper; 
 # Variables válidas dentro del archivo
-my ($Mnsj, $mes, $nMes, @cnf,$rutE) ;	# Variables
+my ($Mnsj, $mes, $nMes, @cnf, $empr, $rutE) ;	# Variables
+my ($Tt,$Iva,$Aft,$Ext,$IEsp);
 my @lMeses = () ;
+my @datos = ();
 my ($bCan, $bImp) ; # Botones
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -37,24 +40,20 @@ sub crea {
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
-	$vnt->title("Procesa Libro Ventas");
-	$vnt->geometry("300x110+475+4"); # Tamaño y ubicación
-	my $vntA = $vp->Toplevel();
-	$vntA->title("Libro CVentas");
-	$vntA->geometry("690x320+40+150"); 
+	$vnt->title("Libro Ventas");
+	$vnt->geometry("950x450+40+150"); 
 	# Define marco para mostrar resultado
-	my $mtA = $vntA->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white');
-	$mtA->tagConfigure('negrita', -font => $tp{ng} ) ;
-	$mtA->tagConfigure('detalle', -font => $tp{mn} ) ;
-	$mtA->pack(-fill => 'both');
-	
+	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
+	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
+	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
+
 	# Define marcos
-	my $mMes = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => 'Seleccione mes');
 	my $mBotonesC = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
+
 	# Define campo para seleccionar mes
-	my $meses = $mMes->BrowseEntry( -variable => \$nMes, -state => 'readonly',
+	my $tMes = $mBotonesC->Label(-text => "Seleccione mes ") ;
+	my $meses = $mBotonesC->BrowseEntry(-variable => \$nMes, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -autolistwidth => 1,
 		-browse2cmd => \&selecciona );
@@ -65,7 +64,6 @@ sub crea {
 		$meses->insert('end', $algo->[1] ) ;
 	}
 	$meses->delete(12,12); #Elimina el 'Todos' al final
-	$meses->pack(-side => "left", -anchor => "w");
 
 	# Barra de mensajes y botón de ayuda
 	my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{tx},
@@ -73,7 +71,7 @@ sub crea {
 	$mnsj->pack(-side => 'right', -expand => 1, -fill => 'x');
 	my $img = $vnt->Photo(-file => "info.gif") ;
 	my $bAyd = $mMensajes->Button(-image => $img, 
-		-command => sub { $ut->ayuda($mt, 'Compras'); } ); 
+		-command => sub { $ut->ayuda($mt, 'Ventas'); } ); 
 	$bAyd->pack(-side => 'left', -expand => 0, -fill => 'none');
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
@@ -81,18 +79,22 @@ sub crea {
 	# Define botones
 	$bMst = $mBotonesC->Button(-text => "Muestra", 
 		-command => sub { &valida($esto, $mtA) } );
-	$bImp = $mBotonesC->Button(-text => "Archivo", 
-		-command => sub { &imprime($mtA) } );
+	$bImp = $mBotonesC->Menubutton(-text => "Archivo", -tearoff => 0, 
+	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
+	[ ['command' => "texto", -command => sub { txt($mtA);} ],
+ 	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
 	$bCan = $mBotonesC->Button(-text => "Cancela", 
-		-command => sub { $vnt->destroy(); $vntA->destroy();} );
+		-command => sub { $vnt->destroy();} );
 	
 	# Dibuja interfaz
-	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$bImp->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$bMst->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$mMes->pack(-expand => 1);
-	$mBotonesC->pack();
 	$mMensajes->pack(-expand => 1, -fill => 'both');
+	$tMes->pack(-side => "left", -anchor => "w");
+	$meses->pack(-side => "left", -anchor => "w");
+	$bMst->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
+	$mBotonesC->pack();
+	$mtA->pack(-fill => 'both');
 
 	$bImp->configure(-state => 'disabled');
 	$mt->delete('0.0','end');
@@ -127,53 +129,130 @@ sub informe ( $ $ ) {
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my @datos = $bd->listaFct('Ventas',$mes);
+	my $nf = $bd->cuentaDcm('Ventas',$mes);
 	$marco->delete('0.0','end');
 	$Mnsj = " ";
-	if (not @datos) { 
+	if (not $nf) { 
 		$Mnsj = "No hay datos para ese mes"; 
 		return;
 	}
-	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$empr,@datosE);
+	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
-
+	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
 	$marco->insert('end', "Libro Ventas  $nMes $cnf[0]\n", 'negrita');
-	my $lin1 = "\nFecha       Factura RUT        Cliente                     ";
-	$lin1 .= "      Afecto      Exento         IVA       Total";
-	my $lin2 = "-"x107;
+	my $lin1 = "\nNº  Fecha        Número  RUT        Cliente                            ";
+	$lin1 .= "      Afecto      Exento         IVA    I.Reten.       Total";
+	my $lin2 = "-"x131;
+	# Muestra Facturas manuales
+	detalles($marco,$lin1,$lin2,$ut,$bd,'FV','M', 'Facturas');	
+	# Facturas Electrónicas
+	detalles($marco,$lin1,$lin2,$ut,$bd,'FV','E', 'Facturas Electrónicas');	
+	# Notas de Crédito
+	detalles($marco,$lin1,$lin2,$ut,$bd,'NC','', 'Notas de Crédito');	
+	# Notas de Débito
+	detalles($marco,$lin1,$lin2,$ut,$bd,'ND','', 'Notas de Débito');	
+	$marco->insert('end', "\nFalta resumen", 'negrita');
+	$bImp->configure(-state => 'active');
+}
+
+sub detalles ( $ $ $ $)
+{
+	my ($marco,$lin1,$lin2,$ut,$bd,$td,$tf,$nmb) = @_;
+	
+	my @datos = $bd->listaFct('Ventas', $mes, $td, $tf);
+	if ( not @datos ) {return ;}
+
+	$marco->insert('end', "\n$nmb", 'negrita');
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
+	$Tt = $Iva = $Aft = $Ext = $IEsp = 0;
 	foreach $algo ( @datos ) {
 		$fch = $ut->cFecha($algo->[0]); 
 		$nm = $algo->[1]; 
 		$rt = $algo->[2]; 
-		$nmb =  decode_utf8($algo->[3]);
+		$nmb =  substr( decode_utf8($algo->[3]),0,35 );
 		$tt = $pesos->format_number( $algo->[4] );
 		$iva = $pesos->format_number( $algo->[5] );
 		$aft = $pesos->format_number( $algo->[6] );
 		$ext = $pesos->format_number( $algo->[7] );
 		$nulo = $algo->[8]; 
-		if ( not $nulo ) {
-			$mov = sprintf("%10s %8s %10s %-28s %11s %11s %11s %11s", 
-				$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$tt ) ;
+		$ie = $pesos->format_number( $algo->[9] );
+		$ni = $algo->[10];
+		$nmb = "Nula" if $nulo == 1 ;
+		if ( $nulo == 1 or $nulo == 0 ) {
+			$mov = sprintf("%3s  %10s %8s %10s %-35s %11s %11s %11s %11s %11s", 
+				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt ) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
+			$Tt += $algo->[4] ;
+			$Iva += $algo->[5] ;
+			$Aft += $algo->[6] ;
+			$Ext += $algo->[7] ;
+			$IEsp += $algo->[9];
 		}
-	}
+	}	
+	$marco->insert('end',"$lin2\n",'detalle');
+	$mov = sprintf("%4s %10s %8s %10s %-35s %11s %11s %11s %11s %11s",'','','',
+		'', 'Totales', $pesos->format_number( $Aft ) ,
+		$pesos->format_number( $Ext ),
+		$pesos->format_number( $Iva ),
+		$pesos->format_number( $IEsp ),
+		$pesos->format_number( $Tt ) );
+	$marco->insert('end', "$mov\n",'detalle' ) ;
+	$marco->insert('end',"$lin2\n",'detalle');
 
-	$bImp->configure(-state => 'active');
 }
 
-sub imprime ( $ )
+sub txt ( $ )
 {
 	my ($marco) = @_;	
 	
 	my $algo = $marco->get('0.0','end');
 	# Genera archivo de texto
-	open ARCHIVO, "> inf/ventas$mes.txt" or die $! ;
+	my $d = "$rutE/txt/ventas$mes.txt";
+	open ARCHIVO, "> $d" or die $! ;
 	print ARCHIVO $algo ;
 	close ARCHIVO ;
+	$Mnsj = "Ver archivo '$d'"
+}
+
+sub csv ( $ )
+{
+	my ($esto) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $ut = $esto->{'mensajes'};
+
+	my ($Tt,$Iva,$Aft,$Ext,$fch,$nm,$rt,$nmb,$nulo,$a,$d);
+	$d = "$rutE/csv/ventas$mes.csv";
+	open ARCHIVO, "> $d" or die $! ;
+	my $l = "$empr\n";
+	print ARCHIVO $l ;
+	$l = "Libro Ventas  $nMes $cnf[0]\n";
+	print ARCHIVO $l ;
+	$l = "Fecha,Factura,RUT,Cliente,Afecto,Exento,IVA,Total\n";
+	print ARCHIVO $l ;
+	$Tt = $Iva = $Aft = $Ext = 0;
+	foreach $a ( @datos ) {
+		$fch = $ut->cFecha($a->[0]); 
+		$nm = $a->[1]; 
+		$rt = $a->[2]; 
+		$nmb =  decode_utf8($a->[3]);
+		$nulo = $a->[8]; 
+		if ( not $nulo ) {
+			$l = "$fch,$nm,$rt,$nmb,$a->[6],$a->[7],$a->[5],$a->[4]\n";
+			print ARCHIVO $l ;
+			$Tt += $a->[4] ;
+			$Iva += $a->[5] ;
+			$Aft += $a->[6] ;
+			$Ext += $a->[7] ;
+		}
+	}
+	$l = ",,,,$Aft,$Ext,$Iva,$Tt \n";
+	print ARCHIVO $l ;
+
+	close ARCHIVO ;
+	$Mnsj = "Grabado en '$d'";
 }
 
 # Fin del paquete
