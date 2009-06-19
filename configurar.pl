@@ -35,12 +35,13 @@ $Nombre = $Rut = '';
 # Define ventana
 my $vnt = MainWindow->new();
 $vnt->title("Configura Programa Quipu");
-$vnt->geometry("370x380+2+2"); # Tamaño y ubicación
+$vnt->geometry("370x390+2+2"); # Tamaño y ubicación
 my $ut = Utiles->crea($vnt);
 my $esto = {};
 $esto->{'baseDatos'} = $bd;
 $esto->{'mensajes'} = $ut;
 
+my %tp = $ut->tipos();
 # Defime marcos
 my $mParametros = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 	-label => 'Datos iniciales');
@@ -52,14 +53,14 @@ my $mBtns = $vnt->Frame(-borderwidth => 1);
 my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
 # Barra de mensajes y botón de ayuda
-my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => 'fixed',
+my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{fx},
 	-bg => '#F2FFE6', -fg => '#800000',);
 $mnsj->pack(-side => 'left', -expand => 1, -fill => 'x');
 $Mnsj = "Mensajes de error o advertencias.";
 
 # Define Lista de datos
 my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -width => 65,
-	-selectmode => 'single', -orient => 'horizontal', -font => 'fixed', 
+	-selectmode => 'single', -orient => 'horizontal', -font => $tp{mn}, 
 	-height => 12 );
 $esto->{'vLista'} = $listaS;
 

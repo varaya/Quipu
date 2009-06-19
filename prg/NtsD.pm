@@ -450,22 +450,24 @@ sub validaFechaC ( $ $)
 	if ($FechaC eq '' ) {
 		$Mnsj = "Anote la fecha de contabilización.";
 		$fechaC->focus;
-		return;
+		return 0;
 	}
 	# Valida fecha contabilización
 	if (not $FechaC =~ m|\d+/\d+/\d+|) {
 		$Mnsj = "Problema con formato fecha";
 		$fechaC->focus;
-		return ;
+		return 0;
 	} elsif ( not $ut->analizaFecha($FechaC) ) {
 		$Mnsj = "Fecha incorrecta" ;
 		$fechaC->focus ;
-		return ;
+		return 0;
 	}
 	# Determina el número de ingreso
 	my $mes = substr $FechaC,3,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
 	$NmrI = $bd->numeroI($TablaD, $mes, $TipoD) + 1 ; 
+	
+	return 1 ;
 }
 
 sub muestraLista ( $ ) 
@@ -677,24 +679,25 @@ sub fNula ( )
 		$documento->focus;
 		return;
 	}
-	validaFechaC($ut,$bd);
-	# Ahora busca Factura
-	my $fct = $bd->buscaFct($TablaD, $RUT, $Documento);
-	if ($fct) {
-		$Mnsj = "Esa Factura ya está registrada.";
+	if ( validaFechaC($ut,$bd) ) {
+		# Ahora busca Factura
+		my $fct = $bd->buscaFct($TablaD, $RUT, $Documento);
+		if ($fct) {
+			$Mnsj = "Esa Factura ya está registrada.";
+			$documento->focus;
+			return;
+		}
+		my $fc = $ut->analizaFecha($FechaC); 
+		# Graba Factura
+		$bd->grabaFct($TablaD, $RUT, $Documento, $fc, 0, 0, 0, 0,'', $TipoD, '', 
+			$fc, '', "M", $NmrI, 1, 0);
+		# Siguientes documento
+		limpiaCampos();
+		$bCnt->configure(-state => 'disabled');
+		inicializaV();
+		$Documento = ($tpD eq "FV") ? $Documento + 1 : '' ; 
 		$documento->focus;
-		return;
 	}
-	my $fc = $ut->analizaFecha($FechaC); 
-	# Graba Factura
-	$bd->grabaFct($TablaD, $RUT, $Documento, $fc, 0, 0, 0, 0,'', $TipoD, '', 
-		$fc, '', "M", $NmrI, 1, 0);
-
-	limpiaCampos();
-	$bCnt->configure(-state => 'disabled');
-	inicializaV();
-	$Documento = ($tpD eq "FV") ? $Documento + 1 : '' ; 
-	$documento->focus;
 }
 
 sub cancela ( )

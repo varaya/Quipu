@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 14.06.2009 
+#  UM : 17.06.2009 
 
 package Compras;
 
@@ -172,23 +172,23 @@ sub detalles ( $ $ $ $)
 		$fch = $ut->cFecha($algo->[0]); 
 		$nm = $algo->[1]; 
 		$rt = $algo->[2]; 
-		$nmb =  substr( decode_utf8($algo->[3]),0,35 );
-		$tt = $pesos->format_number( $algo->[4] );
-		$iva = $pesos->format_number( $algo->[5] );
-		$aft = $pesos->format_number( $algo->[6] );
-		$ext = $pesos->format_number( $algo->[7] );
-		$nulo = $algo->[8]; 
-		$ie = $pesos->format_number( $algo->[9] );
-		$ni = $algo->[10];
+		$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,35 ;
+		$tt = $pesos->format_number( $algo->[3] );
+		$iva = $pesos->format_number( $algo->[4] );
+		$aft = $pesos->format_number( $algo->[5] );
+		$ext = $pesos->format_number( $algo->[6] );
+		$nulo = $algo->[7]; 
+		$ie = $pesos->format_number( $algo->[8] );
+		$ni = $algo->[9];
 		if ( not $nulo ) {
 			$mov = sprintf("%3s  %10s %8s %10s %-35s %11s %11s %11s %11s %11s", 
 				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt ) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
-			$Tt += $algo->[4] ;
-			$Iva += $algo->[5] ;
-			$Aft += $algo->[6] ;
-			$Ext += $algo->[7] ;
-			$IEsp += $algo->[9];
+			$Tt += $algo->[3] ;
+			$Iva += $algo->[4] ;
+			$Aft += $algo->[5] ;
+			$Ext += $algo->[6] ;
+			$IEsp += $algo->[8];
 		}
 	}	
 	$marco->insert('end',"$lin2\n",'detalle');

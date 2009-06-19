@@ -1,10 +1,11 @@
 #  BltsH.pm -  Registra Boletas de Honorarios
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de autor: Víctor Araya R., 2009
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 19.06.2009
 
 package BltsH;
 
@@ -15,7 +16,7 @@ use Encode 'decode_utf8';
 # Variables válidas dentro del archivo
 # Datos a registrar
 my ($Numero, $Fecha, $RUT, $Mnsj, $Dcmnt, $NombreCi, $NombreCt, $NombreCn) ;
-my ($FechaV, $CtaIm, $Impt, $CtaNt, $Neto, $CtaTt, $Total, $TipoD) ;
+my ($FechaV, $CtaIm, $Impt, $CtaNt, $Neto, $CtaTt, $Total, $TipoD, $Glosa) ;
 # Campos
 my ($numero, $fecha, $fechaV, $rut, $dcmnt, $neto, $ctaNt, $ctaIm, $ctaTl ) ;
 # Campos y datos opcionales para Centro de Costos
@@ -37,6 +38,9 @@ sub crea {
 	inicializaV();
 	$TipoD = "BH";
 
+	# Crea archivo temporal para registrar movimientos
+	$bd->creaTemp();
+
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
@@ -51,7 +55,7 @@ sub crea {
 	$bCnt = $mBotonesC->Button(-text => "Contabiliza", 
 		-command => sub { &contabiliza($esto,$bd) } ); 
 	$bCan = $mBotonesC->Button(-text => "Cancela", 
-		-command => sub { &cancela($esto) } );
+		-command => sub { $bd->borraTemp(); $vnt->destroy() } );
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
 	# Barra de mensajes y botón de ayuda
@@ -127,6 +131,7 @@ sub crea {
 	$impt->bind("<FocusOut>", sub { $Total = $Neto + $Impt; } );	
 	$ctaIm->bind("<FocusOut>", sub { 
 		&buscaCuenta($bd, \$CtaIm, \$NombreCi, \$ctaIm) } );
+	$ctaTl->bind("<FocusIn>", sub { $bCnt->configure(-state => 'normal'); } );
 	$ctaTl->bind("<FocusOut>", sub {
 		&buscaCuenta($bd, \$CtaTl, \$NombreCt, \$ctaTl) } );
 
@@ -168,29 +173,24 @@ sub crea {
 }
 
 # Funciones internas
-sub cancela ( )
-{
-	my ($esto) = @_;	
-	my $vn = $esto->{'ventana'};
-	
-	$vn->destroy();
-}
-
 sub vFecha ( ) 
 {
 	my ($esto) = @_;	
 	my $ut = $esto->{'mensajes'};
 
-	$Mnsj = " ";
+#	$Mnsj = " ";
 	if ( $Fecha eq '' ) {
 		$Mnsj = "Debe colocar fecha de emisión"; 
 		$fecha->focus;
 		return 
 	}
 	# Comprueba si la fecha está escrita correctamente
-	if (not $ut->analizaFecha($Fecha)) {
-		$Mnsj = "Fecha incorrecta"; 
+	if (not $Fecha =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Problema con formato fecha";
 		$fecha->focus;
+	} elsif ( not $ut->analizaFecha($Fecha) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fecha->focus ;
 	}
 }
 
@@ -199,14 +199,16 @@ sub vFechaV ( )
 	my ($esto) = @_;	
 	my $ut = $esto->{'mensajes'};
 
-	$Mnsj = " ";
 	if ($FechaV eq '' ) {
 		return 
 	}
 	# Comprueba si la fecha está escrita correctamente
-	if (not $ut->analizaFecha($FechaV)) {
-		$Mnsj = "Fecha incorrecta"; 
+	if (not $FechaV =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Problema con formato fecha";
 		$fechaV->focus;
+	} elsif ( not $ut->analizaFecha($FechaV) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaV->focus ;
 	}
 }
 
@@ -264,7 +266,6 @@ sub buscaRUT ( $ )
 	my ($esto) = @_;
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
-	my $vp = $esto->{'ventana'};
 
 	$Mnsj = " ";
 	if ($RUT eq '') {
@@ -272,20 +273,28 @@ sub buscaRUT ( $ )
 		$rut->focus;
 		return;
 	}
+	$RUT = uc($RUT);
 	if ( not $ut->vRut($RUT) ) {
 		$Mnsj = "El RUT no es válido";
 		$rut->focus;
 		return;
-	} 
+	} else {
+		my $nmb = $bd->buscaT($RUT);
+		if (not $nmb) {
+			$Mnsj = "Curioso: ese RUT no aparece registrado.";
+			$rut->focus;
+			return;
+		} 
+		$Nombre = decode_utf8(" $nmb");
+	}
 }
 
-sub buscaDoc ( $ ) # Evita que se registre dos veces una misma factura
+sub buscaDoc ( $ ) # Evita que se registre dos veces una misma boleta
 { 
 	my ($bd) = @_;
 
-	$Mnsj = " ";
 	if ($Dcmnt eq '') {
-		$Mnsj = "Registre número de la boleta";
+		$Mnsj = "Registre número de la Boleta";
 		$dcmnt->focus;
 		return;
 	}
@@ -303,6 +312,7 @@ sub contabiliza ( $ )
 {
 	my ($esto,$bd) = @_;
 	my $ut = $esto->{'mensajes'};
+	
 	$Mnsj = " ";
 	# Verifica que se completen datos básicos
 	if ($Glosa eq '' ) {
@@ -310,7 +320,6 @@ sub contabiliza ( $ )
 		$glosa->focus;
 		return;
 	}
-	
 	# Graba Comprobante
 	my $det = "$TipoD $Dcmnt $RUT" ;
 	# Registra impuesto
@@ -318,16 +327,12 @@ sub contabiliza ( $ )
 	# Registra neto
 	$bd->agregaItemT($CtaNt, $det, $Neto, 'H', '', '', '', '', $Numero,'');
 	# Registra total
-	$bd->agregaItemT($CtaTl,'',$Total,'D',$RUT,$TipoD,$Dcmnt,'', $Numero,$CCto);
+	$bd->agregaItemT($CtaTl,'',$Total,'D',$RUT,$TipoD,$Dcmnt,'',$Numero,$CCto);
 	my $ff = $ut->analizaFecha($Fecha) ;
-	$fh =~ s/-//g ; # Convierte a formato AAAAMMDD
 	$bd->agregaCmp($Numero, $ff, $Glosa, $Total, 'T');
-
 	# Graba Boleta
-	my $fv = $ut->analizaFecha($FechaV); 
-	$fv =~ s/-//g ;
-
-	$bd->grabaBH($RUT, $Dcmnt, $ff, $Total, $Imtp, $Neto, $Numero, $fv, $CtaTl);
+	my $fv = $ut->analizaFecha($FechaV) if $FechaV ; 
+	$bd->grabaBH($RUT,$Dcmnt,$ff,$Total,$Impt,$Numero,$fv,$CtaTl,$Neto);
 
 	$bCnt->configure(-state => 'disabled');
 	
@@ -340,8 +345,8 @@ sub contabiliza ( $ )
 sub inicializaV
 {
 	$Total = $Impt = $Neto = 0;
-	$NombreCi = $NombreCt = $NombreCn = $RUT = $FechaV = $Fecha = '';
-	$Nombre = $Dcmnt = $CtaIm = $CtaNt = $CtaTt = $NCCto = $CCto = '' ;
+	$NombreCi = $NombreCt = $NombreCn = $RUT = $FechaV = $Fecha = $Glosa = '';
+	$Nombre = $Dcmnt = $CtaIm = $CtaNt = $CtaTl = $NCCto = $CCto = '' ;
 }
 
 # Fin del paquete

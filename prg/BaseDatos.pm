@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 17.06.2009
+#  UM: 19.06.2009
 
 package BaseDatos;
 
@@ -505,12 +505,20 @@ $bd->do("CREATE TEMPORARY TABLE ItemsT (
 	NombreC char(35) )" );
 }
 
+sub borraTemp( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DROP Table ItemsT;");
+}
+
 sub creaTempF( )
 {
 	my ($esto) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
-$bd->do("CREATE TABLE Facts (
+$bd->do("CREATE TEMPORARY TABLE Facts (
 	RUT char(10),
 	Numero char(10),
 	FechaE char(10),
@@ -530,14 +538,6 @@ $bd->do("CREATE TABLE Facts (
 	TF char(1),
 	Orden int(2) )" );
 
-}
-
-sub borraTemp( )
-{
-	my ($esto) = @_;	
-	my $bd = $esto->{'baseDatos'};
-
-	$bd->do("DROP Table ItemsT;");
 }
 
 sub borraTempF( )
@@ -982,6 +982,21 @@ sub buscaFct( $ $ $ )
 	return $dato; 
 }
 
+sub buscaNI ()
+{
+	my ($esto, $tbl, $mes, $ni, $td) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	
+	my $sql = $bd->prepare("SELECT Rut, Numero, Comprobante, ROWID FROM $tbl 
+		WHERE Orden = ? AND Tipo = ? AND Mes = ?;");
+	$sql->execute($ni,$td,$mes);
+	my @dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return @dato; 
+	
+}
+
 sub datosFct( $ $ $ )
 {
 	my ($esto, $tbl, $rut, $doc) = @_;	
@@ -1049,11 +1064,9 @@ sub listaFct( $ $ $ $)
 	my ($esto, $tabla, $mes, $td, $tf) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
-# Problema con Nulos: no tienen RUT, por lo que son excluidos
-	my $sel = "SELECT d.FechaE, d.Numero, d.RUT, t.Nombre,
-		d.Total, d.IVA, d.Afecto, d.Exento, d.Nulo, d.IEspec, d.Orden 
-		FROM $tabla AS d, Terceros AS t
-		WHERE d.RUT = t.RUT AND Mes = ? AND Tipo = ?" ;
+
+	my $sel = "SELECT FechaE, Numero, RUT, Total, IVA, Afecto, Exento, 
+		Nulo, IEspec, Orden FROM $tabla WHERE Mes = ? AND Tipo = ?" ;
 	$sel .= " AND TF = '$tf' " if $tf ;
 	$sel .= " ORDER BY Orden " ; 
 	my $sql = $bd->prepare($sel); 
@@ -1066,6 +1079,24 @@ sub listaFct( $ $ $ $)
 	
 	return @datos; 
 }	
+
+sub cambiaDcm ( ) 
+{
+	my ($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	
+	my $sql = $bd->prepare("UPDATE $Tabla SET Fecha = ?, Mes = ?, Orden = ? 
+		WHERE ROWID = ?"); 
+	$sql->execute($FechaC,$Ni,$MesC,$Id);
+
+	$sql = $bd->prepare("UPDATE DatosC SET Fecha = ? WHERE Numero = ?");
+	$sql->execute($FechaC,$NumC);
+	
+	$sql = $bd->prepare("UPDATE ItemsC SET Mes = ? WHERE Numero = ?");
+	$sql->execute($MesC,$NumC);
+	$sql->finish();
+
+}
 
 
 # BOLETAS de CompraVenta
@@ -1099,18 +1130,18 @@ sub grabaBCV( $ $ $ $ )
 # HONORARIOS
 sub grabaBH( $ $ $ $ $ $ $ $ $ )
 {
-	my ($esto, $rut, $doc, $fch, $t, $i, $n, $nmr, $fv, $cta) = @_;	
+	my ($esto, $rut, $doc, $fch, $t, $im, $nmr, $fv, $cta, $nt) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my ($ms,$sql);
-	
+
 	$ms = substr $fch,4,2 ; # Extrae mes
-	$sql = $bd->prepare("INSERT INTO Honorarios VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$i,$n,$nmr,$fv,0,0,'',$ms,0,$cta);
+	$sql = $bd->prepare("INSERT INTO BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$im,$nmr,$fv,0,0,'',$ms,0,$cta);
 	
 	# Actualiza cuenta individual
 	$sql = $bd->prepare("UPDATE CuentasI SET Haber = Haber + ?, Fecha_UM = ?
 		WHERE RUT = ?;");
-	$sql->execute($t, $fch, $rut);	
+	$sql->execute($nt, $fch, $rut);	
 	$sql->finish();
 }
 

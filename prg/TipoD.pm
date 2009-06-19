@@ -5,6 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
+#  UM: 19.06.2009
 
 package TipoD;
 
@@ -79,10 +80,10 @@ sub crea {
 	$nombre = $mDatos->LabEntry(-label => " Nombre: ", -width => 20,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Nombre);
-	$ctotal = $mDatos->LabEntry(-label => " C.Total:   ", -width => 4,
+	$ctotal = $mDatos->LabEntry(-label => " Cta. Monto: ", -width => 4,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CTotal );
-	$civa = $mDatos->LabEntry(-label => " C.IVA:   ", -width => 4,
+	$civa = $mDatos->LabEntry(-label => " Cta. Impuesto: ", -width => 4,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CIva );
 	
