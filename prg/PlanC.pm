@@ -1,16 +1,17 @@
 #  PlanC.pm - Muestra y archiva Plan de Cuentas
 #  Forma parte del programa Quipu 
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor:  Víctor Araya R., 2008
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM: 20.06.2009
 
 package PlanC;
 
 use Encode 'decode_utf8';
 use prg::Listado;
-
+use Data::Dumper ;
 my ($rutE);
 my $informe = 'Plan de Cuentas';
 
@@ -82,7 +83,7 @@ sub csv ( $ )
 {
 	my ($bd) = @_;
 	
-	my @listaG = $bd->datosGrupos() ;
+	my @listaG = $bd->datosSG() ;
 	my @datosC = $bd->datosCuentas() ;
 	my @datosE = $bd->datosEmpresa($rutE) ;
 
@@ -115,13 +116,15 @@ sub pdf ( $ $ )
 {
 	my ($bd, $ut) = @_;
 	
-	my @listaG = $bd->datosGrupos() ;
+	my @listaG = $bd->datosSG() ;
 	my @datosC = $bd->datosCuentas() ;
 	my @datosE = $bd->datosEmpresa($rutE) ;
+	my @grupos = $ut->grupos();
+	
 	my $fecha = $ut->fechaHoy();
 	my $empresa = decode_utf8($datosE[0]) ;
-	my $tG = @listaG ;
-	my $tC = @datosC ;
+	my $tG = @listaG ; # Total subgrupos
+	my $tC = @datosC ; # Total cuentas
 	my $tR = $tG + $tC ; # Permite determinar el último registro
 
 	my $pdf = Listado->crea(CreationDate => $fecha , Title => $informe ,
@@ -130,30 +133,38 @@ sub pdf ( $ $ )
 
 	my $inicio = $pdf->{AltoCaja};
 	my ($iz, $dr) = ('izquierda', 'derecha');
-	my ($xgrp, $ngrp, $dcta, $xy, $xt, $d);
+	my ($xgrp, $ngrp, $dcta, $xy, $xt, $d, $gp);
 	
 	$d = "$rutE/pdf/planC.pdf";
 	$pdf->iTitulo("PLAN DE CUENTAS - $empresa",'darkblue','Helvetica-Bold',14);
 	$pdf->saltaLineas(1); 
 
-	my $aCols = [45, 230, 25, 25, 25];
-	my $fCols = [$iz, $iz, $dr, $dr, $dr];
-	my $encabezado = ['Código','Cuenta','CI','IE','SN'];
+	my $aCols = [45, 230, 25, 25, 25]; # Ancho de las columnas
+	my $fCols = [$iz, $iz, $dr, $dr, $dr]; # Alineación de las mismas
+	my $encabezado = ['Código','Cuenta','CI','IE','SN']; # Texto del registro
 	$pdf->iRegistro($encabezado, $aCols, $fCols, $tR, titulo => 1, 
 		 color => 'darkgreen', fuente => 'Helvetica-Oblique', cuerpo => 11);  
 	$pdf->fuente('Helvetica'); $pdf->cuerpo(11);
 	my $datos = [];
-	my $bordeI = $pdf->{margenY} * 2 ;
+	my $bordeI = $pdf->{margenY} * 2 ; # define el borde inferior
 
+# FALTA imprimir nombre de los 4 grupos
+# Este procedimiento puede ser poco eficaz, ya que recorre para cada
+# subgrupo todas las cuentas
+#	$tR -= 1;
+#	$datos = ['1','Activos',' ',' ',' '] ;
+#	$pdf->iRegistro($datos,$aCols,$fCols,$tR, color => 'darkblue');
 	foreach $xgrp ( @listaG ) {
-		if ( ($pdf->{vPos} - $pdf->{cuerpo}) < $bordeI ) {
-		  finPgn($pdf, $encabezado, $aCols, $fCols);
+		# Imprime código y nombre subgrupo en color rojo
+		if ( ($pdf->{vPos} - $pdf->{cuerpo}) < $bordeI ) { # nueva página
+		  finPgn($pdf, $encabezado, $aCols, $fCols); # Imprime pié de página
 		}
 		$xt = decode_utf8($xgrp->[1]) ;
 		$datos = [ $xgrp->[0], $xt, ' ', ' ', ' ' ];
 		$tR -= 1;
 		$pdf->iRegistro($datos, $aCols, $fCols, $tR, color => 'firebrick');
 		foreach $dcta ( @datosC ) {
+			# Imprime datos cuenta de mayor del subgrupo correspondiente
 			if ( $xgrp->[0] eq $dcta->[2] ) {
 				if ( ($pdf->{vPos} - $pdf->{cuerpo}) < $bordeI ) {
 				  finPgn($pdf, $encabezado, $aCols, $fCols);
@@ -168,7 +179,8 @@ sub pdf ( $ $ )
 	$pdf->numeroPgn($informe);
 	$pdf->grabar($d); 
 	$Mnsj = "Grabado en '$d'";
-	system "xpdf", $d ;
+	# Muestra el archivo
+#	system "evince", $d ;
 }
 
 sub finPgn {

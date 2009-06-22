@@ -279,7 +279,7 @@ sub datosCI( $ )
 
 
 # SUBGRUPOS: Lee, agrega y actualiza tabla Grupos
-sub datosGrupos( )
+sub datosSG( )
 {
 	my ($esto) = @_;	
 	my $bd = $esto->{'baseDatos'};
@@ -512,58 +512,6 @@ sub borraTemp( )
 
 	$bd->do("DROP Table ItemsT;");
 }
-
-sub creaTempF( )
-{
-	my ($esto) = @_;	
-	my $bd = $esto->{'baseDatos'};
-	
-$bd->do("CREATE TEMPORARY TABLE Facts (
-	RUT char(10),
-	Numero char(10),
-	FechaE char(10),
-	Total int(8),
-	IVA int(8),
-	Afecto int(8),
-	Exento int(8),
-	Comprobante int(5),
-	FechaV char(10),
-	Abonos int(8),
-	Pagada int(1) ,
-	FechaP char(10),
-	Tipo char(2),
-	Mes int(2),
-	Nulo int(1),
-	Cuenta int(4),
-	TF char(1),
-	Orden int(2) )" );
-
-}
-
-sub borraTempF( )
-{
-	my ($esto) = @_;	
-	my $bd = $esto->{'baseDatos'};
-
-	$bd->do("DROP Table Facts;");
-}
-
-sub datosFacts( $ )
-{
-	my ($esto, $Rut) = @_;	
-	my $bd = $esto->{'baseDatos'};
-	my @datos = ();
-
-	my $sql = $bd->prepare("SELECT *,ROWID FROM Facts WHERE RUT = ?;");
-	$sql->execute($Rut);
-	# crea una lista con referencias a las listas de registros
-	while (my @fila = $sql->fetchrow_array) {
-		push @datos, \@fila;
-	}
-	$sql->finish();
-	
-	return @datos; 
-}	
 
 sub datosItems( $ )
 {
@@ -1082,7 +1030,7 @@ sub listaFct( $ $ $ $)
 
 sub cambiaDcm ( ) 
 {
-	my ($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id) = @_ ;
+	my ($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id,$TD) = @_ ;
 	my $bd = $esto->{'baseDatos'};
 	
 	my $sql = $bd->prepare("UPDATE $Tabla SET Fecha = ?, Mes = ?, Orden = ? 
@@ -1094,9 +1042,120 @@ sub cambiaDcm ( )
 	
 	$sql = $bd->prepare("UPDATE ItemsC SET Mes = ? WHERE Numero = ?");
 	$sql->execute($MesC,$NumC);
+	# Falta actualizar número de orden
 	$sql->finish();
 
 }
+
+sub creaTempF( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	
+$bd->do("CREATE TEMPORARY TABLE Facts (
+	RUT char(10),
+	Numero char(10),
+	FechaE char(10),
+	Total int(8),
+	IVA int(8),
+	Afecto int(8),
+	Exento int(8),
+	Comprobante int(5),
+	FechaV char(10),
+	Abonos int(8),
+	Pagada int(1) ,
+	FechaP char(10),
+	Tipo char(2),
+	Mes int(2),
+	Nulo int(1),
+	Cuenta int(4),
+	TF char(1),
+	Orden int(2),
+	IEspec int(8)  )" );
+
+}
+
+sub borraTempF( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DROP Table Facts;");
+}
+
+sub creaTempRF( $ )
+{
+	my ($esto, $td) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	
+$bd->do("CREATE TEMPORARY TABLE RFcts (
+	Numero int(5),
+	Total int(8),
+	IVA int(8),
+	Afecto int(8),
+	Exento int(8),
+	IEspec int(8) ,
+	Tipo char(2) )" );
+
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,'$td' ) " );
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,'NC' ) " );
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,'ND' ) " );
+
+}
+
+sub actualizaRF( $ $ $ $ $ $ $ )
+{
+	my ($esto, $td, $n, $t, $i, $a, $e, $ie) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("UPDATE RFcts SET Numero = Numero + ?, 
+		Total = Total + ?, IVA = IVA + ?, Afecto = Afecto + ?,
+		Exento = Exento + ?, IEspec = IEspec + ?  WHERE Tipo = ?;");
+	$sql->execute( $n, $t, $i, $a, $e, $ie, $td );	
+	$sql->finish();
+}
+
+sub borraTempRF( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DROP Table RFcts;");
+}
+
+sub datosRF( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+
+	my $sql = $bd->prepare("SELECT * FROM RFcts;");
+	$sql->execute();
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	
+	return @datos; 
+}
+
+sub datosFacts( $ )
+{
+	my ($esto, $Rut) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+
+	my $sql = $bd->prepare("SELECT *,ROWID FROM Facts WHERE RUT = ?;");
+	$sql->execute($Rut);
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	
+	return @datos; 
+}	
 
 
 # BOLETAS de CompraVenta
@@ -1143,6 +1202,24 @@ sub grabaBH( $ $ $ $ $ $ $ $ $ )
 		WHERE RUT = ?;");
 	$sql->execute($nt, $fch, $rut);	
 	$sql->finish();
+}
+
+sub listaBH( $ )
+{
+	my ($esto, $mes) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+	
+	my $sql = $bd->prepare("SELECT b.FechaE, b.Numero, b.RUT, t.Nombre,
+		b.Retenido, b.Total, b.Nulo FROM BoletasH AS b, Terceros AS t 
+		WHERE b.RUT = t.RUT AND b.Mes = ?");
+	$sql->execute($mes);
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+
+	return @datos; 	
 }
 
 

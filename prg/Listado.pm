@@ -1,11 +1,12 @@
 #  Listado.pm - Interfaz para generar listados en PDF
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009
 #  Desarrollado a partir del paquete PDF::Report por Andy Orr
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 20.06.2009
 
 package Listado ;
 
@@ -16,7 +17,7 @@ my %Tipo;
 $Tipo{hoja} = 'letter';
 $Tipo{orientacion} = 'retrato'; # alternativa 'apaisado'
 
-my %INFO = (Creator => 'PartidaDoble', CreationDate => '', Title => '', 
+my %INFO = (Creator => 'Quipu', CreationDate => '', Title => '', 
 	Producer => "PDF::API2 $PDF::API2::VERSION", Subject => '', Author => '') ;
 
 # Parámetros que se pueden definir al crear el objeto con "Listado->crea();
@@ -353,11 +354,11 @@ sub numeroPgn {
 # Impresión de registros en una línea  
 sub iRegistro {
   my $obj = shift ;
-  my $rDatos = shift ;
-  my $raCols = shift ;
-  my $rfCols = shift ;
-  my $numR = shift ;
-  my %atr = @_ ;
+  my $rDatos = shift ; # Texto de columnas por imprimir
+  my $raCols = shift ; # Datos de ancho de columnas
+  my $rfCols = shift ; # Atributos de las columnas (alineación)
+  my $numR = shift ; # Cantidad de registros restantes
+  my %atr = @_ ; # Otros atributos
   
   my ($color, @aCols, @fCols, @datos, $col, $anchoC, $anchoT, $alin, $aL);
   @aCols = @{$raCols};
@@ -387,8 +388,9 @@ sub iRegistro {
   }
   $obj->{hPos} = $obj->{margenX};
   $obj->{vPos} -= $obj->{cuerpo} * $obj->{sepV} ;
-  # imprime una línea de separación 
-  if ( $atr{'titulo'} or $numR == 0 ) {
+  # imprime una línea de separación entre cada registro
+  # o una más gruesa si es el encabezado o el última registro
+  if ( $atr{'titulo'} or ( $numR == 0 ) ) { 
 	  $obj->{vPos} -= 2 ;
 	  $obj->lineaH($obj->{hPos}, $aL) ;
 	  $obj->{vPos} -= 2 ;
@@ -399,14 +401,15 @@ sub iRegistro {
 }
 
 sub iTitulo {
-  my ($obj, $texto, $color, $fuente, $cuerpo) = @_;
+  my ($obj, $texto, $color, $fnte, $cuerpo) = @_;
 
   $obj->cuerpo($cuerpo);
-  $obj->fuente($fuente);
+  $obj->fuente($fnte);
   $obj->{hPos} = $obj->{margenX};
   $obj->iTexto($texto, $obj->{hPos}, $obj->{AltoCaja}, $color);
   $obj->{vPos} = $obj->{AltoCaja} - $obj->{cuerpo};
   $obj->{hPos} = $obj->{margenX};
 }
 
+# Fin del paquete
 1;

@@ -58,7 +58,7 @@ $Mnsj = "Mensajes de error o advertencias.";
 # Define botones
 $bNvo = $mBtns->Button(-text => "Registra", -command => sub { &registra($esto)}); 
 $bCan = $mBtns->Button(-text => "Termina", 
-	-command => sub { $vnt->destroy(); $bd->cierra();});
+	-command => sub { &termina ($bd, $vnt) });
 
 # Parametros
 $mes = $mDatosC->LabEntry(-label => "Mes: ", -width => 3,
@@ -160,7 +160,7 @@ sub registra ( $ )
 	
 	if ( validaFechaC($ut, $bd) ) {
 		# Actualiza datos
-		$bd->cambiaDcm($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id);
+		$bd->cambiaDcm($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id,$TipoD);
 		$Mnsj = "Registro actualizado";
 	} 
 	
@@ -185,6 +185,14 @@ sub buscaDoc ( $ )
 	my @dtsC = $bd->consultaC($NumC);
 	$FechaC = $ut->cFecha($dtsC[2]);
 	$Id = $datos[3] ;
+}
+
+sub termina ( $ $ )
+{
+	my ($bd, $vn ) = @_;
+
+	$bd->cierra();
+	$vn->destroy(); 
 }
 
 # Termina la ejecución del programa

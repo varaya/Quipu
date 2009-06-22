@@ -1,10 +1,11 @@
 #  SGrupos.pm - Registra o modifica el Plan de Cuentas: subgrupos de cuentas
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 20.06.2009
 
 package SGrupos;
 
@@ -129,7 +130,7 @@ sub muestraLista ( $ )
 	my $listaS = $esto->{'vLista'};
 	
 	# Obtiene lista con datos de grupos registrados
-	my @data = $bd->datosGrupos();
+	my @data = $bd->datosSG();
 
 	# Completa TList con nombres de los grupos
 	my ($algo, $nm);

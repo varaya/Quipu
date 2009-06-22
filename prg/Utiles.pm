@@ -5,6 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM : 19.06.2009 
 
 package Utiles;
 
@@ -50,6 +51,23 @@ sub tipos ( )
 		fx => "$fx") ;
 
 	return %tp;	
+}
+
+sub tipoDcmt ( )
+{
+	my %td = ( 
+		FC => "Facturas de Compra" ,
+		FV => "Facturas de Venta" ,
+		ND => "Notas de Débito" ,
+		NC => "Notas de Crédito" ) ;
+	return %td ;
+}
+
+sub grupos ( )
+{
+	my @grps = (  ['1','Activos','A'],['2','Pasivos','P'],
+					['3','Ingresos','I'],['4','Gastos','G'] ) ;
+	return @grps ;
 }
 
 sub mError
@@ -121,7 +139,7 @@ sub muestraPC( $ $ $ $ )
 	# Muestra Plan de Cuentas
 	my ($esto, $marco, $bd, $todo, $rut) = @_;
 	
-	my @listaG = $bd->datosGrupos();		# Lista de grupos
+	my @listaG = $bd->datosSG();		# Lista de grupos
 	my @datosC = $bd->datosCuentas();		# Lista de cuentas
 	my @datosE = $bd->datosEmpresa($rut);
 	my ($xgrp, $ngrp, $dcta, $xy, $xt);

@@ -208,7 +208,9 @@ sub opProcesa {
  ['command' => "Libro Ventas", -command => sub { require prg::Ventas;
 	Ventas->crea($vp, $mt, $bd, $ut, $Rut);} ],
  ['command' => "Libro Compras",	-command => sub { require prg::Compras;
-	Compras->crea($vp, $mt, $bd, $ut, $Rut);} ],"-",
+	Compras->crea($vp, $mt, $bd, $ut, $Rut);} ],
+ ['command' => "Libro Honorarios",	-command => sub { require prg::Honorarios;
+	Honorarios->crea($vp, $mt, $bd, $ut, $Rut);} ],"-",
  ['cascade' => "Listados", -tearoff => 0, -menuitems => opListados() ] ]
 }
 

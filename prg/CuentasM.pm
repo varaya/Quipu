@@ -1,10 +1,11 @@
 #  CuentasM.pm - Registra o modifica el Plan de Cuentas: cuentas de mayor
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2008
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 20.06.2009
 
 package CuentasM;
 
@@ -100,7 +101,7 @@ sub crea {
 		-disabledforeground => '#000000', -autolistwidth => 1,
 		-browse2cmd => \&selecciona );
 	# Crea opciones del combobox
-	@listaG = $bd->datosGrupos();
+	@listaG = $bd->datosSG();
 	my $algo;
 	foreach $algo ( @listaG ) {
 		$grupos->insert('end', decode_utf8($algo->[1]) ) ;
