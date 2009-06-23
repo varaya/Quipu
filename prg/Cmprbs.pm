@@ -1,10 +1,11 @@
 #  Cmprbs.pm - Registra y contabiliza comprobantes
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2009
+#  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 23.06.2009
 
 package Cmprbs;
 
@@ -184,6 +185,7 @@ sub crea {
 	}
 	
 	# Dibuja interfaz
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$fecha->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$numero->grid(-row => 0, -column => 1, -sticky => 'ne');
 	$glosa->grid(-row => 1, -column => 0, -columnspan => 2, -sticky => 'nw');
@@ -221,7 +223,6 @@ sub crea {
 	$mDoc->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$mOtros	->pack(-expand => 1);
 	$mBotonesL->pack( -expand => 1);
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 
 	# Inicialmente deshabilita algunos botones
 	$bReg->configure(-state => 'disabled');

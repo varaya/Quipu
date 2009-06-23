@@ -1,7 +1,7 @@
 #  Diario.pm - Consulta e imprime Libro Diario
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
@@ -102,35 +102,39 @@ sub valida ( $ )
 {
 	my ($esto,$mt) = @_;
 	my $ut = $esto->{'mensajes'};
-	my ($fi, $ff, $mnsj);
+	my ($fi, $ff);
 	
-	$Mnsj = " ";
-	$mnsj = "Fecha mal escrita. Formato 'DD/M/AAAA'";
-	if (not $FechaI ) {
-		$Mnsj = "Debe colocar fecha de inicio";
+	# Fecha inicial
+	if ( $FechaI eq '' ) {
+		$Mnsj = "Debe colocar fecha de inicio"; 
 		$fechaI->focus;
-		return
+		return 
 	}
+	# Comprueba si la fecha está escrita correctamente
+	if (not $FechaI =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Formato fecha es dd/mm/aaaa";
+		$fechaI->focus;
+	} elsif ( not $ut->analizaFecha($FechaI) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaI->focus ;
+	}
+	# Fecha final
+	if ( $FechaF eq '' ) {
+		$Mnsj = "Debe colocar fecha final"; 
+		$fechaI->focus;
+		return 
+	}
+	# Comprueba si la fecha está escrita correctamente
+	if (not $FechaF =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Formato fecha es dd/mm/aaaa";
+		$fechaF->focus;
+	} elsif ( not $ut->analizaFecha($FechaF) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaF->focus ;
+	}
+	# Compara fechas
 	$fi = $ut->analizaFecha($FechaI);
-	# Comprueba si la fecha inicial está escrita correctamente
-	if (not $fi) {
-		$Mnsj = $mnsj;
-		$fechaI->focus;
-		return;
-	}
-	if (not $FechaF ) {
-		$Mnsj = "Debe colocar fecha final";
-		$fechaF->focus;
-		return
-	}
 	$ff = $ut->analizaFecha($FechaF);
-	# Comprueba si la fecha final está escrita correctamente
-	if (not $ff) {
-		$Mnsj = $mnsj;
-		$fechaF->focus;
-		return;
-	}
-	# Compara fecha
 	if ($fi > $ff) {
 		$Mnsj = "Fecha final es anterior a la inicial.";
 		$fechaI->focus;

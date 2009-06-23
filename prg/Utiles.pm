@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 19.06.2009 
+#  UM : 22.06.2009 
 
 package Utiles;
 
@@ -106,14 +106,16 @@ sub vRut
         s/\s+$//;
     }
 
+	my ($rt, $dvp, $lr,$j, $t, $dvc);
+	
+	$rt = $dvp = '';
 	my @campos = split /-/, $rut;
 	my @digitos = (3, 2, 7, 6, 5, 4, 3, 2);
-	my $rt = $campos[0];
-	my $dvp = $campos[1];
-	my $lr = length($rt) - 1;
-	my $j = @digitos;
-	my $t = 0;
-	my $dvc;
+	$rt = $campos[0];
+	$dvp = $campos[1];
+	$lr = length($rt) - 1;
+	$j = @digitos;
+	$t = 0;
 
 	if ($dvp eq '' ) {return 0;}
 

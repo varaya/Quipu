@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 19.06.2009
+#  UM: 23.06.2009
 
 package BaseDatos;
 
@@ -652,13 +652,14 @@ sub numeroC( )
 	return $dato; 
 }
 
-sub numeroI( $ $ $ )
+sub numeroI( $ $ $ $ )
 {
-	my ($esto, $tabla, $mes, $td ) = @_;	
+	my ($esto, $tabla, $mes, $td, $ni) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
-	my $sql = $bd->prepare("SELECT count(*) FROM $tabla WHERE Mes = ? AND Tipo = ?;");
-	$sql->execute($mes,$td);
+	my $sql = $bd->prepare("SELECT ROWID FROM $tabla 
+		WHERE Mes = ? AND Tipo = ? AND Orden = ?;");
+	$sql->execute($mes,$td,$ni);
 	my $dato = $sql->fetchrow_array;
 	$sql->finish();
 	
@@ -709,7 +710,7 @@ sub borraItemT( $ )
 
 sub sumaTC( $ )
 {
-	my ($esto, $Nmr) = @_;	
+	my ($esto, $Nmr, $dh) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
 	my $sql = $bd->prepare("SELECT sum(Debe),sum(Haber) FROM ItemsT
@@ -717,8 +718,8 @@ sub sumaTC( $ )
 	$sql->execute($Nmr);
 	my @dato = $sql->fetchrow_array;
 	$sql->finish();
-	
-	return ($dato[0], $dato[1]); 
+	my $res = $dh = "D" ? $dato[0] : $dato[1] ;
+	return $res ; 
 }
 
 sub agregaCmp( $ $ $ $ $ $ )

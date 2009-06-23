@@ -1,11 +1,11 @@
 #  BltsH.pm -  Registra Boletas de Honorarios
 #  Forma parte del programa Quipu
 #
-#  Derechos de autor: Víctor Araya R., 2009
+#  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 19.06.2009
+#  UM: 23.06.2009
 
 package BltsH;
 
@@ -47,13 +47,23 @@ sub crea {
 	my $alt = $ucc ? 340 : 320 ;
 	$vnt->title("Boletas de Honorarios");
 	$vnt->geometry("360x$alt+475+4"); # Tamaño y ubicación
+	# Busca cuentas predefinidas
+	# Códigos
+	my @dtc = $bd->buscaDoc($TipoD) ;
+	$CtaNt =  $dtc[1];
+	$CtaIm =  $dtc[2];
+	# y sus nombres
+	@dtc = $bd->dtCuenta($CtaNt);
+	$NombreCn = decode_utf8("$dtc[0] ");
+	@dtc = $bd->dtCuenta($CtaIm);
+	$NombreCi = decode_utf8("$dtc[0] ");
 
 	# Defime marcos
 	my $mDatosC = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 		-label => "Registra Boleta de Honorarios");
 	my $mBotonesC = $vnt->Frame(-borderwidth => 1);
 	$bCnt = $mBotonesC->Button(-text => "Contabiliza", 
-		-command => sub { &contabiliza($esto,$bd) } ); 
+		-command => sub { &contabiliza($esto) } ); 
 	$bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { $bd->borraTemp(); $vnt->destroy() } );
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
@@ -121,6 +131,7 @@ sub crea {
 	# Habilita validación de datos
 	$rut->bind("<FocusIn>", sub { &vFecha($esto) } );
 	$dcmnt->bind("<FocusIn>", sub { &buscaRUT($esto) } );
+	$fechaV->bind("<FocusIn>", sub { &validaNum() } );
 	$fechaV->bind("<FocusOut>", sub { &vFechaV($esto) });
 	$glosa->bind("<FocusIn>", sub { &buscaDoc($bd) } );	
 	if ( $ucc ) {
@@ -136,6 +147,7 @@ sub crea {
 		&buscaCuenta($bd, \$CtaTl, \$NombreCt, \$ctaTl) } );
 
 	# Dibuja interfaz
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$fecha->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$numero->grid(-row => 0, -column => 1, -columnspan => 2, -sticky => 'ne');
 	$rut->grid(-row => 1, -column => 0, -sticky => 'nw');
@@ -162,7 +174,7 @@ sub crea {
 
 	$mDatosC->pack();
 	$mBotonesC->pack();
-	$mMensajes->pack(-expand => 1, -fill => 'both');
+	
 
 	# Inicialmente deshabilita algunos botones
 	$bCnt->configure(-state => 'disabled');
@@ -186,7 +198,7 @@ sub vFecha ( )
 	}
 	# Comprueba si la fecha está escrita correctamente
 	if (not $Fecha =~ m|\d+/\d+/\d+|) {
-		$Mnsj = "Problema con formato fecha";
+		$Mnsj = "Formato fecha es dd/mm/aaaa";
 		$fecha->focus;
 	} elsif ( not $ut->analizaFecha($Fecha) ) {
 		$Mnsj = "Fecha incorrecta" ;
@@ -267,7 +279,7 @@ sub buscaRUT ( $ )
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
 
-	$Mnsj = " ";
+#	$Mnsj = " ";
 	if ($RUT eq '') {
 		$Mnsj = "Debe registrar un RUT.";
 		$rut->focus;
@@ -289,16 +301,27 @@ sub buscaRUT ( $ )
 	}
 }
 
+sub validaNum ( )
+{
+	if ($Dcmnt eq '') {
+		$Mnsj = "Registre número de la Boleta";
+		$dcmnt->focus;
+		return ;
+	}
+	# Valida formato número entero
+	if (not $Dcmnt =~ /^(\d+)$/) {
+		$Mnsj = "NO es número";
+		$dcmnt->focus;
+		return ;
+	}
+	$Mnsj = " ";
+}
+
 sub buscaDoc ( $ ) # Evita que se registre dos veces una misma boleta
 { 
 	my ($bd) = @_;
 
-	if ($Dcmnt eq '') {
-		$Mnsj = "Registre número de la Boleta";
-		$dcmnt->focus;
-		return;
-	}
-	# Busca factura
+	# Busca boleta
 	my $fct = $bd->buscaFct('BoletasH', $RUT, $Dcmnt);
 	if ($fct) {
 		$Mnsj = "Esa Boleta ya está registrada.";
@@ -310,10 +333,11 @@ sub buscaDoc ( $ ) # Evita que se registre dos veces una misma boleta
 
 sub contabiliza ( $ )
 {
-	my ($esto,$bd) = @_;
+	my ($esto) = @_;
 	my $ut = $esto->{'mensajes'};
+	my $bd = $esto->{'baseDatos'} ;
 	
-	$Mnsj = " ";
+#	$Mnsj = " ";
 	# Verifica que se completen datos básicos
 	if ($Glosa eq '' ) {
 		$Mnsj = "Escriba alguna glosa para el comprobante.";

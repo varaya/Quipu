@@ -3,11 +3,11 @@
 #	impuesto específico a los combustibles
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2009
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM: 17.06.2009
+#  UM: 223.06.2009
 
 package FcmpE;
 
@@ -80,7 +80,7 @@ sub crea {
 		
 	# Defime marcos
 	my $mDatosC = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => "Factura de Compra");
+		-label => "Factura de Compra Especial");
 	my $mLista = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 		-label => "Cuentas de $tipoD");
 	my $mItems = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
@@ -362,6 +362,12 @@ sub buscaDoc ( $ )
 		$dcmnt->focus;
 		return;
 	}
+	# Valida formato número entero
+	if (not $Dcmnt =~ /^(\d+)$/) {
+		$Mnsj = "NO es número";
+		$dcmnt->focus;
+		return ;
+	}
 	# Busca RUT
 	if (not $RUT) {
 		$Mnsj = "Debe registrar un RUT.";
@@ -528,6 +534,9 @@ sub registra ( )
 	
 	# Retotaliza comprobante
 	$TotalI = $bd->sumaTC($Numero,$DH);
+	if ($TotalI == $Neto) {	
+		$bCnt->configure(-state => 'active');
+	}
 	limpiaCampos();
 	
 	$bNvo->configure(-state => 'active');

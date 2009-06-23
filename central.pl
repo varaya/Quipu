@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 17.06.2009
+#  UM : 23.06.2009
 
 # use Data::Dumper; 
 
@@ -150,15 +150,12 @@ sub opRegistra {
 }
 
 sub opContabiliza {
- my ($tipoC, $tipoF, $tipoB, $tipoNC, $tipoND, $tipoA );
- $tipoC = $tipoF = $tipoB = $tipoNC = $tipoND = $tipoA = ' ';
+ my ($tipoC, $tipoB, $tipoNC, $tipoND, $tipoA );
+ $tipoC = $tipoB = $tipoNC = $tipoND = $tipoA = ' ';
 
-[['cascade' => "Factura", -tearoff => 0,
- 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoF ,
-	-command => sub { require prg::Fctrs; 
-	Fctrs->crea($vp,$bd,$ut,$tipoF,$mt,$CCts,$iva);} ], qw/Ventas Compras/,],],
- ['cascade' => "F. Especial", -tearoff => 0, -menuitems => opEspecial() ],
- ['command' => "B. Honorarios",	-command => sub { require prg::BltsH;
+[['cascade' => "Ventas", -tearoff => 0, -menuitems => opVentas() ],
+ ['cascade' => "Compras", -tearoff => 0, -menuitems => opCompras() ],
+ ['command' => "Honorarios",	-command => sub { require prg::BltsH;
 	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },],
  ['cascade' => "N. Crédito", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoNC ,  
@@ -175,8 +172,17 @@ sub opContabiliza {
 ['cascade' => "Nulos", -tearoff => 0,	-menuitems => opAnula() ] ]
 }
 
-sub opEspecial {
-[['command' => "Afecto y Exento", -command => sub { require prg::FcmpE; 
+sub opVentas {
+[['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
+	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva);} ], 
+ ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
+ 	FTrcrs->crea($vp, $mt, $bd, $ut);} ] ]
+}
+
+sub opCompras {
+[['command' => "F. Recibidas", -command => sub { require prg::Fctrs; 
+	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva); } ],
+ ['command' => "F. Especiales", -command => sub { require prg::FcmpE; 
 	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
  ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
  	FTrcrs->crea($vp, $mt, $bd, $ut);} ] ]

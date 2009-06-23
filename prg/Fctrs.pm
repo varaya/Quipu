@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 17.06.2009
+#  UM : 23.06.2009
 
 package Fctrs;
 
@@ -75,6 +75,10 @@ sub crea {
 	my @dtc = $bd->buscaDoc($TipoD) ;
 	$CtaT =  $dtc[1];
 	$CtaIVA =  $dtc[2];
+	@dtc = $bd->dtCuenta($CtaT);
+	$NombreCt = decode_utf8("$dtc[0] ");
+	@dtc = $bd->dtCuenta($CtaIVA);
+	$NombreCi = decode_utf8("$dtc[0] ");
 	 
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
@@ -176,13 +180,12 @@ sub crea {
 	$fechaC = $mDatosC->LabEntry(-label => "Contabilizada: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaC );
+	$nmrO = $mDatosC->LabEntry(-label => "Nº I: ", -width => 4,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-justify => 'right', -textvariable => \$NmrI );
 	$numero = $mDatosC->LabEntry(-label => "$TipoCmp #: ", -width => 6,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Numero, -state => 'disabled',
-		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
-	$nmrO = $mDatosC->LabEntry(-label => "Nº I: ", -width => 4,
-		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-justify => 'right', -textvariable => \$NmrI, -state => 'disabled',
 		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
 
 	# Define campos para registro de items
@@ -208,6 +211,8 @@ sub crea {
 	$fecha->bind("<FocusIn>", sub { &buscaDoc($esto) } );
 	$fechaV->bind("<FocusOut>", sub{ &validaFecha($ut,\$FechaV,\$fechaV,0)});
 	$glosa->bind("<FocusIn>", sub { &validaFecha($ut,\$Fecha,\$fecha,1) } );
+	$nmrO->bind("<FocusIn>", sub { &validaFechaC($ut, $bd) } );
+	$nmrO->bind("<FocusOut>", sub { &validaNI($bd) } );
 	$neto->bind("<FocusOut>", sub { &totaliza() } );
 	$iva->bind("<FocusIn>", sub { $Iva = int( $Neto * $pIVA / 100 + 0.5) ;} );
 	$iva->bind("<FocusOut>", sub { &totaliza() } );	
@@ -253,8 +258,8 @@ sub crea {
 	$ctaT->grid(-row => 7, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$nCtaT->grid(-row => 8, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$fechaC->grid(-row => 9, -column => 0, -sticky => 'nw');
-	$numero->grid(-row => 9, -column => 1, -sticky => 'ne');
-	$nmrO->grid(-row => 9, -column => 2, -sticky => 'ne');
+	$nmrO->grid(-row => 9, -column => 1, -sticky => 'ne');
+	$numero->grid(-row => 9, -column => 2, -sticky => 'ne');
 	
 	$codigo->grid(-row => 0, -column => 0, -sticky => 'nw');	
 	$cuenta->grid(-row => 0, -column => 1, -columnspan => 2, -sticky => 'nw');
@@ -389,6 +394,12 @@ sub buscaDoc ( $ )
 		$dcmnt->focus;
 		return;
 	}
+	# Valida que sea número entero
+	if (not $Dcmnt =~ /^(\d+)$/) {
+		$Mnsj = "NO es un número válido.";
+		$dcmnt->focus;
+		return ;
+	}
 	# Busca RUT
 	if (not $RUT) {
 		$Mnsj = "Debe registrar un RUT.";
@@ -435,11 +446,8 @@ sub datosF ( $ ) # Verifica los datos mínimos para anotar un item
 		$dcmnt->focus ;
 		return ;
 	}
-	# Valida fecha contabilización
-	if ( validaFechaC($ut,$bd) ) {
-		# Define una propuesta de detalle para los itemes
-		$Detalle = "$TipoD# $Dcmnt $RUT" ;
-	}
+	# Define una propuesta de detalle para los itemes
+	$Detalle = "$TipoD# $Dcmnt $RUT" ;
 }
 
 sub validaFechaC ( $ $)
@@ -461,12 +469,22 @@ sub validaFechaC ( $ $)
 		$fechaC->focus ;
 		return 0;
 	}
-	# Determina el número de ingreso
-	my $mes = substr $FechaC,3,2 ; # Extrae mes
-	$mes =~ s/^0// ; # Elimina '0' al inicio
-	$NmrI = $bd->numeroI($TablaD, $mes, $TipoD) + 1 ; 
 	
 	return 1;
+}
+
+sub validaNI ( $ )
+{
+	my ($bd) = @_;
+	
+	my $mes = substr $FechaC,3,2 ; # Extrae mes
+	$mes =~ s/^0// ; # Elimina '0' al inicio
+	if ( $bd->numeroI($TablaD, $mes, $TipoD, $NmrI) ) {
+		$Mnsj = "Número existe";
+		$nmrO->focus;
+		return ;
+	}
+	$Mnsj = " ";
 }
 
 sub muestraLista ( $ ) 
@@ -574,6 +592,9 @@ sub registra ( )
 	
 	# Retotaliza comprobante
 	$TotalI = $bd->sumaTC($Numero,$DH);
+	if ($TotalI == $Neto) {	
+		$bCnt->configure(-state => 'active');
+	}
 	limpiaCampos();
 	
 	$bNvo->configure(-state => 'active');
@@ -606,7 +627,6 @@ sub contabiliza ( )
 	my $bd = $esto->{'baseDatos'};
 	my $listaS = $esto->{'vLista'};
 	
-	$Mnsj = " ";
 	# Verifica que se completen datos básicos
 	if ($AE eq 'A' and $Iva > 0 and $CtaIVA eq '') {
 		$Mnsj = "Debe registrar la cuenta del IVA.";
@@ -628,6 +648,8 @@ sub contabiliza ( )
 		$fecha->focus;
 		return;
 	}
+	$Mnsj = " ";
+
 	# Graba Comprobante
 	my $det = "$TipoD $Dcmnt $RUT" ;
 	if ($Iva > 0) { # Registra IVA si es afecto
@@ -651,7 +673,6 @@ sub contabiliza ( )
 		$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI, 0, 0);
 
 	limpiaCampos();
-
 	$bCnt->configure(-state => 'disabled');
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 
@@ -659,6 +680,7 @@ sub contabiliza ( )
 	# Inicializa variables
 	inicializaV();
 	$Numero = $bd->numeroC() + 1;
+	$NmrI += 1 ;
 	$Dcmnt = ($TipoD eq "FV") ? $Dcmnt + 1 : '' ; 
 	$glosa->delete(0,'end');
 	$dcmnt->focus;
@@ -670,7 +692,6 @@ sub fNula ( )
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
 	
-	$Mnsj = " ";
 	if ($Dcmnt eq '') {
 		$Mnsj = "Registre número de Factura";
 		$dcmnt->focus;
@@ -681,25 +702,29 @@ sub fNula ( )
 		$rut->focus;
 		return ;
 	}
-	if ( validaFechaC($ut,$bd) ) {
-		# Ahora busca Factura
-		my $fct = $bd->buscaFct($TablaD, $RUT, $Dcmnt);
-		if ($fct) {
-			$Mnsj = "Esa Factura ya está registrada.";
-			$dcmnt->focus;
-			return;
-		}
-		my $fc = $ut->analizaFecha($FechaC); 
-		# Graba Factura
-		$bd->grabaFct($TablaD, $RUT, $Dcmnt, $fc, 0, 0, 0, 0,'', $TipoD, '', 
-			$fc, '', "M", $NmrI, 1, 0);
-
-		limpiaCampos();
-		$bCnt->configure(-state => 'disabled');
-		inicializaV();
-		$Dcmnt = ($TipoD eq "FV") ? $Dcmnt + 1 : '' ; 
-		$dcmnt->focus;
+	if ( not validaFechaC($ut,$bd) ) {
+		return ;		
 	}
+	# Ahora busca Factura
+	my $fct = $bd->buscaFct($TablaD, $RUT, $Dcmnt);
+	if ($fct) {
+		$Mnsj = "Esa Factura ya está registrada.";
+		$dcmnt->focus;
+		return;
+	}
+	$Mnsj = " ";
+
+	my $fc = $ut->analizaFecha($FechaC); 
+	# Graba Factura
+	$bd->grabaFct($TablaD, $RUT, $Dcmnt, $fc, 0, 0, 0, 0,'', $TipoD, '', 
+		$fc, '', "M", $NmrI, 1, 0);
+
+	limpiaCampos();
+	$bCnt->configure(-state => 'disabled');
+	inicializaV();
+	$Dcmnt = ($TipoD eq "FV") ? $Dcmnt + 1 : '' ; 
+	$NmrI += 1 ;
+	$dcmnt->focus;
 }
 
 sub cancela ( )
@@ -730,7 +755,7 @@ sub limpiaCampos ( )
 sub inicializaV ( )
 {
 	$Monto = $TotalI = $Total = $Neto = $Iva = 0;
-	$Codigo = $RUT = $Glosa = $Detalle = $NCCto = $CCto = $NmrI = '';
+	$Codigo = $RUT = $Glosa = $Detalle = $NCCto = $CCto = '';
 	$NombreCi = $NombreCt = $Nombre = $Fecha = $FechaV = $SGrupo = '';
 }
 

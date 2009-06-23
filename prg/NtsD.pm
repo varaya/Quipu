@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 17.06.2009
+#  UM : 23.06.2009
 
 package NtsD;
 
@@ -173,13 +173,12 @@ sub crea {
 	$fechaC = $mDatosC->LabEntry(-label => "Contabilizada: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaC );
+	$nmrO = $mDatosC->LabEntry(-label => "Nº I: ", -width => 4,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-justify => 'right', -textvariable => \$NmrI);
 	$numero = $mDatosC->LabEntry(-label => "$TipoCmp #: ", -width => 6,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Numero, -state => 'disabled',
-		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
-	$nmrO = $mDatosC->LabEntry(-label => "Nº I: ", -width => 4,
-		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-justify => 'right', -textvariable => \$NmrI, -state => 'disabled',
 		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
 
 	# Define campos para registro de items
@@ -204,6 +203,8 @@ sub crea {
 	$fecha->bind("<FocusIn>", sub { &buscaDoc($esto) } );	
 	$glosa->bind("<FocusIn>", sub { &validaFecha($ut,\$Fecha, \$fecha, 1) } );
 	$neto->bind("<FocusOut>", sub { &totaliza() } );
+	$nmrO->bind("<FocusIn>", sub { &validaFechaC($ut, $bd) } );
+	$nmrO->bind("<FocusOut>", sub { &validaNI($bd) } );
 	$iva->bind("<FocusIn>", sub { $Iva = int( $Neto * $pIVA / 100 + 0.5) ;} );	
 	$iva->bind("<FocusOut>", sub { &totaliza() } );	
 	$ctaIVA->bind("<FocusOut>", sub { 
@@ -235,7 +236,7 @@ sub crea {
 	$rut->grid(-row => 1, -column => 0, -sticky => 'nw');
 	$nombre->grid(-row => 1, -column => 1, -columnspan => 2, -sticky => 'ne');
 	$fecha->grid(-row => 2, -column => 0, -columnspan => 2, -sticky => 'nw');
-	$glosa->grid(-row => 3, -column => 0, -columnspan => 2, -sticky => 'nw');
+	$glosa->grid(-row => 3, -column => 0, -columnspan => 3, -sticky => 'nw');
 	$neto->grid(-row => 4, -column => 0, -sticky => 'nw');
 	$afecto->grid(-row => 4, -column => 1, -sticky => 'nw');	
 	$exento->grid(-row => 4, -column => 2, -sticky => 'nw');	
@@ -246,8 +247,8 @@ sub crea {
 	$ctaT->grid(-row => 7, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$nCtaT->grid(-row => 8, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$fechaC->grid(-row => 9, -column => 0, -sticky => 'nw');
-	$numero->grid(-row => 9, -column => 1, -sticky => 'ne');
-	$nmrO->grid(-row => 9, -column => 2, -sticky => 'ne');
+	$nmrO->grid(-row => 9, -column => 1, -sticky => 'ne');
+	$numero->grid(-row => 9, -column => 2, -sticky => 'ne');
 	
 	$codigo->grid(-row => 0, -column => 0, -sticky => 'nw');	
 	$cuenta->grid(-row => 0, -column => 1, -columnspan => 2, -sticky => 'nw');
@@ -380,6 +381,12 @@ sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma ND
 		$documento->focus;
 		return;
 	}
+	# Valida formato número entero
+	if (not $Documento =~ /^(\d+)$/) {
+		$Mnsj = "NO es número";
+		$documento->focus;
+		return ;
+	}
 	# Busca RUT
 	if (not $RUT) {
 		$Mnsj = "Debe registrar un RUT.";
@@ -462,12 +469,22 @@ sub validaFechaC ( $ $)
 		$fechaC->focus ;
 		return 0;
 	}
-	# Determina el número de ingreso
-	my $mes = substr $FechaC,3,2 ; # Extrae mes
-	$mes =~ s/^0// ; # Elimina '0' al inicio
-	$NmrI = $bd->numeroI($TablaD, $mes, $TipoD) + 1 ; 
 	
 	return 1 ;
+}
+
+sub validaNI ( $ )
+{
+	my ($bd) = @_;
+	
+	my $mes = substr $FechaC,3,2 ; # Extrae mes
+	$mes =~ s/^0// ; # Elimina '0' al inicio
+	if ( $bd->numeroI($TablaD, $mes, $tpD, $NmrI) ) {
+		$Mnsj = "Número existe";
+		$nmrO->focus;
+		return ;
+	}
+	$Mnsj = " ";
 }
 
 sub muestraLista ( $ ) 
@@ -572,6 +589,9 @@ sub registra ( )
 	
 	# Retotaliza comprobante
 	$TotalI = $bd->sumaTC($Numero,$DH);
+	if ($TotalI == $Neto) {	
+		$bCnt->configure(-state => 'active');
+	}
 	limpiaCampos();
 	
 	$bNvo->configure(-state => 'active');
