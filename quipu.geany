@@ -7,6 +7,6 @@ description=Sistema de Control de Gestión basado en la contabilidad
 run_cmd=
 
 [files]
-current_page=1
-FILE_NAME_0=0;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
-FILE_NAME_1=0;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
+current_page=0
+FILE_NAME_0=7097;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
+FILE_NAME_1=15902;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;

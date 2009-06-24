@@ -591,7 +591,8 @@ sub registra ( )
 	@datos = muestraLista($esto);
 	
 	# Retotaliza comprobante
-	$TotalI = $bd->sumaTC($Numero,$DH);
+	my ($td, $th) = $bd->sumas($Numero);
+	$TotalI = ($DH eq "D") ? $td : $th ;
 	if ($TotalI == $Neto) {	
 		$bCnt->configure(-state => 'active');
 	}

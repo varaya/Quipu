@@ -192,7 +192,7 @@ sub cFecha( $ )
 {
 	my ($esto, $ff) = @_;
 	my ($dm, $mes, $a);
-	
+
 	if (not $ff) { return "";}
 	$a = substr $ff,0,4;
 	$mes = substr $ff,4,2;

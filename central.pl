@@ -176,7 +176,7 @@ sub opVentas {
 [['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva);} ], 
  ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
- 	FTrcrs->crea($vp, $mt, $bd, $ut);} ] ]
+ 	FTrcrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva);} ] ]
 }
 
 sub opCompras {
@@ -185,7 +185,7 @@ sub opCompras {
  ['command' => "F. Especiales", -command => sub { require prg::FcmpE; 
 	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
  ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
- 	FTrcrs->crea($vp, $mt, $bd, $ut);} ] ]
+ 	FTrcrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva);} ] ]
 }
 
 sub opConsulta {
@@ -193,7 +193,7 @@ my $tipoD = $tipo = '';
 [['command' => "+Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ], "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
-	CCmprb->crea($vp, $mt, $bd, $ut);} ],
+	CCmprb->crea($vp, $mt, $bd, $ut, $Rut);} ],
  ['cascade' => "Documentos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoD ,  
 	-command => sub { require prg::CDcmts; CDcmts->crea($vp,$mt,$bd,$ut,$tipoD);}], 

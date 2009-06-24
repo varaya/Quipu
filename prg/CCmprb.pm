@@ -1,68 +1,52 @@
 #  CCmprb.pm - Lista, consulta e imprime comprobantes
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM: 24.06.2009
 
 package CCmprb;
 
 use Tk::TList;
 use Tk::LabFrame;
-use Tk::BrowseEntry;
 use Encode 'decode_utf8';
 use Number::Format;
-
+ 
 # Variables válidas dentro del archivo
 my @datos = () ;	# Lista items del comprobante
-my ($bCan, $bImp, $mes, $nMes) ; 
+my ($bCan, $bImp, $rutE) ; 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rt) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
 	$esto->{'mensajes'} = $ut;
 
 	# Inicializa variables
+	$rutE = $rt ;
 	my %tp = $ut->tipos();
 	$Fecha = $ut->fechaHoy();
 	$mes = $nMes = '';
 	# Define ventana
 	my $vnt = $vp->Toplevel();
-	$esto->{'ventana'} = $vnt;
-	$vnt->title("Consulta Comprobantes");
-	$vnt->geometry("400x300+475+4"); # Tamaño y ubicación
-	
-	# Define marcos
-	my $mMes = $vnt->Frame(-borderwidth => 1);
-	my $mLista = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => 'Comprobantes');
-	my $mBtnsC = $vnt->Frame(-borderwidth => 1);
+	$vnt->title("Procesa Libro Mayor");
+	$vnt->geometry("650x430+475+4"); # Tamaño y ubicación
+	# Define marco para mostrar resultado
+	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
+	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
+	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
+	$mtA->tagConfigure('cuenta', -font => $tp{cn} ) ;
+	$mtA->tagConfigure('grupo', -font => $tp{gr}, -foreground => 'brown') ;
+
+	# Defime marcos
+	my $mBotones = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
-
-	# Define campo para seleccionar mes
-	my $tMes = $mMes->Label(-text => "Seleccione mes ") ;
-	my $meses = $mMes->BrowseEntry(-variable => \$nMes, -state => 'readonly',
-		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
-		-disabledforeground => '#000000', -autolistwidth => 1,
-		-browse2cmd => \&selecciona );
-	# Crea listado de meses
-	@lMeses = $ut->meses();
-	my $algo;
-	foreach $algo ( @lMeses ) {
-		$meses->insert('end', $algo->[1] ) ;
-	}
-	$tMes->pack(-side => "left", -anchor => "w");
-	$meses->pack(-side => "left", -anchor => "w");
-
-	my $bMuestra = $mMes->Button(-text => "Mostrar", 
-		-command => sub { @datos = muestraLista($esto); } );
-	$bMuestra->pack(-side => "right");
 
 	# Barra de mensajes y botón de ayuda
 	my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{tx},
@@ -75,67 +59,64 @@ sub crea {
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
-	# Define Lista de comprobantes
-	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -width => 80,
-		-selectmode => 'single', -orient => 'horizontal', -height => 14,
-		-font => $tp{mn}, -command => sub { &muestraC($esto, $mt) } );
-	$esto->{'vLista'} = $listaS;
-	
+	my $cuenta = $mBotones->LabEntry(-label => "Comprobante #: ", -width => 6,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$Cuenta );
 	# Define botones
-	$bCan = $mBtnsC->Button(-text => "Cancela",
-		-command => sub { &cancela($esto) } );
-	$bImp = $mBtnsC->Button(-text => "Archivo", -command => sub{&imprime($mt)});
-	$bLmp = $mBtnsC->Button(-text => "Limpia", 
-		-command => sub { $mt->delete('0.0','end'); 
-			$bImp->configure(-state => 'disabled');} );
+	my $bLmp = $mBotones->Button(-text => "Muestra", 
+		-command => sub { muestraC($esto,$mtA); } );
+	$bImp = $mBotones->Menubutton(-text => "Archivo", -tearoff => 0, 
+	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
+	[ ['command' => "texto", -command => sub { txt($mtA);} ],
+ 	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
+	$bCan = $mBotones->Button(-text => "Cancela", 
+		-command => sub { $vnt->destroy(); } );
 
-#	@datos = muestraLista($esto);
-	
 	# Dibuja interfaz
+	$cuenta->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bLmp->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$bImp->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$bLmp->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$listaS->pack();
-	$mMes->pack(-expand => 1, -fill => 'x');
-	$mLista->pack(-expand => 1);
-	$mBtnsC->pack();
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 
-	$mt->delete('0.0','end');
+	$mMensajes->pack(-expand => 1, -fill => 'both');
+	$mBotones->pack(-expand => 1);
+	$mtA->pack(-fill => 'both');
+
+	# Inicialmente deshabilita botón Registra
 	$bImp->configure(-state => 'disabled');
+	$cuenta->focus;
 
 	bless $esto;
 	return $esto;
 }
 
 # Funciones internas
-sub selecciona {
-	my ($jc, $Index) = @_;
-	$mes = $lMeses[$Index]->[0];
-}
-
 sub muestraC {
 
 	my ($esto, $marco) = @_;
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
-	my $listaS = $esto->{'vLista'};
 
 	my $tc = {};
 	$tc->{'I'} = 'Ingreso';
 	$tc->{'E'} = 'Egreso';
 	$tc->{'T'} = 'Traspaso';
-
+	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo);
 	# Obtiene item seleccionado
-	my @ns = $listaS->info('selection');
-	my $sItem = @datos[$ns[0]];
-	
-	my $nmrC = $sItem->[0];
-	my $tipoC = $tc->{$sItem->[1]};
-	my $fecha = $ut->cFecha($sItem->[2]);
-	my $glosa = decode_utf8($sItem->[4]);
-	my $total = $pesos->format_number( $sItem->[3] );
+	@datos = $bd->datosCmprb($Cuenta) ;
+	if (not @datos) {
+		$Mnsj = "NO existe ese comprobante";
+		$cuenta->focus ;
+		return ;
+	}
+	$nmrC = $datos[0];
+	$tipoC = $tc->{$datos[3]};
+	$fecha = $ut->cFecha($datos[2]);
+	$glosa = decode_utf8($datos[1]);
+	$total = $pesos->format_number( $datos[4] );
+	$nulo = $datos[5];
 
+	$marco->delete('0.0','end');
 	$marco->insert('end', 
 	 "\nComprobante de $tipoC   # $nmrC  del  $fecha\n", 'negrita');
 	$marco->insert('end', "Glosa: $glosa\n\n" , 'cuenta');
@@ -144,13 +125,13 @@ sub muestraC {
 	my @data = $bd->itemsC($nmrC);
 
 	my ($algo, $mov, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
-	my $lin1 = "Cuenta                            Debe       Haber Detalle";
-	my $lin2 = "-"x73;
+	my $lin1 = "Cuenta                                      Debe       Haber Detalle";
+	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
-		$ncta = $bd->nmbCuenta($cm);
+		$ncta = decode_utf8($bd->nmbCuenta($cm) );
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
@@ -164,7 +145,7 @@ sub muestraC {
 		if ($algo->[6]) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
-		$mov1 = sprintf("%-5s %-20s %11s %11s  %-15s", $cm, decode_utf8($ncta),
+		$mov1 = sprintf("%-5s %-30s %11s %11s  %-15s", $cm, substr($ncta,0,30) ,
 			$mntD, $mntH, $dt ) ;
 		$mov2 = sprintf("       %-15s %-20s", $ci, $dcm ) ;
 
@@ -209,26 +190,18 @@ sub muestraLista ( $ )
 	return @data;
 }
 
-sub imprime ( $ )
+sub txt ( $ )
 {
-	my ($esto, $marco) = @_;	
-	my $ut = $esto->{'mensajes'};
+	my ( $marco) = @_;	
 	
 	my $algo = $marco->get('0.0','end');
 
 	# Genera archivo de texto
-	open ARCHIVO, "> txt/cmprb.txt" or die $! ;
+	my $d = "$rutE/txt/cmprb.txt" ;
+	open ARCHIVO, "> $d" or die $! ;
 	print ARCHIVO $algo ;
 	close ARCHIVO ;
-	$Mnsj = "Ver archivo 'txt/cmprb.txt'"
-}
-
-sub cancela ( $ )
-{
-	my ($esto) = @_;	
-	my $vn = $esto->{'ventana'};
-
-	$vn->destroy();
+	$Mnsj = "Ver archivo '$d'"
 }
 
 # Fin del paquete

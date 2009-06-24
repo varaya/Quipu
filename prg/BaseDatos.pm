@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 23.06.2009
+#  UM: 24.06.2009
 
 package BaseDatos;
 
@@ -606,6 +606,19 @@ sub listaC( $ )
 	return @datos; 
 }	
 
+sub datosCmprb( $ )
+{
+	my ($esto, $nmr) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("SELECT * FROM DatosC WHERE Numero = ?;");
+	$sql->execute($nmr);
+	my @dts = $sql->fetchrow_array;
+	$sql->finish();
+	
+	return @dts; 
+}	
+
 sub diario( $ $ )
 {
 	my ($esto, $fi, $ff) = @_;	
@@ -708,9 +721,9 @@ sub borraItemT( $ )
 	$bd->do("DELETE FROM ItemsT WHERE ROWID = $Id ;");
 }
 
-sub sumaTC( $ )
+sub sumas( $ )
 {
-	my ($esto, $Nmr, $dh) = @_;	
+	my ($esto, $Nmr) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
 	my $sql = $bd->prepare("SELECT sum(Debe),sum(Haber) FROM ItemsT
@@ -718,8 +731,8 @@ sub sumaTC( $ )
 	$sql->execute($Nmr);
 	my @dato = $sql->fetchrow_array;
 	$sql->finish();
-	my $res = $dh = "D" ? $dato[0] : $dato[1] ;
-	return $res ; 
+
+	return ( $dato[0], $dato[1] ); 
 }
 
 sub agregaCmp( $ $ $ $ $ $ )

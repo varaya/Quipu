@@ -4,7 +4,8 @@
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM: 23.06.2009
 
 package Diario;
 
@@ -38,15 +39,19 @@ sub crea {
 	$tc->{'I'} = 'Ingreso';
 	$tc->{'E'} = 'Egreso';
 	$tc->{'T'} = 'Traspaso';
-	
-	# Define ventana
+
+
+	# Define ventanas
 	my $vnt = $vp->Toplevel();
-	$vnt->title("Procesa Libro Diario");
-	$vnt->geometry("350x110+475+4"); # Tamaño y ubicación
-	
+	$esto->{'ventana'} = $vnt;
+	$vnt->title("Libro Diario");
+	$vnt->geometry("600x450+390+100"); 
+	# Define marco para mostrar resultado
+	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
+	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
+	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
+
 	# Define marcos
-	my $mDatos = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => 'Fechas');
 	my $mBotonesC = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
@@ -62,36 +67,36 @@ sub crea {
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
 	# Define opciones de seleccion
-	$fechaI = $mDatos->LabEntry(-label => "Inicial: ", -width => 10,
+	$fechaI = $mBotonesC->LabEntry(-label => "Fechas:  Inicial ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaI );
-	$fechaF = $mDatos->LabEntry(-label => "Final: ", -width => 10,
+	$fechaF = $mBotonesC->LabEntry(-label => "Final ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaF );
 	
 	# Define botones
 	$bMst = $mBotonesC->Button(-text => "Muestra", 
-		-command => sub { &valida($esto, $mt) } );
+		-command => sub { &valida($esto, $mtA) } );
 	$bImp = $mBotonesC->Menubutton(-text => "Archivo", -tearoff => 0, 
 	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
-	[ ['command' => "texto", -command => sub { txt($mt);} ],
+	[ ['command' => "texto", -command => sub { txt($mtA);} ],
  	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
 	$bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy(); } );
 	
 	# Dibuja interfaz
 	$fechaI->pack(-side => 'left', -expand => 0, -fill => 'none');
-	$fechaF->pack(-side => 'right', -expand => 0, -fill => 'none');
+	$fechaF->pack(-side => 'left', -expand => 0, -fill => 'none');
 
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$bImp->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$bMst->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$mDatos->pack(-expand => 1);
-	$mBotonesC->pack();
 	$mMensajes->pack(-expand => 1, -fill => 'both');
+	$mBotonesC->pack();
+	$mtA->pack(-fill => 'both');
 
 	$bImp->configure(-state => 'disabled');
-	$mt->delete('0.0','end');
+	$mtA->delete('0.0','end');
 
 	bless $esto;
 	return $esto;
@@ -144,7 +149,7 @@ sub valida ( $ )
 	informe($esto,$mt,$fi,$ff);
 }
 
-sub informe ( $ $ ) {
+sub informe ( $ $  $) {
 
 	my ($esto, $marco, $fi, $ff) = @_;
 	my $bd = $esto->{'baseDatos'};
@@ -167,8 +172,8 @@ sub informe ( $ $ ) {
 	}
 
 	$marco->insert('end', "Libro Diario  $cnf[0]  -  $empr\n", 'negrita');
-	my $lin1 = "\nFecha      Detalle                       Código        Debe       Haber";
-	my $lin2 = "-"x71;
+	my $lin1 = "\nFecha      Detalle                            Código        Debe       Haber";
+	my $lin2 = "-"x76;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	foreach $algo ( @datosC ) {
@@ -193,7 +198,7 @@ sub asiento ( $ $ $ $ $ ) {
 	my ($algo, $mov1, $mov2, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
-		$ncta = $bd->nmbCuenta($cm);
+		$ncta = substr decode_utf8( $bd->nmbCuenta($cm) ),0,35 ;
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
@@ -207,7 +212,7 @@ sub asiento ( $ $ $ $ $ ) {
 		if ($algo->[6]) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
-		$mov1 = sprintf("           %-30s %-5s %11s %11s", decode_utf8($ncta), 
+		$mov1 = sprintf("           %-35s %-5s %11s %11s", $ncta, 
 			$cm, $mntD, $mntH) ;
 		$mov2 = sprintf("            %-15s %-20s", $ci, $dcm ) ;
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
@@ -241,9 +246,7 @@ sub csv
 	my ($Numero, $Tipo, $Fecha, $Total, $Glosa) = (0 .. 4);
 
 	$fi = $ut->analizaFecha($FechaI) ;
-	$fi =~ s/-//g ; # Convierte a formato AAAAMMDD
 	$ff = $ut->analizaFecha($FechaF) ;
-	$ff =~ s/-//g ; # Convierte a formato AAAAMMDD
 	my @datosC = $bd->diario($fi,$ff);
 	my ($algo, $fh, $gl, $empr, @datosE, $l, $d);
 	@datosE = $bd->datosEmpresa($rutE);

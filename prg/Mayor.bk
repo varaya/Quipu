@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 24.06.2009
+#  UM: 23.06.2009
 
 package Mayor;
 
@@ -16,7 +16,7 @@ use Number::Format;
 #use Data::Dumper; print Dumper \@dtsCmp;
 	
 # Variables válidas dentro del archivo
-my ($bImp, $bCan, $Mnsj, $Cuenta, @cnf,$empr,$rutE) ; 	
+my ($bImp, $bCan, $Mnsj, $cdC, @cnf, $sItem,$empr,$rutE) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -32,19 +32,21 @@ sub crea {
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	@cnf = $bd->leeCnf();
-	$Cuenta = '';
+	$cdC = '';
 	$rutE = $rtE ;
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Procesa Libro Mayor");
-	$vnt->geometry("600x430+475+4"); # Tamaño y ubicación
+	$vnt->geometry("300x350+475+4"); # Tamaño y ubicación
 	# Define marco para mostrar resultado
-	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
+	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
 	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
-	$mtA->tagConfigure('grupo', -font => $tp{gr}, -foreground => 'brown') ;
 
 	# Defime marcos
+	
+	my $mLista = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
+		-label => 'Cuentas con movimiento');
 	my $mBotones = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
@@ -59,90 +61,95 @@ sub crea {
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
-	my $cuenta = $mBotones->LabEntry(-label => "Indique Cuenta: ", -width => 5,
-		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-textvariable => \$Cuenta );
+	# Define Lista de datos
+	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -height => 16,
+		-selectmode => 'single', -orient => 'horizontal', -width => 45,
+		-command => sub { &muestraM($esto, $mt) } );
+	$esto->{'vLista'} = $listaS;
+	
 	# Define botones
-	my $bLmp = $mBotones->Button(-text => "Muestra", 
-		-command => sub { muestraM($esto,$mtA); } );
+	my $bLmp = $mBotones->Button(-text => "Limpia", 
+		-command => sub { $mt->delete('0.0','end'); } );
 	$bImp = $mBotones->Menubutton(-text => "Archivo", -tearoff => 0, 
 	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
 	[ ['command' => "texto", -command => sub { txt($mt);} ],
  	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
 	$bCan = $mBotones->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy(); } );
-
+	
+	@datos = muestraLista($esto);
+	if (not @datos) {
+		$Mnsj = "No hay cuentas registradas" ;
+	}
 	# Dibuja interfaz
-	$cuenta->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bLmp->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 	$mMensajes->pack(-expand => 1, -fill => 'both');
+	$listaS->pack();
+	$mLista->pack(-expand => 1);
 	$mBotones->pack(-expand => 1);
-	$mtA->pack(-fill => 'both');
+	
 	# Inicialmente deshabilita botón Registra
 	$bImp->configure(-state => 'disabled');
 	$mt->delete('0.0','end');
-	muestraLista($esto,$mt);
-	$cuenta->focus;
+
 	bless $esto;
 	return $esto;
 }
 
 # Funciones internas
-sub muestraLista ( $ $ ) 
+sub muestraLista ( $ ) 
 {
-	my ($esto,$mt) = @_;
+	my ($esto) = @_;
+	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
+	my $listaS = $esto->{'vLista'};
 	
 	# Obtiene lista de cuentas con movimiento
-	@datos = $bd->datosCcM();
+	my @data = $bd->datosCcM();
 
 	# Completa TList con nombres de los cuentas
 	my ($algo, $nm);
-	foreach $algo ( @datos ) {
+	$listaS->delete(0,'end');
+	foreach $algo ( @data ) {
 		$nm = sprintf("%-5s %-30s", $algo->[1], decode_utf8($algo->[0]) ) ;
-		$mt->insert('end', "$nm\n", 'detalle' ) ;
+		$listaS->insert('end', -itemtype => 'text', -text => "$nm" ) ;
 	}
+	# Devuelde una lista de listas con datos de las cuentas
+	return @data;
 }
 
-sub muestraM ( $ $ )
-{
+sub muestraM {
 
 	my ($esto, $marco) = @_;
-	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
+	my $bd = $esto->{'baseDatos'};
+	my $listaS = $esto->{'vLista'};
 
-	my ($nmC,$saldoI,$tSaldo,$fechaUM);
+	# Obtiene item seleccionado
+	my @ns = $listaS->info('selection');
+	$sItem = @datos[$ns[0]];
 	# Datos cuenta
-	foreach $algo ( @datos ) {
-		if ( $Cuenta == $algo->[1]) {
-			$nmC = decode_utf8($algo->[0]);
-			$saldoI = $algo->[4];
-			$tSaldo = $algo->[5];
-			$fechaUM = $algo->[6]; 
-			last if $Cuenta == $algo->[1] ;		
-		} 
-	}
-	if ( not $nmC ) {
-		$Mnsj = "Cuenta no existe o sin movimientos";
-		return ;
-	}
-	
+	$cdC = $sItem->[1];
+	my $nmC = decode_utf8($sItem->[0]);
+	my $saldoI = $sItem->[4];
+	my $tSaldo = $sItem->[5];
+	my $fechaUM = $sItem->[6]; 
 	my @datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
-	$marco->delete('0.0','end');
+
 	$marco->insert('end', "Libro Mayor  $cnf[0]  -  $empr\n", 'negrita');
-	$marco->insert('end', "Cuenta: $Cuenta - $nmC\n\n" , 'grupo');
+	$marco->insert('end', "Cuenta: $cdC - $nmC\n\n" , 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 
-	my @data = $bd->itemsM($Cuenta);
+	my @data = $bd->itemsM($cdC);
 
 	my ($algo, $mov, $nCmp, $mntD, $mntH, $dt, $ci, $tDebe, $tHaber, $dcm);
 	my($tC, $fecha, $nulo );
-	my $lin1 = "   # T  Fecha       Detalle                          Debe       Haber";
-	my $lin2 = "-"x69;
+	my $lin1 = "   # T Fecha      Detalle                          Debe       Haber";
+	my $lin2 = "-"x67;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = 0 ;
@@ -156,7 +163,7 @@ sub muestraM ( $ $ )
 		$mntH = $pesos->format_number( $saldoI );
 		$tHaber += $saldoI;
 	}
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",
+	$mov = sprintf("%4s %-1s %10s %-25s %11s %11s",
 		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
@@ -182,7 +189,7 @@ sub muestraM ( $ $ )
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
 		}
-		$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s", $nCmp, $tC, 
+		$mov = sprintf("%4s %-1s %10s %-25s %11s %11s", $nCmp, $tC, 
 			$fecha, $dt, $mntD, $mntH ) ;
 
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
@@ -191,7 +198,7 @@ sub muestraM ( $ $ )
 	$dt = "Totales";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s %10s %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
 	$dt = "Saldo al $fechaUM";
@@ -199,11 +206,10 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s %10s %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	
 	$bImp->configure(-state => 'active');
-	$Cuenta = '';
 
 }
 
@@ -214,7 +220,7 @@ sub txt ( $ )
 	my $algo = $marco->get('0.0','end');
 
 	# Genera archivo de texto
-	my $d = "$rutE/txt/myr$Cuenta.txt" ;
+	my $d = "$rutE/txt/myr$cdC.txt" ;
 	open ARCHIVO, "> $d" or die $! ;
 	print ARCHIVO $algo ;
 	close ARCHIVO ;
@@ -234,11 +240,11 @@ sub csv ( $ )
 	my $fechaUM = $sItem->[6];
 
 	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d);
-	$d = "$rutE/csv/myr$Cuenta.csv";
+	$d = "$rutE/csv/myr$cdC.csv";
 	open ARCHIVO, "> $d" or die $! ;
 	$l =  '"'."Libro Mayor  $cnf[0]  -  $empr".'"';
 	print ARCHIVO "$l\n";
-	$l = '"'."Cuenta: $Cuenta - $nmC".'"';
+	$l = '"'."Cuenta: $cdC - $nmC".'"';
 	print ARCHIVO "$l\n";
 	$l = "Comprobante";
 	print ARCHIVO "$l\n";
@@ -257,7 +263,7 @@ sub csv ( $ )
 	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	
-	my @data = $bd->itemsM($Cuenta);
+	my @data = $bd->itemsM($cdC);
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
 		$fecha = $ut->cFecha($algo->[9]);

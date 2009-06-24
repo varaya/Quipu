@@ -435,17 +435,6 @@ sub datosF ( ) # Verifica los datos mínimos para anotar un item
 		$documento->focus;
 		return;
 	}
-	# Valida fecha contabilización
-	if (not $FechaC =~ m|\d+/\d+/\d+|) {
-		$Mnsj = "Problema con formato fecha";
-		$fechaC->focus;
-		return ;
-	} elsif ( not $ut->analizaFecha($FechaC) ) {
-		$Mnsj = "Fecha incorrecta" ;
-		$fechaC->focus ;
-		return ;
-	}
-
 	# Define una propuesta de detalle para los itemes
 	$Detalle = "$TipoD# $Documento $RUT" ;
 }
@@ -588,7 +577,8 @@ sub registra ( )
 	@datos = muestraLista($esto);
 	
 	# Retotaliza comprobante
-	$TotalI = $bd->sumaTC($Numero,$DH);
+	my ($td, $th) = $bd->sumas($Numero);
+	$TotalI = ($DH eq "D") ? $td : $th ;
 	if ($TotalI == $Neto) {	
 		$bCnt->configure(-state => 'active');
 	}

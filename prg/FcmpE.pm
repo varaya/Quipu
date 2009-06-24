@@ -165,13 +165,12 @@ sub crea {
 	$fechaC = $mDatosC->LabEntry(-label => "Contabilizada: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaC );
+	$nmrO = $mDatosC->LabEntry(-label => "Nº I: ", -width => 4,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-justify => 'right', -textvariable => \$NmrI);
 	$numero = $mDatosC->LabEntry(-label => "$TipoCmp #: ", -width => 6,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Numero, -state => 'disabled',
-		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
-	$nmrO = $mDatosC->LabEntry(-label => "Nº I: ", -width => 4,
-		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-justify => 'right', -textvariable => \$NmrI, -state => 'disabled',
 		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
 
 	# Define campos para registro de items
@@ -198,6 +197,8 @@ sub crea {
 	$fecha->bind("<FocusIn>", sub { &buscaDoc($esto) } );
 	$fechaV->bind("<FocusOut>", sub{ &validaFecha($ut,\$FechaV,\$fechaV,0)});
 	$glosa->bind("<FocusIn>", sub { &validaFecha($ut,\$Fecha,\$fecha,1) } );	
+	$nmrO->bind("<FocusIn>", sub { &validaFechaC($ut, $bd) } );
+	$nmrO->bind("<FocusOut>", sub { &validaNI($bd) } );
 	$neto->bind("<FocusOut>", sub { &totaliza() } );
 	$netoE->bind("<FocusOut>", sub { &totaliza() } );
 	$iva->bind("<FocusIn>", sub { $Iva = int( ($Neto + $NetoE) * $pIVA / 100 + 0.5) ;} );	
@@ -243,8 +244,8 @@ sub crea {
 	$ctaT->grid(-row => 7, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$nCtaT->grid(-row => 8, -column => 1, -columnspan => 2, -sticky => 'nw'); 
 	$fechaC->grid(-row => 9, -column => 0, -sticky => 'nw');
-	$numero->grid(-row => 9, -column => 1, -sticky => 'ne');
-	$nmrO->grid(-row => 9, -column => 2, -sticky => 'ne');
+	$nmrO->grid(-row => 9, -column => 1, -sticky => 'ne');
+	$numero->grid(-row => 9, -column => 2, -sticky => 'ne');
 	
 	$codigo->grid(-row => 0, -column => 0, -sticky => 'nw');	
 	$cuenta->grid(-row => 0, -column => 1, -columnspan => 2, -sticky => 'nw');
@@ -300,6 +301,43 @@ sub validaFecha ($ $ $ $ )
 		$Mnsj = "Fecha incorrecta";
 		$$c->focus;
 	}
+}
+
+sub validaFechaC ( $ $)
+{
+	my ($ut, $bd) = @_;
+	
+	if ($FechaC eq '' ) {
+		$Mnsj = "Anote la fecha de contabilización.";
+		$fechaC->focus;
+		return 0;
+	}
+	# Valida fecha contabilización
+	if (not $FechaC =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Problema con formato fecha";
+		$fechaC->focus;
+		return 0;
+	} elsif ( not $ut->analizaFecha($FechaC) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaC->focus ;
+		return 0;
+	}
+	
+	return 1 ;
+}
+
+sub validaNI ( $ )
+{
+	my ($bd) = @_;
+	
+	my $mes = substr $FechaC,3,2 ; # Extrae mes
+	$mes =~ s/^0// ; # Elimina '0' al inicio
+	if ( $bd->numeroI($TablaD, $mes, $tpD, $NmrI) ) {
+		$Mnsj = "Número existe";
+		$nmrO->focus;
+		return ;
+	}
+	$Mnsj = " ";
 }
 
 sub buscaCuenta ( $ $ $ $ ) 
@@ -414,17 +452,6 @@ sub datosF ( $ ) # Verifica los datos mínimos para anotar un item
 		$dcmnt->focus ;
 		return ;
 	}
-	# Valida fecha contabilización
-	if ( not $ut->analizaFecha($FechaC) ) {
-		$Mnsj = "Fecha incorrecta" ;
-		$fechaC->focus ;
-		return ;
-	}
-	# Determina el número de ingreso
-	my $mes = substr $FechaC,3,2 ; # Extrae mes
-	$mes =~ s/^0// ; # Elimina '0' al inicio
-	$NmrI = $bd->numeroI($TablaD, $mes, $TipoD) + 1 ; 
-
 	# Define una propuesta de detalle para los itemes
 	$Detalle = "$TipoD# $Dcmnt $RUT" ;
 }
@@ -533,7 +560,8 @@ sub registra ( )
 	@datos = muestraLista($esto);
 	
 	# Retotaliza comprobante
-	$TotalI = $bd->sumaTC($Numero,$DH);
+	my ($td, $th) = $bd->sumas($Numero);
+	$TotalI = ($DH eq "D") ? $td : $th ;
 	if ($TotalI == $Neto) {	
 		$bCnt->configure(-state => 'active');
 	}
