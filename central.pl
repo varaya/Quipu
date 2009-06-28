@@ -245,7 +245,7 @@ my $tipoA = '' ;
  ['cascade' => "Documento", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoA , 
 	-command => sub { require prg::AnulaD; 
-	  AnulaD->crea($vp, $bd, $ut, $tipoA);} ], qw/Clientes Proveedores/,] ] ]
+	  AnulaD->crea($vp, $bd, $ut, $tipoA);} ], qw/Clientes Proveedores Honorarios/,] ] ]
 }
 
 sub Empresa

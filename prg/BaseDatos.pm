@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 24.06.2009
+#  UM: 28.06.2009
 
 package BaseDatos;
 
@@ -345,13 +345,16 @@ sub grabaGrupo( $ $ $ $ )
 
 
 # CUENTAS DE MAYOR: Lee, agrega y actualiza tablas Cuentas y Mayor
-sub datosCuentas( )
+sub datosCuentas( $ )
 {
-	my ($esto) = @_;	
+	my ($esto,$todas) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $sql = $bd->prepare("SELECT * FROM dg.Cuentas ORDER BY Codigo;");
+	my $sel = "SELECT * FROM dg.Cuentas ";
+	$sel .= "WHERE SGrupo < 30 " if not $todas;
+	$sel .= "ORDER BY Codigo;";
+	my $sql = $bd->prepare( $sel );
 	$sql->execute();
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -936,7 +939,7 @@ sub buscaFct( $ $ $ )
 	my ($esto, $tbl, $rut, $doc) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
-	my $sql = $bd->prepare("SELECT FechaE FROM $tbl WHERE RUT=? AND Numero=?;");
+	my $sql = $bd->prepare("SELECT FechaE FROM $tbl WHERE RUT = ? AND Numero = ?;");
 	$sql->execute($rut, $doc);
 	my $dato = $sql->fetchrow_array;
 	$sql->finish();
@@ -949,7 +952,7 @@ sub buscaNI ()
 	my ($esto, $tbl, $mes, $ni, $td) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
-	my $sql = $bd->prepare("SELECT Rut, Numero, Comprobante, ROWID FROM $tbl 
+	my $sql = $bd->prepare("SELECT Rut, Numero, Comprobante, TF, ROWID FROM $tbl 
 		WHERE Orden = ? AND Tipo = ? AND Mes = ?;");
 	$sql->execute($ni,$td,$mes);
 	my @dato = $sql->fetchrow_array;
@@ -1044,18 +1047,22 @@ sub listaFct( $ $ $ $)
 
 sub cambiaDcm ( ) 
 {
-	my ($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id,$TD) = @_ ;
+	my ($esto,$NumC,$FechaC,$TpD,$NumD,$Ni,$MesC,$Tabla,$Id,$TD) = @_ ;
 	my $bd = $esto->{'baseDatos'};
 	
-	my $sql = $bd->prepare("UPDATE $Tabla SET Fecha = ?, Mes = ?, Orden = ? 
-		WHERE ROWID = ?"); 
-	$sql->execute($FechaC,$Ni,$MesC,$Id);
+	my $sql = $bd->prepare("UPDATE $Tabla SET Fecha = ?, Mes = ?, Orden = ? ,
+		TF = ? WHERE ROWID = ?"); 
+	$sql->execute($FechaC,$Ni,$MesC,$TpD,$Id);
 
 	$sql = $bd->prepare("UPDATE DatosC SET Fecha = ? WHERE Numero = ?");
 	$sql->execute($FechaC,$NumC);
 	
 	$sql = $bd->prepare("UPDATE ItemsC SET Mes = ? WHERE Numero = ?");
 	$sql->execute($MesC,$NumC);
+
+	$sql = $bd->prepare("UPDATE ItemsC SET Documento = ? 
+		WHERE Numero = ? AND TipoD = ? ");
+	$sql->execute($NumD,$NumC,$TD);
 	# Falta actualizar número de orden
 	$sql->finish();
 
@@ -1301,6 +1308,76 @@ sub grabaCentro( $ $ $ $ $)
 	$sql->execute($Cdg, $Nmbr, $Tp, $Grp, $Agr, $Id);
 	$sql->finish();
 } 
+
+# APERTURA
+sub registraF ()
+{
+	my ($esto, $TablaD, $RUT, $NumD, $fch, $Total, $TipoD, $Cuenta) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	# Agrega documento
+	my $sql = $bd->prepare("INSERT INTO $TablaD VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($RUT,$NumD,$fch,$Total,0,0,0,0,'',0,0,'',$TipoD,0,'',$Cuenta,0,0,0);
+	
+	# Actualiza cuenta individual
+	my $ts = $TipoD eq 'FV' ? 'D' : 'H';
+	$sql = $bd->prepare("UPDATE CuentasI SET Saldo = Saldo + ?, TSaldo = ? WHERE RUT = ?;");
+	$sql->execute($Total, $ts, $RUT);
+	
+	# Actualiza cuenta de mayor
+	$sql = $bd->prepare("UPDATE Mayor SET Saldo = Saldo + ?, TSaldo = ? WHERE Codigo = ?;");
+	$sql->execute($Total, $ts, $Cuenta);
+	
+	$sql->finish();
+}
+
+sub saldoCI ()
+{
+	my ($esto, $total, $ts, $Rut) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("UPDATE CuentasI SET Saldo = ?, TSaldo = ? WHERE RUT = ?;");
+	$sql->execute($total, $ts, $Rut);
+	
+	$sql->finish();
+}
+
+sub registraB ( )
+{
+	my ($esto, $RUT, $NumD, $Total, $Cuenta) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $fch = '20080000';
+	my $sql = $bd->prepare("INSERT INTO BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($RUT,$NumD,$fch,$Total,0,0,'',0,0,0,0,0,$Cuenta);
+	# Actualiza cuenta individual
+	$sql = $bd->prepare("UPDATE CuentasI SET Saldo = Saldo + ?, TSaldo = ? WHERE RUT = ?;");
+	$sql->execute($Total, 'H', $RUT);
+	# Actualiza cuenta de mayor
+	$sql = $bd->prepare("UPDATE Mayor SET Saldo = Saldo + ?, TSaldo = ? WHERE Codigo = ?;");
+	$sql->execute($Total, 'H', $Cuenta);
+	
+	$sql->finish();
+}
+
+sub registraD ( )
+{
+	my ($esto, $RUT, $NumD, $Total, $Cuenta, $tbl,$td) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $fch = '20080000';
+	my $sql = $bd->prepare("INSERT INTO $tbl VALUES(?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($NumD, $Cuenta, $RUT, $fch, $Total, 0, '', '', 0, 0, $td);
+	# Actualiza cuenta individual
+	my $ts = $tbl eq 'DocsR' ? 'D' : 'H';
+	$sql = $bd->prepare("UPDATE CuentasI SET Saldo = Saldo + ?, TSaldo = ? WHERE RUT = ?;");
+	$sql->execute($Total, $ts, $RUT);
+	# Actualiza cuenta de mayor
+	$sql = $bd->prepare("UPDATE Mayor SET Saldo = Saldo + ?, TSaldo = ? WHERE Codigo = ?;");
+	$sql->execute($Total, $ts, $Cuenta);
+	
+	$sql->finish();
+}
 
 # Termina el paquete
 1;

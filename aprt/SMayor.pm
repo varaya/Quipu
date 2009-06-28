@@ -1,10 +1,11 @@
 #  SMayor.pm - Registra asiento de apertura inicial
-#  Forma parte del programa PartidaDoble
+#  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2008
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
-#  incluida en este paquete
+#  Puede ser utilizado y distribuido en los términos previstos en la 
+#  licencia incluida en este paquete 
+#  UM: 24.06.2009
 
 package SMayor;
 
@@ -21,7 +22,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $mt) = @_;
+	my ($esto, $bd, $ut) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -35,7 +36,7 @@ sub crea {
 	$cuentas->{"-1,2"} = "Debe";
 	$cuentas->{"-1,3"} = "Haber";
 
-	my @data = $bd->datosCuentas();
+	my @data = $bd->datosCuentas(0);
 	my ($algo, $fila, $nc);
 	$nc = @data + 1;
 	$fila = 0;
@@ -49,10 +50,10 @@ sub crea {
 	}
 	
 	# Define ventana
-	my $vnt = $vp->Toplevel();
+	my $vnt = MainWindow->new();
 	$esto->{'ventana'} = $vnt;
-	$vnt->title("Registra Apertura");
-	$vnt->geometry("400x365+495+20"); # Tamaño y ubicación
+	$vnt->title("Saldos");
+	$vnt->geometry("460x390+2+120"); # Tamaño y ubicación
 
 	# Define marcos
 	my $mTabla = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
@@ -101,6 +102,7 @@ sub crea {
 		-command => sub { &registra($esto, $nc - 1) } );
 
 	# Dibuja interfaz
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$bReg->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$totalD->grid(-row => 0, -column => 0);
@@ -109,7 +111,6 @@ sub crea {
 	$mTabla->pack(-expand => 1);
 	$mDatosC->pack();
 	$mBotonesC->pack();
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 
 	$bReg->configure(-state => 'disabled');
 

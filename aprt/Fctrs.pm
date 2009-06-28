@@ -1,13 +1,13 @@
-#  BltsH.pm - Registra Boletas de Honorarios para la apertura
+#  Fctrs.pm - Registra Facturas de Ventas para la apertura
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 26.06.2009
+#  UM : 25.06.2009
  
-package BltsH;
+package Fctrs;
 
 use Tk;
 use Tk::LabEntry;
@@ -20,7 +20,7 @@ my ($bCan, $bNvo) ; # Botones
 
 sub crea {
 
-	my ($esto, $bd, $ut) = @_;
+	my ($esto, $bd, $ut, $tf) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -32,11 +32,14 @@ sub crea {
 	$vnt->geometry("290x160+2+115"); # Tamaño y ubicación
 
 	my %tp = $ut->tipos();
+	$TipoD = $tf ;
+	$TablaD = $TipoD eq "FV" ? "Ventas" : "Compras";
 	$Total = 0;
+	$NumD = $Cuenta = '';
 	
 	# Defime marcos
 	my $mDatos = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => "Boletas de Honorarios");
+		-label => "Facturas $TablaD:");
 	my $mBtns = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
@@ -47,7 +50,7 @@ sub crea {
 	$Mnsj = "Se actualizan saldos";
 
 	# Define botones
-	$bNvo = $mBtns->Button(-text => "Registra", -command => sub { &registra($bd)}); 
+	$bNvo = $mBtns->Button(-text => "Registra", -command => sub { &registra( $esto )}); 
 	$bCan = $mBtns->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy(); });
 
@@ -61,7 +64,7 @@ sub crea {
 	$cuenta = $mDatos->LabEntry(-label => "Cuenta ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$Cuenta);
-	$total = $mDatos->LabEntry(-label => "Líquido ", -width => 12,
+	$total = $mDatos->LabEntry(-label => "Total ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$Total);
 
@@ -84,7 +87,7 @@ sub crea {
 	$mBtns->pack(-expand => 1);
 
 	$bNvo->configure(-state => 'disabled');
-	$rut->focus ;
+	$rut->focus;
 	
 	bless $esto;
 	return $esto;
@@ -118,14 +121,15 @@ sub buscaRUT ()
 		$Nombre = decode_utf8(" $nmb");
 	}
 }
+
 sub buscaDoc ( $ )
 { 
 	my ($esto) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	if ($NumD eq '') {
-		$Mnsj = "Registre número Boleta";
+	if (not $NumD) {
+		$Mnsj = "Registre número de Factura";
 		$numD->focus;
 		return;
 	}
@@ -136,9 +140,9 @@ sub buscaDoc ( $ )
 		return ;
 	}
 	# Ahora busca Factura
-	my $fct = $bd->buscaFct('BoletasH', $RUT, $NumD);
+	my $fct = $bd->buscaFct($TablaD, $RUT, $NumD);
 	if ($fct) {
-		$Mnsj = "Esa Boleta ya está registrada.";
+		$Mnsj = "Esa Factura ya está registrada.";
 		$numD->focus;
 		return;
 	}
@@ -173,9 +177,13 @@ sub valida ( )
 
 sub registra ( $ ) 
 {
-	my ($bd ) = @_;
+	my ($esto ) = @_;
+	my $bd = $esto->{'baseDatos'} ;
 	
-	$bd->registraB($RUT, $NumD, $Total, $Cuenta ) ;
+	my $fch = '20080000';
+	
+	# Agrega documento
+	$bd->registraF($TablaD, $RUT, $NumD, $fch, $Total, $TipoD, $Cuenta);
 
 	$NumD = $Nombre = '';
 	$Total = 0;
@@ -183,6 +191,7 @@ sub registra ( $ )
 	$bNvo->configure(-state => 'disabled');
 	$rut->focus ;
 }
+
 
 # Fin del paquete
 1;

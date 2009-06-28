@@ -144,24 +144,22 @@ sub crea {
 	$detalle = $mItems->LabEntry(-label => " Detalle: ", -width => 40,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Detalle);
-
 	$cuentaI = $mCntaI->LabEntry(-label => " RUT: ", -width => 15,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-justify => 'right', -textvariable => \$RUT);
-		
+		-justify => 'right', -textvariable => \$RUT);	
 	$tipoD = $mDoc->BrowseEntry( -variable => \$TipoD, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -width => 12, -listwidth => 30,
 		-browse2cmd => \&seleccionaD );
 	if ( @bancos ) {
-	$mBco = $mItems->Label(-text => "Banco:  " );
-	$bcos = $mItems->BrowseEntry( -variable => \$nBanco, -state => 'readonly',
-		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
-		-disabledforeground => '#000000', -width => 12, -listwidth => 30,
-		-browse2cmd => \&seleccionaB );
-	foreach $algo ( @bancos ) {
-		$bcos->insert('end', decode_utf8($algo->[1]) ) ;
-	  }
+		$mBco = $mItems->Label(-text => "Banco:  " );
+		$bcos = $mItems->BrowseEntry( -variable => \$nBanco, -state => 'readonly',
+			-disabledbackground => '#FFFFFC', -autolimitheight => 1,
+			-disabledforeground => '#000000', -width => 12, -listwidth => 30,
+			-browse2cmd => \&seleccionaB );
+		foreach $algo ( @bancos ) {
+			$bcos->insert('end', decode_utf8($algo->[1]) ) ;
+	  	}
 	}
 	# Crea opciones para elegir tipo de documento
 	@listaD = $bd->datosDocs();
@@ -169,10 +167,6 @@ sub crea {
 	foreach $algo ( @listaD ) {
 		$tipoD->insert('end', decode_utf8($algo->[1]) ) ;
 	}
-
-	$documento = $mDoc->LabEntry(-label => "# ", -width => 12,
-		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-textvariable => \$Documento);		
 
 	$documento = $mDoc->LabEntry(-label => "# ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
@@ -305,7 +299,6 @@ sub agrega ( )
 	my $ut = $esto->{'mensajes'};
 	
 	my ($tabla);
-	$Mnsj = " ";
 	# Verifica que se completen datos de detalle
 	if (length $Codigo < 4) {
 		$Mnsj = "Registre el código de la cuenta";
@@ -357,6 +350,7 @@ sub agrega ( )
 			}
 		}
 	}
+	$Mnsj = " ";
 	# Graba datos
 	if ($CntaI eq "B") {
 		$RUT = $cBanco ;
@@ -373,7 +367,6 @@ sub agrega ( )
 		$TotalH += $Monto;	
 		$TotalHf = $pesos->format_number($TotalH);
 	}
-	
 	limpiaCampos();
 	$bcos->configure(-state => 'disabled') ;
 	$cuentaI->configure(-state => 'active');
@@ -486,7 +479,6 @@ sub contabiliza ( )
 	}
 	# Graba datos
 	my $ff = $ut->analizaFecha($Fecha);
-	$ff =~ s/-//g ; # Convierte a formato AAAAMMDD
 	$bd->agregaCmp($Numero, $ff, $Glosa, $TotalD, $TipoCmp, $BH);
 	$bd->actualizaCI($Numero, $ff);
 	

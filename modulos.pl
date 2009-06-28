@@ -1,12 +1,13 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
 
-print "Verificando Módulos\n";
+print "Verificando: \n";
 
-my @modules = qw(Tk  Tk::TableMatrix  Tk::NoteBook  DBI  DBD::Pg 
-	DBD::SQLite  Encode Number::Format Date::Simple  Data::Dumper
-	Tk::BrowseEntry );
+my @modules = qw(Tk  Tk::TableMatrix  Tk::BrowseEntry Tk::NoteBook 
+	DBI  DBD::Pg DBD::SQLite  Encode Number::Format Date::Simple  
+	Data::Dumper PDF::API2 );
 for my $module (@modules) {
   eval "require $module";
   my $ok = '';

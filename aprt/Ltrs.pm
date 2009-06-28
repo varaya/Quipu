@@ -1,26 +1,27 @@
-#  BltsH.pm - Registra Boletas de Honorarios para la apertura
+#  Ltrs.pm - Registra Letras y Cheques para la apertura
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 26.06.2009
+#  UM : 28.06.2009
  
-package BltsH;
+package Ltrs;
 
+use prg::BaseDatos;
 use Tk;
 use Tk::LabEntry;
 use Tk::LabFrame;
 use Encode 'decode_utf8';
 
 my ($RUT,$Mnsj,$NumD,$Total,$Nombre,$TablaD,$TipoD,$Cuenta); # Variables
-my ($rut,$numD,$total,$nombre,$cuenta); # Campos
+my ($rut,$numD,$total,$nombre,$cuenta,$em,$rc); # Campos
 my ($bCan, $bNvo) ; # Botones
 
 sub crea {
 
-	my ($esto, $bd, $ut) = @_;
+	my ($esto, $bd, $ut, $tf) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -29,14 +30,19 @@ sub crea {
 	# Define ventana
 	my $vnt = MainWindow->new();
 	$vnt->title("Documentos");
-	$vnt->geometry("290x160+2+115"); # Tamaño y ubicación
+	$vnt->geometry("290x210+2+115"); # Tamaño y ubicación
 
 	my %tp = $ut->tipos();
+	$TipoD = $tf ;
+	$TablaD = '' ;
+	my $sTit = $TipoD eq "LT" ? "Letras" : "Cheques";
 	$Total = 0;
 	
 	# Defime marcos
+	my $mTipo = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
+		-label => "$sTit");
 	my $mDatos = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => "Boletas de Honorarios");
+		-label => "Datos:");
 	my $mBtns = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
@@ -48,8 +54,12 @@ sub crea {
 
 	# Define botones
 	$bNvo = $mBtns->Button(-text => "Registra", -command => sub { &registra($bd)}); 
-	$bCan = $mBtns->Button(-text => "Cancela", 
-		-command => sub { $vnt->destroy(); });
+	$bCan = $mBtns->Button(-text => "Cancela", -command => sub { $vnt->destroy()});
+
+	$em = $mTipo->Radiobutton( -text => "Emitidos", -value => 'DocsE', 
+		-variable => \$TablaD);
+	$rc = $mTipo->Radiobutton( -text => "Recibidos", -value => 'DocsR', 
+		-variable => \$TablaD);
 
 	$rut = $mDatos->LabEntry(-label => "RUT: ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
@@ -61,7 +71,7 @@ sub crea {
 	$cuenta = $mDatos->LabEntry(-label => "Cuenta ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$Cuenta);
-	$total = $mDatos->LabEntry(-label => "Líquido ", -width => 12,
+	$total = $mDatos->LabEntry(-label => "Total ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$Total);
 
@@ -69,6 +79,9 @@ sub crea {
 	$cuenta->bind("<FocusIn>", sub { &buscaDoc($esto) } );
 	$total->bind("<FocusIn>", sub { &buscaCta($bd) } );
 	$total->bind("<FocusOut>", sub { &valida() } );
+
+	$em->grid(-row => 0, -column => 0, -sticky => 'nw');
+	$rc->grid(-row => 0, -column => 1, -sticky => 'nw');
 	
 	$rut->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$numD->grid(-row => 0, -column => 1, -sticky => 'nw');
@@ -80,12 +93,13 @@ sub crea {
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 	$mMensajes->pack(-expand => 1, -fill => 'both');
+	$mTipo->pack(-expand => 1);
 	$mDatos->pack(-expand => 1);	
 	$mBtns->pack(-expand => 1);
 
 	$bNvo->configure(-state => 'disabled');
-	$rut->focus ;
-	
+	$em->focus ;
+		
 	bless $esto;
 	return $esto;
 }
@@ -125,7 +139,7 @@ sub buscaDoc ( $ )
 	my $ut = $esto->{'mensajes'};
 
 	if ($NumD eq '') {
-		$Mnsj = "Registre número Boleta";
+		$Mnsj = "Registre número del Documento";
 		$numD->focus;
 		return;
 	}
@@ -135,10 +149,16 @@ sub buscaDoc ( $ )
 		$numD->focus;
 		return ;
 	}
+	# Verifica que esté marcado tipo de documento
+	if ( $TablaD eq '') {
+		$Mnsj = "Marcar tipo documento.";
+		$em->focus;
+		return ;
+	}
 	# Ahora busca Factura
-	my $fct = $bd->buscaFct('BoletasH', $RUT, $NumD);
+	my $fct = $bd->buscaFct($TablaD, $RUT, $NumD);
 	if ($fct) {
-		$Mnsj = "Esa Boleta ya está registrada.";
+		$Mnsj = "Ese Documento ya está registrada.";
 		$numD->focus;
 		return;
 	}
@@ -175,8 +195,8 @@ sub registra ( $ )
 {
 	my ($bd ) = @_;
 	
-	$bd->registraB($RUT, $NumD, $Total, $Cuenta ) ;
-
+	$bd->registraD($RUT, $NumD, $Total, $Cuenta, $TablaD, $TipoD);
+	
 	$NumD = $Nombre = '';
 	$Total = 0;
 	

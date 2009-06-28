@@ -1,25 +1,25 @@
 #!/usr/bin/perl -w
 
-#  ajustes.pl - Cambia fecha de contabilizacion de un documento
+#  ajustes.pl - Cambia fecha de contabilizacion o número de un documento
+#  (cambios que no afectan las cuentas de mayor o las individuales)
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor (c) Víctor Araya R., 2009
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
-#  UM: 17.06.2009
+#  UM: 24.06.2009
 
 use prg::BaseDatos;
 use Tk;
-use Tk::TList;
 use Tk::LabEntry;
 use Tk::LabFrame;
 use Encode 'decode_utf8';
 
 use prg::Utiles;
 
-my ($Rut,$Mnsj,$FechaC,$NumD,$Ni,$Tabla,$TipoD,$Mes,$MesC,$NumC,$Id); # Variables
-my ($mes, $de, $dr, $fc, $nd, $nc, $ni, $rut, $numD, $fechaC, $numC ); # Campos
+my ($Rut,$Mnsj,$FechaC,$NumD,$Ni,$Tabla,$TipoD,$Mes,$MesC,$NumC,$Id,$TA,$TpD); # Variables
+my ($mes,$de,$dr,$fc,$nd,$nc,$ni,$rut,$numD,$fechaC,$numC,$cn,$cf,$tp ); # Campos
 my ($bCan, $bNvo) ; # Botones
 
 # Datos de configuración
@@ -33,8 +33,8 @@ $bd = BaseDatos->crea("$RutE/$base");
 
 # Define ventana
 my $vnt = MainWindow->new();
-$vnt->title("Cambia fecha");
-$vnt->geometry("280x250+2+2"); # Tamaño y ubicación
+$vnt->title("Ajustes");
+$vnt->geometry("280x310+2+2"); # Tamaño y ubicación
 my $ut = Utiles->crea($vnt);
 my $esto = {};
 $esto->{'baseDatos'} = $bd;
@@ -42,10 +42,12 @@ $esto->{'mensajes'} = $ut;
 
 my %tp = $ut->tipos();
 # Defime marcos
+my $mTipoA = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
+	-label => 'Seleccione Ajuste:');
 my $mDatosC = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 	-label => 'Buscar Documento:');
 my $mDatos = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-	-label => 'Datos obtemidos:');
+	-label => 'Datos registrados:');
 my $mBtns = $vnt->Frame(-borderwidth => 1);
 my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
@@ -61,6 +63,12 @@ $bCan = $mBtns->Button(-text => "Termina",
 	-command => sub { &termina ($bd, $vnt) });
 
 # Parametros
+$cn = $mTipoA->Radiobutton( -text => "Número", -value => 'N', 
+	-variable => \$TA , -command => sub { &activa() });
+$cf = $mTipoA ->Radiobutton( -text => "Fecha", -value => 'F', 
+	-variable => \$TA, -command => sub { &activa() } );
+$tp = $mTipoA->Radiobutton( -text => "Tipo", -value => 'T', 
+	-variable => \$TA , -command => sub { &activa() });
 $mes = $mDatosC->LabEntry(-label => "Mes: ", -width => 3,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 	-textvariable => \$Mes );
@@ -83,43 +91,59 @@ $rut = $mDatos->LabEntry(-label => "RUT:  ", -width => 12,
 	-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 	-textvariable => \$Rut, -state => 'disabled',
 	-disabledbackground => '#FFFFFC', -disabledforeground => '#000000' );
-$numD = $mDatos->LabEntry(-label => "# ", -width => 10,
+$numD = $mDatos->LabEntry(-label => "Doc. # ", -width => 10,
 	-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
-	-textvariable => \$NumD, -state => 'disabled',
-	-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
+	-textvariable => \$NumD, -disabledbackground => '#FFFFFC', 
+	-disabledforeground => '#000000'  );
 $numC = $mDatos->LabEntry(-label => "Nº C ", -width => 6,
 	-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 	-textvariable => \$NumC, -state => 'disabled',
 	-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
 $fechaC = $mDatos->LabEntry(-label => "Fecha: ", -width => 10,
 	-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
-	-textvariable => \$FechaC );
+	-textvariable => \$FechaC, -disabledbackground => '#FFFFFC', 
+	-disabledforeground => '#000000' );
+$tipoD = $mDatos->LabEntry(-label => "M o E: ", -width => 3,
+	-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
+	-textvariable => \$TpD, -disabledbackground => '#FFFFFC', 
+	-disabledforeground => '#000000' );
 
 $ni->bind("<FocusOut>", sub { &buscaDoc($esto) } );
 
 # Dibuja interfaz
+$cn->grid(-row => 0, -column => 0, -sticky => 'nw');
+$cf->grid(-row => 0, -column => 1, -sticky => 'nw');
+$tp->grid(-row => 0, -column => 2, -sticky => 'nw');
 $mes->grid(-row => 0, -column => 0, -sticky => 'nw');
 $de->grid(-row => 0, -column => 1, -sticky => 'nw');
 $dr->grid(-row => 0, -column => 2, -sticky => 'nw');
 $fc->grid(-row => 1, -column => 0, -sticky => 'nw');
 $nc->grid(-row => 1, -column => 1, -sticky => 'nw');
 $nd->grid(-row => 1, -column => 2, -sticky => 'nw');
-$ni->grid(-row => 2, -column => 1, -sticky => 'nw');
+$ni->grid(-row => 2, -column => 2, -sticky => 'nw');
 
 $rut->grid(-row => 0, -column => 0, -sticky => 'nw');
 $numD->grid(-row => 0, -column => 1, -sticky => 'nw');
 $numC->grid(-row => 1, -column => 0, -sticky => 'nw');
 $fechaC->grid(-row => 1, -column => 1, -sticky => 'nw');
+$tipoD->grid(-row => 2, -column => 1, -sticky => 'nw') ;
 
 $bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 $bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
+$mMensajes->pack(-expand => 1, -fill => 'both');
+$mTipoA->pack(-expand => 1);
 $mDatosC->pack(-expand => 1);
 $mDatos->pack(-expand => 1);	
 $mBtns->pack(-expand => 1);
-$mMensajes->pack(-expand => 1, -fill => 'both');
 
-$mes->focus ;
+$ni->configure(-state => 'disable');
+$numD->configure(-state => 'disable');
+$mes->configure(-state => 'disable');
+$fechaC->configure(-state => 'disable');
+$tipoD->configure(-state => 'disable');
+
+$cn->focus ;
 
 # Ejecuta el programa
 MainLoop;
@@ -160,10 +184,9 @@ sub registra ( $ )
 	
 	if ( validaFechaC($ut, $bd) ) {
 		# Actualiza datos
-		$bd->cambiaDcm($esto,$NumC,$FechaC,$Ni,$MesC,$Tabla,$Id,$TipoD);
+		$bd->cambiaDcm($esto,$NumC,$FechaC,$TpD,$NumD,$Ni,$MesC,$Tabla,$Id,$TipoD);
 		$Mnsj = "Registro actualizado";
 	} 
-	
 }
 
 sub buscaDoc ( $ )
@@ -179,12 +202,32 @@ sub buscaDoc ( $ )
 		$mes->focus;
 		return ;
 	}
-	$Rut = $datos[0];
+	$Rut =  $datos[0];
 	$NumD = $datos[1];
-	$NumC = $datos[2] ;
+	$NumC = $datos[2];
+	$TpD =  $datos[3];
+	$Id  =  $datos[4];
 	my @dtsC = $bd->consultaC($NumC);
 	$FechaC = $ut->cFecha($dtsC[2]);
-	$Id = $datos[3] ;
+}
+
+sub activa ( ) 
+{
+	$mes->configure(-state => 'normal');
+	$ni->configure(-state => 'normal');
+	if ( $TA eq 'F') {
+		$numD->configure(-state => 'disable');
+		$fechaC->configure(-state => 'normal');
+		$tipoD->configure(-state => 'disable');
+	} elsif ($TA eq 'N') {
+		$numD->configure(-state => 'normal');
+		$fechaC->configure(-state => 'disable');
+		$tipoD->configure(-state => 'disable');
+	} else {
+		$numD->configure(-state => 'disable');
+		$fechaC->configure(-state => 'disable');
+		$tipoD->configure(-state => 'normal');
+	}
 }
 
 sub termina ( $ $ )

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 22.06.2009 
+#  UM : 24.06.2009 
 
 package Utiles;
 
@@ -142,7 +142,7 @@ sub muestraPC( $ $ $ $ )
 	my ($esto, $marco, $bd, $todo, $rut) = @_;
 	
 	my @listaG = $bd->datosSG();		# Lista de grupos
-	my @datosC = $bd->datosCuentas();		# Lista de cuentas
+	my @datosC = $bd->datosCuentas(1);		# Lista de cuentas
 	my @datosE = $bd->datosEmpresa($rut);
 	my ($xgrp, $ngrp, $dcta, $xy, $xt);
 	my $empresa = ' ' ;

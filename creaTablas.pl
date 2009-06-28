@@ -64,6 +64,8 @@ $bd->do("INSERT INTO Documentos VALUES('FC','F.Compra','','') ");
 $bd->do("INSERT INTO Documentos VALUES('BH','B.Honorario','','') ");
 $bd->do("INSERT INTO Documentos VALUES('NC','N.Crédito'),'','' ");
 $bd->do("INSERT INTO Documentos VALUES('ND','N.Débito','','' )");
+$bd->do("INSERT INTO Documentos VALUES('CH','Cheque','','' )");
+$bd->do("INSERT INTO Documentos VALUES('LT','Letra','','' )");
 
 # Desconecta la base de datos
 $bd->disconnect;

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 20.06.2009
+#  UM: 24.06.2009
 
 package CuentasM;
 
@@ -172,7 +172,7 @@ sub muestraLista ( $ )
 	my $listaS = $esto->{'vLista'};
 	
 	# Obtiene lista con datos de cuentas registradas
-	my @data = $bd->datosCuentas();
+	my @data = $bd->datosCuentas(1);
 
 	# Completa TList con nombres de los cuentas
 	my ($algo, $nm);

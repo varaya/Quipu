@@ -1,11 +1,13 @@
 #!/usr/bin/perl -w
 
 #  creaTablasRC.pl - inicializa la base de datos con SQLite 3
-#  Forma parte del Programa PartidaDoble
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Forma parte del programa Quipu
+#
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
-#  incluida en este paquete
+#  Puede ser utilizado y distribuido en los términos previstos en la 
+#  licencia incluida en este paquete 
+#  UM : 24.06.2009 
 
 use DBI;
 use strict;
@@ -161,17 +163,34 @@ $bd->do("CREATE TABLE BoletasH (
 	Nulo int(1),
 	Cuenta int(4) )" );
 
-# Cheques Emitidos (para conciliación bancaria)
-$bd->do("CREATE TABLE ChequesE (
+# Documentos emitidos (cheques y letras)
+$bd->do("CREATE TABLE DocsE (
 	Numero char(10),
 	Cuenta int(4) ,
+	RUT char(10),
 	FechaE char(10),
 	Monto int(8),
 	Comprobante int(5),
 	FechaV char(10),
 	FechaP char(10),
 	Cobrado int(1) ,
-	Nulo int(1) )" );
+	Nulo int(1),
+	Tipo char(2) )" );
+
+# Documentos recibidos (cheques y letras)
+$bd->do("CREATE TABLE DocsR (
+	Numero char(10),
+	Cuenta int(4) ,
+	RUT char(10),
+	FechaE char(10),
+	Monto int(8),
+	Comprobante int(5),
+	FechaV char(10),
+	Abonos int(8),
+	FechaP char(10),
+	Estado int(1) ,
+	Nulo int(1),
+	Tipo char(2) )" );
 
 # Actualización de Pagada en B. Honorarios
 $bd->do("CREATE TRIGGER PagoBH AFTER UPDATE OF Abonos ON BoletasH

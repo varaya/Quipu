@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 20.06.2009
+#  UM: 24.06.2009
 
 package PlanC;
 
@@ -84,7 +84,7 @@ sub csv ( $ )
 	my ($bd) = @_;
 	
 	my @listaG = $bd->datosSG() ;
-	my @datosC = $bd->datosCuentas() ;
+	my @datosC = $bd->datosCuentas(1) ;
 	my @datosE = $bd->datosEmpresa($rutE) ;
 
 	my ($xgrp, $ngrp, $dcta, $xy, $xt, $d);
@@ -117,7 +117,7 @@ sub pdf ( $ $ )
 	my ($bd, $ut) = @_;
 	
 	my @listaG = $bd->datosSG() ;
-	my @datosC = $bd->datosCuentas() ;
+	my @datosC = $bd->datosCuentas(1) ;
 	my @datosE = $bd->datosEmpresa($rutE) ;
 	my @grupos = $ut->grupos();
 	
