@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 23.06.2009
+#  UM: 29.06.2009
 
 package Diario;
 
@@ -165,27 +165,32 @@ sub informe ( $ $  $) {
 		$fechaI->focus;
 		return;
 	}
-	my ($algo, $nm, $tp, $fch, $tt, $gl, $empr, @datosE);
+	my ($algo, $nm, $tp, $fch, $tt, $gl, $empr,$tg, @datosE);
 	@datosE = $bd->datosEmpresa($rutE);
 	if (@datosE) {
 		$empr = decode_utf8($datosE[0]); 
 	}
-
+	$tg = 0;
 	$marco->insert('end', "Libro Diario  $cnf[0]  -  $empr\n", 'negrita');
-	my $lin1 = "\nFecha      Detalle                            Código        Debe       Haber";
-	my $lin2 = "-"x76;
+	my $lin1 = "\nFecha      Detalle                            Código        Debe        Haber";
+	my $lin2 = "-"x77;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	foreach $algo ( @datosC ) {
 		$nm = $algo->[$Numero]; 
 		$tipoC = $tc->{$algo->[$Tipo]}; 
 		$fch = $ut->cFecha($algo->[$Fecha]); 
+		$tg += $algo->[$Total] ;
 		$tt = $pesos->format_number( $algo->[$Total] );
 		$gl = decode_utf8($algo->[$Glosa]);
 		$marco->insert('end', "\n$fch -------- $tipoC # $nm --------\n", 'detalle');
 		asiento($bd, $marco, $nm, $tt, $gl);
 	}
-
+	$tt = $pesos->format_number( $tg );
+	$marco->insert('end',"$lin2\n",'detalle');
+	$mov1 = sprintf("           %-35s %-5s %11s  %11s", 'Totales', '', $tt, $tt) ;
+	$marco->insert('end', "$mov1\n", 'detalle' ) ;
+	$marco->insert('end',"$lin2\n",'detalle');
 	$bImp->configure(-state => 'active');
 }
 
@@ -212,7 +217,7 @@ sub asiento ( $ $ $ $ $ ) {
 		if ($algo->[6]) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
-		$mov1 = sprintf("           %-35s %-5s %11s %11s", $ncta, 
+		$mov1 = sprintf("           %-35s %-5s %11s  %11s", $ncta, 
 			$cm, $mntD, $mntH) ;
 		$mov2 = sprintf("            %-15s %-20s", $ci, $dcm ) ;
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
@@ -248,7 +253,8 @@ sub csv
 	$fi = $ut->analizaFecha($FechaI) ;
 	$ff = $ut->analizaFecha($FechaF) ;
 	my @datosC = $bd->diario($fi,$ff);
-	my ($algo, $fh, $gl, $empr, @datosE, $l, $d);
+	my ($algo, $fh, $gl, $empr, @datosE, $l, $tg, $d);
+	$tg = 0;
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 
@@ -259,12 +265,15 @@ sub csv
 	$l = "Fecha,Detalle,Código,Debe,Haber";
 	print ARCHIVO "$l\n";
 	foreach $algo ( @datosC ) {
+		$tg += $algo->[$Total] ;
 		$fh = $ut->cFecha($algo->[$Fecha]) ;
 		$l = ( "$fh,-------- $tc->{$algo->[$Tipo]} # $algo->[$Numero] --------" );
 		print ARCHIVO "$l\n";
 		$gl = '"'.decode_utf8($algo->[$Glosa]).'"'; 
 		asientoCSV($bd, $algo->[$Numero], $gl, $csv);
 	}
+	$l = ",, ,$tg,$tg" ;
+	print ARCHIVO "$l\n";
 	close ARCHIVO ;
 	$Mnsj = "Grabado en '$d'";
 }

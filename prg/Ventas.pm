@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 23.06.2009 
+#  UM : 29.06.2009 
 
 package Ventas;
 
@@ -277,8 +277,8 @@ sub csv ( $ )
 	$l = "Nº,Fecha,Factura,RUT,Cliente,Afecto,Exento,IVA,IReten.,Total\n";
 	print ARCHIVO $l ;
  
-	detalleCSV($ut,$bd,'FC','M','Facturas');
-	detalleCSV($ut,$bd,'FC','E','Facturas Electrónicas');
+	detalleCSV($ut,$bd,'FV','M','Facturas');
+	detalleCSV($ut,$bd,'FV','E','Facturas Electrónicas');
 	detalleCSV($ut,$bd,'NC','',$nd{NC});
 	detalleCSV($ut,$bd,'ND','',$nd{ND});
 	# Resumen
@@ -318,9 +318,9 @@ sub detalleCSV ( )
 {
 	my ($ut,$bd,$td,$tf,$stit) = @_;
 	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$l,$a);
-	
-	my @datos = $bd->listaFct('Ventas',$mes, $td, $tf);
-	if ( not @datos ) {return ;}
+
+	my @datos = $bd->listaFct('Ventas', $mes, $td, $tf);
+	if ( not @datos ) { return ;}
 	
 	print ARCHIVO "$stit\n ";
 	$Tt = $Iva = $Aft = $Ext = $IEsp = 0;

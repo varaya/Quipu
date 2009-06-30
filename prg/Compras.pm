@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 19.06.2009 
+#  UM : 29.06.2009 
 
 package Compras;
 
@@ -318,7 +318,7 @@ sub detalleCSV ( )
 {
 	my ($ut,$bd,$td,$tf,$stit) = @_;
 	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$l,$a);
-	
+
 	my @datos = $bd->listaFct('Compras',$mes, $td, $tf);
 	if ( not @datos ) {return ;}
 	

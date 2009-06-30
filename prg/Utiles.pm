@@ -101,7 +101,7 @@ sub vRut
 {
 	my ($esto, $rut) = @_;
 	
-   for ($rut) {           # trim whitespace in $variable, cheap
+   for ($rut) {           # elimina espacios en blanco
         s/^\s+//;
         s/\s+$//;
     }

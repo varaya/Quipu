@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 19.06.2009 
+#  UM : 29.06.2009 
 
 package Honorarios;
 
@@ -15,7 +15,7 @@ use Number::Format;
 
 # Variables válidas dentro del archivo
 my ($Mnsj, $mes, $nMes, @cnf, $empr, $rutE) ;	# Variables
-my ($Tt,$Iva,$Aft,$Ext,$IEsp);
+my ($Tt, $Im, $Nt);
 my @lMeses = () ;
 my @datos = ();
 my ($bCan, $bImp) ; # Botones
@@ -41,7 +41,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Honorarios");
-	$vnt->geometry("780x450+40+150"); 
+	$vnt->geometry("780x450+40+100"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -201,32 +201,35 @@ sub csv ( $ )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($Tt,$Iva,$Aft,$Ext,$fch,$nm,$rt,$nmb,$nulo,$a,$d);
+	my @datos = $bd->listaBH($mes);
+	if ( not @datos ) {return ;}
+
+	my ($algo,$fch,$rt,$tt,$im,$nt,$nulo,$a,$d);
 	$d = "$rutE/csv/honorarios$mes.csv";
 	open ARCHIVO, "> $d" or die $! ;
 	my $l = "$empr\n";
 	print ARCHIVO $l ;
-	$l = "Libro Compras  $nMes $cnf[0]\n";
+	$l = "Libro Honorarios  $nMes $cnf[0]\n";
 	print ARCHIVO $l ;
-	$l = "Fecha,Factura,RUT,Proveedor,Afecto,Exento,IVA,Total\n";
+	$l = "Fecha,Número,RUT,Prestador,Neto,Retención,Total\n";
 	print ARCHIVO $l ;
-	$Tt = $Iva = $Aft = $Ext = 0;
+	$Tt = $Im = $Nt = 0;
 	foreach $a ( @datos ) {
 		$fch = $ut->cFecha($a->[0]); 
 		$nm = $a->[1]; 
 		$rt = $a->[2]; 
 		$nmb =  decode_utf8($a->[3]);
-		$nulo = $a->[8]; 
+		$nt = $a->[5]-$a->[4] ;
+		$nulo = $a->[6]; 
 		if ( not $nulo ) {
-			$l = "$fch,$nm,$rt,$nmb,$a->[6],$a->[7],$a->[5],$a->[4]\n";
+			$l = "$fch,$nm,$rt,$nmb,$nt,$a->[4],$a->[5]\n";
 			print ARCHIVO $l ;
-			$Tt += $a->[4] ;
-			$Iva += $a->[5] ;
-			$Aft += $a->[6] ;
-			$Ext += $a->[7] ;
+			$Tt += $a->[5] ;
+			$Im += $a->[4] ;
+			$Nt += $nt ;
 		}
 	}
-	$l = ",,,,$Aft,$Ext,$Iva,$Tt \n";
+	$l = ",,,,$Nt,$Im,$Tt \n";
 	print ARCHIVO $l ;
 
 	close ARCHIVO ;
