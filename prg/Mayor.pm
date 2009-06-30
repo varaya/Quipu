@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 24.06.2009
+#  UM: 30.06.2009
 
 package Mayor;
 
@@ -13,7 +13,7 @@ use Tk::TList;
 use Tk::LabFrame;
 use Encode 'decode_utf8';
 use Number::Format;
-#use Data::Dumper; print Dumper \@dtsCmp;
+#use Data::Dumper; print Dumper \@data;
 	
 # Variables válidas dentro del archivo
 my ($bImp, $bCan, $Mnsj, $Cuenta, @cnf,$empr,$rutE) ; 	
@@ -67,7 +67,7 @@ sub crea {
 		-command => sub { muestraM($esto,$mtA); } );
 	$bImp = $mBotones->Menubutton(-text => "Archivo", -tearoff => 0, 
 	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
-	[ ['command' => "texto", -command => sub { txt($mt);} ],
+	[ ['command' => "texto", -command => sub { txt($mtA);} ],
  	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
 	$bCan = $mBotones->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy(); } );
@@ -86,6 +86,7 @@ sub crea {
 	$mt->delete('0.0','end');
 	muestraLista($esto,$mt);
 	$cuenta->focus;
+	
 	bless $esto;
 	return $esto;
 }
@@ -101,6 +102,7 @@ sub muestraLista ( $ $ )
 
 	# Completa TList con nombres de los cuentas
 	my ($algo, $nm);
+	$mt->insert('end',"Cuentas con saldo\n",'detalle');
 	foreach $algo ( @datos ) {
 		$nm = sprintf("%-5s %-30s", $algo->[1], decode_utf8($algo->[0]) ) ;
 		$mt->insert('end', "$nm\n", 'detalle' ) ;
@@ -109,12 +111,11 @@ sub muestraLista ( $ $ )
 
 sub muestraM ( $ $ )
 {
-
 	my ($esto, $marco) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($nmC,$saldoI,$tSaldo,$fechaUM);
+	my ($saldoI,$tSaldo,$fechaUM);
 	# Datos cuenta
 	foreach $algo ( @datos ) {
 		if ( $Cuenta == $algo->[1]) {
@@ -203,8 +204,6 @@ sub muestraM ( $ $ )
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	
 	$bImp->configure(-state => 'active');
-	$Cuenta = '';
-
 }
 
 sub txt ( $ )
@@ -222,17 +221,24 @@ sub txt ( $ )
 	$Mnsj = "Ver archivo '$d'";
 }
 
-sub csv ( $ )
+sub csv (  )
 {
-	my ($esto, $marco) = @_;
+	my ($esto) = @_;
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
 
-	my $nmC = decode_utf8($sItem->[0]);
-	my $saldoI = $sItem->[4];
-	my $tSaldo = $sItem->[5];
-	my $fechaUM = $sItem->[6];
-
+	# Datos cuenta
+	foreach $algo ( @datos ) {
+		if ( $Cuenta == $algo->[1]) {
+			$nmC = decode_utf8($algo->[0]);
+			$saldoI = $algo->[4];
+			$tSaldo = $algo->[5];
+			$fechaUM = $algo->[6]; 
+			last if $Cuenta == $algo->[1] ;		
+		} 
+	}
+	my @data = $bd->itemsM($Cuenta);
+	
 	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d);
 	$d = "$rutE/csv/myr$Cuenta.csv";
 	open ARCHIVO, "> $d" or die $! ;
@@ -257,12 +263,11 @@ sub csv ( $ )
 	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	
-	my @data = $bd->itemsM($Cuenta);
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
-		$fecha = $ut->cFecha($algo->[9]);
-		$tC = $algo->[10];
-		$nulo = $algo->[11];
+		$fecha = $ut->cFecha($algo->[10]);
+		$tC = $algo->[11];
+		$nulo = $algo->[12];
 		$mntD = $mntH = 0;
 		$mntD = $algo->[2]; 
 		$tDebe += $algo->[2];
