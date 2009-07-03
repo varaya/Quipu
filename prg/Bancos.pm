@@ -1,10 +1,11 @@
 #  Bancos.pm - Registra Bancos, como subcuentas
-#  Forma parte del programa PartidaDoble
+#  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
-#  incluida en este paquete 
+#  Puede ser utilizado y distribuido en los términos previstos en la 
+#  licencia incluida en este paquete 
+#  UM: 02.07.2009
 
 package Bancos;
 
@@ -31,7 +32,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Agrega o Modifica Bancos");
-	$vnt->geometry("260x300+475+4"); # Tamaño y ubicación
+	$vnt->geometry("260x330+475+4"); # Tamaño y ubicación
 	
 	# Inicializa variables
 	$Codigo = $Nombre = "";
@@ -93,11 +94,11 @@ sub crea {
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$listaS->pack();
 	$mLista->pack(-expand => 1);
 	$mDatos->pack(-expand => 1);	
 	$mBotones->pack(-expand => 1);
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 	
 	# Inicialmente deshabilita botón Registra
 	$bReg->configure(-state => 'disabled');

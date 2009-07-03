@@ -104,7 +104,7 @@ $bd->do("CREATE TABLE Compras (
 # Actualización de Pagada en F. Compras
 $bd->do("CREATE TRIGGER PagoFC AFTER UPDATE OF Abonos ON Compras
   BEGIN
-    UPDATE Compras SET Pagada = CASE WHEN Abonos >= Total THEN 1 
+    UPDATE Compras SET Pagada = CASE WHEN Abonos >= Total THEN 1
 		ELSE 0 END ;
   END" );
 
@@ -133,7 +133,7 @@ $bd->do("CREATE TABLE Ventas (
 # Actualización de Pagada en F. Ventas
 $bd->do("CREATE TRIGGER PagoFV AFTER UPDATE OF Abonos ON Ventas
   BEGIN
-    UPDATE Ventas SET Pagada = CASE WHEN Abonos >= Total THEN 1 
+    UPDATE Ventas SET Pagada = CASE WHEN Abonos >= Total THEN 1
 		ELSE 0 END ;
   END " );
 

@@ -63,6 +63,13 @@ sub tipoDcmt ( )
 	return %td ;
 }
 
+sub tablaD ( )
+{
+	my %td = ('FC' => "Compras" , 'FV' => "Ventas" ,
+		'BH' => "BoletasH" , 'LT' => "Docs", 'CH' => "Docs") ;
+	return %td ;
+}
+
 sub grupos ( )
 {
 	my @grps = (  ['1','Activos','A'],['2','Pasivos','P'],

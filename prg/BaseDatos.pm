@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 28.06.2009
+#  UM: 01.07.2009
 
 package BaseDatos;
 
@@ -764,8 +764,8 @@ sub agregaCmp( $ $ $ $ $ $ )
 		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha) ;
 	}
 	if ($Tipo eq 'E') { # Si es egreso Facturas de Compra 
-		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha);
-		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha) if $bh;
+		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha) ;
+		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha) if $bh ;
 	}
 }
 
@@ -783,8 +783,35 @@ sub actualizaP ( $ $ $ $ )
 		$algo = \@fila;
 		$aCta->execute($algo->[2], $fch, $algo->[0], $algo->[1]);
 	}
+	# Condición de 'Pagada' se actualiza por un disparador de SQLite
 	$sql->finish();
 	$aCta->finish();
+}
+
+sub agregaDP ( $ $ $ )
+{
+	my ($esto, $nmr, $ff, $tabla) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my ($cm, $algo, $sql, $rDoc);
+
+	$cm = ($tabla eq 'DocsR') ? 'Debe' : 'Haber' ;
+	# Busca cheques y agrega docs
+	$sql = $bd->prepare("SELECT  Documento, CuentaM, RUT, $cm FROM ItemsC
+		WHERE Numero = ? AND RUT <> '' AND TipoD = ?;");
+	$sql->execute($nmr,'CH');
+	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?);");
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$rDoc->execute($algo->[0],$algo->[1],$algo->[2],$ff,$algo->[2],$nmr,'','',0,0,'CH');
+	}
+	# Busca letras y agrega
+	$sql->execute($nmr,'LT');
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$rDoc->execute($algo->[0],$algo->[1],$algo->[2],$ff,$algo->[2],$nmr,'','',0,0,'LT');
+	}
+	$sql->finish();
+	$rDoc->finish();
 }
 
 sub actualizaCI ( $ $ )

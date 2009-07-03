@@ -1,2 +1,34 @@
 REGISTRA CUENTA DE MAYOR
 
+.nTipos de Cuentas
+
+El programa incluye el manejo de los siguientes tipos de cuentas y sus correspondientes documentos:
+
+- Individuales: Permiten agrupar cuentas corrientes, junto
+  con controlar el pago de los documentos correspondientes.
+- Banco: Agrupa sub cuentas por cada banco, que se ingresan
+  en otra opción del menú.
+- Documentos: Se usan para habilitar el control de documentos 
+  de pago, tales como cheques y letras.
+- Cierre: Define la cuenta a la cual se traspasa el resultado 
+  del año, en el momento de hacer el cierre.
+- Normales: El resto de las cuentas, aquellas que no tienen un 
+  comportamiento especial.
+
+La correcta contabilización de los documentos y sus pagos se controlar combinando el tipo de cuenta y el tipo de comprobante: por ejemplo no se puede cancelar una Factura de Venta usando un Comprobante de Egreso.
+
+.nCaracterísticas
+
+Toda cuenta pertenece a un Subgrupo, que define los dos primeros dígitos del código de la cuenta.
+
+El código debe ser de 4 dígitos; el programa controla que no se repita. El nombre de la cuenta tiene un largo de 40 caracteres.
+
+Si se trata de un cuenta de Depreciación Acumulada se debe marcar "Signo negativo"
+
+.nOperación
+
+Para agregar un cuenta complete los datos y pulse el botón "Agrega"; el código y nombre de la cuenta aparecerá en la listado "Cuentas Registradas".
+
+Para modificar los datos de una cuenta, con el puntero se selecciona la cuenta en el listado y se hace un doble 'click': aparecerán los datos en las casillas correspondientes para su modificación y quedará habilitada el botón "Registra". No se puede cambiar ni el código ni el tipo de cuenta.
+
+Para salir de esta función presione el botón "Cancela". Evitar cerrar la ventana con el botón "x".

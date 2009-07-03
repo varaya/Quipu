@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 24.06.2009
+#  UM: 02.07.2009
 
 package CuentasM;
 
@@ -18,7 +18,7 @@ use Encode 'decode_utf8';
 	
 # Variables válidas dentro del archivo
 my ($Codigo, $Nombre, $nGrupo, $cGrupo, $Id, $CuentaI, $IEspcl, $Ngtv);	# Datos
-my ($codigo, $nombre, $grupos,$tipoI,$tipoN,$tipoC,$tipoB,$iEspcl,$ngtv) ;	# Campos 
+my ($codigo,$nombre,$grupos,$tipoI,$tipoN,$tipoC,$tipoB,$tipoD,$iEspcl,$ngtv) ;	# Campos 
 my ($bReg, $bNvo) ; 	# Botones
 my @listaG = () ;		# Lista de grupos
 my @datos = () ;		# Lista de cuentas
@@ -40,7 +40,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Cuentas de Mayor");
-	$vnt->geometry("380x420+475+4"); # Tamaño y ubicación
+	$vnt->geometry("370x400+475+4"); # Tamaño y ubicación
 	
 	# Defime marcos
 	my $mLista = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
@@ -64,7 +64,7 @@ sub crea {
 	
 	# Define Lista de datos
 	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe',
-		-selectmode => 'single', -orient => 'horizontal', -width => 35,
+		-selectmode => 'single', -orient => 'horizontal', -width => 45,
 		-command => sub { &modifica($esto) } );
 	$esto->{'vLista'} = $listaS;
 	
@@ -88,9 +88,11 @@ sub crea {
 	$tipo = $mDatos->Label(-text => " Tipo: ");
 	$tipoN = $mDatos->Radiobutton( -text => "Normal", -value => 'N', 
 		-variable => \$CuentaI );
-	$tipoI = $mDatos->Radiobutton(-text => "CtaCte", -value => 'I', 
+	$tipoI = $mDatos->Radiobutton(-text => "CI", -value => 'I', 
 		-variable => \$CuentaI );
-	$tipoB = $mDatos->Radiobutton(-text => "Bancos", -value => 'B', 
+	$tipoB = $mDatos->Radiobutton(-text => "Bco", -value => 'B', 
+		-variable => \$CuentaI );
+	$tipoD = $mDatos->Radiobutton(-text => "Docs", -value => 'D', 
 		-variable => \$CuentaI );
 	$tipoC = $mDatos->Radiobutton(-text => "Cierre", -value => 'C', 
 		-variable => \$CuentaI );
@@ -105,18 +107,14 @@ sub crea {
 	my $algo;
 	foreach $algo ( @listaG ) {
 		$grupos->insert('end', decode_utf8($algo->[1]) ) ;
-	}
-			
+	}		
 	@datos = muestraLista($esto);
 	if (not @datos) {
 		$listaS->insert('end', -itemtype => 'text', 
 			-text => "No hay cuentas registradas" ) ;
 	}
-	
-#	$cuentaI = $mDatos->Checkbutton(-text => 'Controla cuentas individuales',
-#		-variable => \$CuentaI, -offvalue => 'N', -onvalue => 'S');
-	$iEspcl = $mDatos->Checkbutton(-text => "ILA o Impuesto Especial",
-		-variable => \$IEspcl, -offvalue => 'N', -onvalue => 'S');
+#	$iEspcl = $mDatos->Checkbutton(-text => "ILA o Impuesto Especial",
+#		-variable => \$IEspcl, -offvalue => 'N', -onvalue => 'S');
 	$ngtv = $mDatos->Checkbutton(-text => "Signo negativo",
 		-variable => \$Ngtv, -offvalue => 'N', -onvalue => 'S');
 	
@@ -126,24 +124,25 @@ sub crea {
 	$mGrupos->pack(-side => "top", -anchor => "nw");
 	$codigo->pack(-side => "top", -anchor => "nw");	
 	$nombre->pack(-side => "top", -anchor => "nw");
-	$iEspcl->pack(-side => "top", -anchor => "nw");
+#	$iEspcl->pack(-side => "top", -anchor => "nw");
 	$ngtv->pack(-side => "top", -anchor => "nw");
 
 	$tipo->pack(-side => "left", -anchor => "nw");
 	$tipoN->pack(-side => "left", -anchor => "e");
 	$tipoI->pack(-side => "left", -anchor => "e");
 	$tipoB->pack(-side => "left", -anchor => "e");
+	$tipoD->pack(-side => "left", -anchor => "e");
 	$tipoC->pack(-side => "left", -anchor => "e");
 	
 	$bReg->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$listaS->pack();
 	$mLista->pack(-expand => 1);
 	$mDatos->pack(-expand => 1);	
 	$mBotones->pack(-expand => 1);
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 	
 	# Inicialmente deshabilita botón Registra
 	$bReg->configure(-state => 'disabled');

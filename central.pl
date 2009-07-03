@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 23.06.2009
+#  UM : 02.07.2009
 
 # use Data::Dumper; 
 
@@ -19,7 +19,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "v0.85 a Junio 2009";
+my $version = "v0.90 a Julio 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas

@@ -90,8 +90,7 @@ sub crea {
 	@datos = muestraLista($esto);
 	if (not @datos) {
 		$Mnsj = "No hay documentos registrados" ;
-	}
-		
+	}	
 	# Dibuja interfaz
 	$codigo->pack(-side => "top", -anchor => "nw");	
 	$nombre->pack(-side => "top", -anchor => "nw");
@@ -102,11 +101,11 @@ sub crea {
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$listaS->pack();
 	$mLista->pack(-expand => 1);
 	$mDatos->pack(-expand => 1);	
 	$mBotones->pack(-expand => 1);
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 	
 	# Inicialmente deshabilita botón Registra
 	$bReg->configure(-state => 'disabled');

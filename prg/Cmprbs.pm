@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 23.06.2009
+#  UM: 02.07.2009
 
 package Cmprbs;
 
@@ -15,11 +15,12 @@ use Tk::LabFrame;
 use Tk::BrowseEntry;
 use Encode 'decode_utf8';
 use Number::Format;
+#use Data::Dumper;
 
 # Variables válidas dentro del archivo
 # Datos a registrar
 my ($Numero, $Id, $Glosa, $Fecha, $TotalD, $TotalH, $TotalDf, $TotalHf ) ;
-my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Documento, $Cuenta ) ;
+my ($Codigo,$Detalle,$Monto,$DH,$CntaI,$RUT,$Documento,$Cuenta,$Nmb) ;
 my ($TipoCmp, $TipoD, $cTipoD, $BH, $Bco, $nBanco, $cBanco, $mBco, $Mnsj ) ; 
 # Campos
 my ($codigo, $detalle, $glosa, $fecha, $totalD, $totalH, $bcos ) ;
@@ -131,12 +132,10 @@ sub crea {
 	$codigo = $mItems->LabEntry(-label => " Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Codigo );
-#	$codigo->bind("<FocusOut>", sub { &buscaCta($esto) } );
 	$cuenta = $mItems->Label(-textvariable => \$Cuenta, -font => $tp{mn});
 	$monto= $mItems->LabEntry(-label => " Monto:  ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Monto); 
-	$monto->bind("<FocusIn>", sub { &buscaCta($esto) } );
 	$debe = $mItems->Radiobutton( -text => "Debe", -value => 'D', 
 		-variable => \$DH );
 	$haber = $mItems->Radiobutton(-text => "Haber", -value => 'H', 
@@ -146,7 +145,7 @@ sub crea {
 		-textvariable => \$Detalle);
 	$cuentaI = $mCntaI->LabEntry(-label => " RUT: ", -width => 15,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-justify => 'right', -textvariable => \$RUT);	
+		-justify => 'left', -textvariable => \$RUT);	
 	$tipoD = $mDoc->BrowseEntry( -variable => \$TipoD, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -width => 12, -listwidth => 30,
@@ -163,11 +162,11 @@ sub crea {
 	}
 	# Crea opciones para elegir tipo de documento
 	@listaD = $bd->datosDocs();
+	push @listaD, ['XZ','N.Documento','','',0];
 	my $algo;
 	foreach $algo ( @listaD ) {
 		$tipoD->insert('end', decode_utf8($algo->[1]) ) ;
 	}
-
 	$documento = $mDoc->LabEntry(-label => "# ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Documento);		
@@ -177,6 +176,11 @@ sub crea {
 		$listaS->insert('end', -itemtype => 'text', 
 			-text => "No hay movimientos registrados" ) ;
 	}
+	# Habilita validaciones
+	$monto->bind("<FocusIn>", sub { &buscaCta($esto) } );
+	$detalle->bind("<FocusIn>", sub { &monto() } );	
+	$tipoD->bind("<FocusIn>", sub { &buscaRut($esto) } );
+	$documento->bind("<FocusIn>", sub { &verificaD() } );
 	
 	# Dibuja interfaz
 	$mMensajes->pack(-expand => 1, -fill => 'both');
@@ -198,8 +202,8 @@ sub crea {
 		$bcos->grid(-row => 3, -column => 1, -sticky => 'nw');
 	}
 	$cuentaI->pack();
-	$tipoD->grid(-row => 3, -column => 0, -sticky => 'nw');
-	$documento->grid(-row => 3, -column => 1, -sticky => 'nw');
+	$tipoD->grid(-row => 0, -column => 0, -sticky => 'nw');
+	$documento->grid(-row => 0, -column => 1, -sticky => 'nw');
 
 	$bReg->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bEle->pack(-side => 'left', -expand => 0, -fill => 'none');
@@ -222,8 +226,12 @@ sub crea {
 	$bReg->configure(-state => 'disabled');
 	$bEle->configure(-state => 'disabled');
 	$bCnt->configure(-state => 'disabled');
+	# y campos
 	$bcos->configure(-state => 'disabled');
-
+	$cuentaI->configure(-state => 'disabled');
+	$tipoD->configure(-state => 'disabled');
+	$documento->configure(-state => 'disabled');
+	
 	bless $esto;
 	return $esto;
 }
@@ -233,19 +241,23 @@ sub seleccionaD {
 	my ($jc, $Index) = @_;
 	$cTipoD = $listaD[$Index]->[0];
 	$BH = 1 if $cTipoD eq 'BH';
-	$documento->focus;
+	if ( $cTipoD eq 'XZ' ) {
+		$documento->configure(-state => 'disabled');
+	} else {
+		$documento->focus;
+	}
 }
 
 sub seleccionaB {
 	my ($jc, $Index) = @_;
 	$cBanco = $bancos[$Index]->[0];
 }
+
 sub buscaCta ( ) {
 
 	my ($esto) = @_;
 	my $bd = $esto->{'baseDatos'};
 
-	$Mnsj = " ";
 	# Comprueba largo del código de la cuenta
 	if (length $Codigo < 4) {
 		$Mnsj = "Código debe tener 4 dígitos";
@@ -264,8 +276,16 @@ sub buscaCta ( ) {
 	}
 	# Si es cuenta con detalle para Banco
 	if ($CntaI eq "B") {
-		$bcos->configure(-state => 'active') ;
+		$bcos->configure(-state => 'normal') ;
 		$cuentaI->configure(-state => 'disabled');
+		$documento->configure(-state => 'normal');
+		$tipoD->configure(-state => 'normal');
+	}
+	# o si agrupa cuentas individuales
+	if ($CntaI eq "I") {
+		$cuentaI->configure(-state => 'normal');
+		$tipoD->configure(-state => 'normal');
+		$documento->configure(-state => 'normal');
 	}
 }
 
@@ -278,14 +298,15 @@ sub muestraLista ( $ )
 	# Obtiene lista con datos de itemes registrados
 	my @data = $bd->datosItems($Numero);
 	# Completa TList con código, nombre cuenta, monto (d o h) 
-	my ($algo, $mov, $cm, $mntD, $mntH);
+	my ($algo, $mov, $cm, $mntD, $mntH,$ncta);
 	$listaS->delete(0,'end');
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
-		$mov = sprintf("%-5s %-30s %11s %11s", 
-			$cm, decode_utf8($algo->[9]), $mntD, $mntH ) ;
+		$ncta = substr decode_utf8($algo->[10]),0, 24 ;
+		$mov = sprintf("%-5s %-24s %11s %11s", 
+			$cm, $ncta, $mntD, $mntH ) ;
 		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
 	}
 	# Devuelve una lista de listas con datos de las cuentas
@@ -298,7 +319,11 @@ sub agrega ( )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 	
-	my ($tabla);
+	# Define tabla según tipo de documento
+	my $tabla = '' ;
+	$tabla = 'BoletasH' if $cTipoD eq 'BH';
+	$tabla = 'Compras' if $cTipoD eq 'FC';
+	$tabla = 'Ventas' if $cTipoD eq 'FV';
 	# Verifica que se completen datos de detalle
 	if (length $Codigo < 4) {
 		$Mnsj = "Registre el código de la cuenta";
@@ -306,13 +331,9 @@ sub agrega ( )
 		return;
 	}
 	if ($Monto == 0) {
-		$Mnsj = "Anote alguna cifra";
+		$Mnsj = "Complete el monto";
 		$monto->focus;
-		return;
-	}
-	if ($DH eq '') {
-		$Mnsj = "Indique tipo de movimiento";
-		return;
+		return ;
 	}
 	if ($CntaI eq "I" and $RUT eq '' ) {
 		$Mnsj = "Debe registrar RUT de la Cuenta Individual";
@@ -320,29 +341,12 @@ sub agrega ( )
 		return;
 	}
 	if ($CntaI eq "I" ) {
-		# Valida y verifica RUT
-		if ( not $ut->vRut($RUT) ) {
-			$Mnsj = "RUT no es válido";
-			$cuentaI->focus;
-			return;
-		} else {
-			my $nmb = $bd->buscaT($RUT);
-			if ( not $nmb ) {
-				$Mnsj = "Ese RUT No esta registrado" ;
-				$cuentaI->focus;
-				return;
-			}
-			$Mnsj = $nmb;
-		}
 		# Control del documento [experimental]
 		if ( not $TipoD ) {
 			$Mnsj = "Seleccione un tipo de documento";
 			$tipoD->focus;
 			return;
-		} else {
-			$tabla = 'BoletasH' if $cTipoD eq 'BH';
-			$tabla = 'Compras' if $cTipoD eq 'FC';
-			$tabla = 'Ventas' if $cTipoD eq 'FV';
+		} elsif (not $tabla eq '' ) {
 			if (not $bd->buscaFct($tabla, $RUT, $Documento) ) {
 				$Mnsj = "Ese documento NO está registrado.";
 				$documento->focus;
@@ -356,7 +360,7 @@ sub agrega ( )
 		$RUT = $cBanco ;
 	}
 	$bd->agregaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
-		$Cuenta, $Numero);
+		$Cuenta, $Numero,'');
 	# Muestra lista modificada de cuentas
 	@datos = muestraLista($esto);
 	# Totaliza comprobante
@@ -367,10 +371,65 @@ sub agrega ( )
 		$TotalH += $Monto;	
 		$TotalHf = $pesos->format_number($TotalH);
 	}
+	
 	limpiaCampos();
+	
 	$bcos->configure(-state => 'disabled') ;
-	$cuentaI->configure(-state => 'active');
+	$cuentaI->configure(-state => 'disabled');
+	$tipoD->configure(-state => 'disabled');
+	$documento->configure(-state => 'disabled');
+
 	$codigo->focus;
+}
+
+sub buscaRut ()
+{
+	my ($esto) = @_;
+	my $ut = $esto->{'mensajes'};
+	my $bd = $esto->{'baseDatos'};
+
+	# Valida y verifica RUT, siempre que no sea un Banco
+	if ($CntaI eq "B") {
+		return ;
+	}
+	$RUT = uc($RUT);
+	if ( not $ut->vRut($RUT) ) {
+		$Mnsj = "RUT no es válido";
+		$cuentaI->focus;
+		return;
+	} else {
+		my $nmb = $bd->buscaT($RUT);
+		if ( not $nmb ) {
+			$Mnsj = "Ese RUT No esta registrado" ;
+			$cuentaI->focus;
+			return;
+		}
+		$Mnsj = decode_utf8("$nmb");
+	}
+}
+
+sub verificaD
+{
+	if ($TipoCmp eq 'I' and ( $cTipoD eq 'FC' or $BH )) {
+		$Mnsj = "Tipo de documento NO corresponde";
+		$tipoD->focus;
+	}
+	if ($TipoCmp eq 'E' and $cTipoD eq 'FV') {
+		$Mnsj = "Tipo de documento NO corresponde";
+		$tipoD->focus;
+	}
+}
+
+sub monto 
+{
+	if ($DH eq '') {
+		$Mnsj = "Indique tipo de movimiento";
+		return ;
+	}
+	if ($Monto == 0) {
+		$Mnsj = "Anote alguna cifra";
+		$monto->focus;
+	}
 }
 
 sub modifica ( )
@@ -404,10 +463,9 @@ sub modifica ( )
 	$RUT = $sItem->[5];
 	$TipoD = $sItem->[6];
 	$Documento = $sItem->[7];
-	$Cuenta = $sItem->[9];	
-
+	$Cuenta = $sItem->[10];	
 	# Obtiene Id del registro
-	$Id = $sItem->[10];
+	$Id = $sItem->[11];
 }
 
 sub registra ( )
@@ -417,7 +475,7 @@ sub registra ( )
 	
 	# Graba datos
 	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $TipoD, $Documento, 
-		$Cuenta, $Id);
+		'', $Cuenta, $Id);
 	# Muestra lista actualizada de items
 	@datos = muestraLista($esto);
 	# Retotaliza comprobante
@@ -455,7 +513,6 @@ sub elimina ( )
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
 	$bReg->configure(-state => 'disabled');
-
 }
 
 sub contabiliza ( )
@@ -481,6 +538,9 @@ sub contabiliza ( )
 	my $ff = $ut->analizaFecha($Fecha);
 	$bd->agregaCmp($Numero, $ff, $Glosa, $TotalD, $TipoCmp, $BH);
 	$bd->actualizaCI($Numero, $ff);
+	# Graba documentos de pago, si corresponde
+	my $tabla = ( $TipoCmp eq "I" ) ? 'DocsR': 'DocsE';
+	$bd->agregaDP($Numero, $ff, $tabla);
 	
 	limpiaCampos();
 
@@ -493,6 +553,7 @@ sub contabiliza ( )
 	$TotalDf = $TotalHf = '';
 	$Numero = $bd->numeroC() + 1;
 	$glosa->delete(0,'end');
+	$tipoD->delete(0,'end');
 	$fecha->focus;
 }
 

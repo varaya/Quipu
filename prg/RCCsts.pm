@@ -1,10 +1,11 @@
 #  RCCsts.pm - Registra o modifica la definición de Centros de Costos
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
+#  UM: 02.07.2009
 
 package RCCsts;
 use Tk::TList;
@@ -110,11 +111,11 @@ sub crea {
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$listaS->pack();
 	$mLista->pack(-expand => 1);
 	$mDatos->pack(-expand => 1);	
 	$mBotones->pack(-expand => 1);
-	$mMensajes->pack(-expand => 1, -fill => 'both');
 	
 	# Inicialmente deshabilita botón Registra
 	$bReg->configure(-state => 'disabled');
