@@ -322,7 +322,7 @@ sub buscaDoc ( $ ) # Evita que se registre dos veces una misma boleta
 	my ($bd) = @_;
 
 	# Busca boleta
-	my $fct = $bd->buscaFct('BoletasH', $RUT, $Dcmnt);
+	my $fct = $bd->buscaFct('BoletasH', $RUT, $Dcmnt, 'FechaE');
 	if ($fct) {
 		$Mnsj = "Esa Boleta ya está registrada.";
 		$dcmnt->focus;

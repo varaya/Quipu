@@ -427,7 +427,7 @@ sub buscaDoc ( $ )
 		$Nombre = decode_utf8(" $nmb");
 	}
 	# Ahora busca Factura
-	my $fct = $bd->buscaFct($TablaD, $RUT, $Dcmnt);
+	my $fct = $bd->buscaFct($TablaD, $RUT, $Dcmnt, 'FechaE');
 	if ($fct) {
 		$Mnsj = "Esa Factura ya está registrada.";
 		$dcmnt->focus;

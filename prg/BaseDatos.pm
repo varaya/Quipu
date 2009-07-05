@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 01.07.2009
+#  UM: 04.07.2009
 
 package BaseDatos;
 
@@ -695,8 +695,8 @@ sub agregaItemT( $ $ $ $ $ $ $ $ $ $)
 	$sql->execute($Num, $Cod, $Db, $Hb, $Det, $RUT, $cTD, $Doc, $CCto, 0, $Cnta );
 	$sql->finish();
 	# Actualiza archivo Mayor, si no existe la cuenta en una empresa
-	$bd->do("INSERT INTO Mayor VALUES(?,0,0,0,' ',' ');", undef, 
-		$Cod) if not existeCM($bd,$Cod);
+	$bd->do( "INSERT INTO Mayor VALUES(?,0,0,0,' ',' ');", undef, 
+		$Cod ) if not existeCM($bd,$Cod);
 
 } 
 
@@ -709,7 +709,7 @@ sub grabaItemT( $ $ $ $ $ $ $ $ $ $)
 	$Db = $Hb = 0;
 	if ($DH eq 'D') { $Db = $Mnt; } else { $Hb = $Mnt; }
 	$sql = $bd->prepare("UPDATE ItemsT SET CuentaM = ?, Debe = ?, Haber = ?,
-		Detalle = ?, RUT = ?, TipoD = ?,Documento = ?,CCosto = ?,NombreC = ?
+		Detalle = ?, RUT = ?, TipoD = ?, Documento = ?, CCosto = ?, NombreC = ?
 		WHERE ROWID = ?;");
 	$sql->execute($Cod,$Db,$Hb,$Det,$RUT,$cTipoD,$Doc,$CC,$Cnta,$Id);
 	$sql->finish();
@@ -742,7 +742,7 @@ sub agregaCmp( $ $ $ $ $ $ )
 {
 	my ($esto, $Numero, $Fecha, $Glosa, $Total, $Tipo, $bh) = @_;	
 	my $bd = $esto->{'baseDatos'};
-	my (@fila, $mes, $algo, $sql);
+	my (@fila, $mes, $sql);
 
 	# Graba datos basicos del Comprobante
 	$sql = $bd->prepare("INSERT INTO DatosC VALUES(?, ?, ?, ?, ?, ?, ?);");
@@ -777,8 +777,8 @@ sub actualizaP ( $ $ $ $ )
 	$sql = $bd->prepare("SELECT RUT, Documento, $cm FROM ItemsC
 		WHERE Numero = ? AND RUT <> '' AND TipoD = ?;");
 	$sql->execute($nmr,$td);
-	$aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos + ?, 
-		FechaP = ? WHERE RUT = ? AND Numero = ?;");
+	$aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos + ?, FechaP = ? 
+		WHERE RUT = ? AND Numero = ?;");
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
 		$aCta->execute($algo->[2], $fch, $algo->[0], $algo->[1]);
@@ -792,23 +792,23 @@ sub agregaDP ( $ $ $ )
 {
 	my ($esto, $nmr, $ff, $tabla) = @_;	
 	my $bd = $esto->{'baseDatos'};
-	my ($cm, $algo, $sql, $rDoc);
+	my ($cm, $x, $sql, $rDoc);
 
 	$cm = ($tabla eq 'DocsR') ? 'Debe' : 'Haber' ;
 	# Busca cheques y agrega docs
 	$sql = $bd->prepare("SELECT  Documento, CuentaM, RUT, $cm FROM ItemsC
-		WHERE Numero = ? AND RUT <> '' AND TipoD = ?;");
+		WHERE Numero = ? AND TipoD = ?;");
 	$sql->execute($nmr,'CH');
-	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?);");
+	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?,?);");
 	while (my @fila = $sql->fetchrow_array) {
-		$algo = \@fila;
-		$rDoc->execute($algo->[0],$algo->[1],$algo->[2],$ff,$algo->[2],$nmr,'','',0,0,'CH');
+		$x = \@fila;
+		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,'','',0,'',0,'CH');
 	}
-	# Busca letras y agrega
+	# Busca letras y agrega, si existen
 	$sql->execute($nmr,'LT');
 	while (my @fila = $sql->fetchrow_array) {
-		$algo = \@fila;
-		$rDoc->execute($algo->[0],$algo->[1],$algo->[2],$ff,$algo->[2],$nmr,'','',0,0,'LT');
+		$x = \@fila;
+		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,'','',0,'',0,'LT');
 	}
 	$sql->finish();
 	$rDoc->finish();
@@ -961,12 +961,12 @@ sub cuentaDcm ( $ $ )
 	return $dato; 
 }
 
-sub buscaFct( $ $ $ )
+sub buscaFct( $ $ $ $ )
 {
-	my ($esto, $tbl, $rut, $doc) = @_;	
+	my ($esto, $tbl, $rut, $doc, $campo) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
-	my $sql = $bd->prepare("SELECT FechaE FROM $tbl WHERE RUT = ? AND Numero = ?;");
+	my $sql = $bd->prepare("SELECT $campo FROM $tbl WHERE RUT = ? AND Numero = ?;");
 	$sql->execute($rut, $doc);
 	my $dato = $sql->fetchrow_array;
 	$sql->finish();

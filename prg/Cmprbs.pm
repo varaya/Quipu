@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 02.07.2009
+#  UM: 04.07.2009
 
 package Cmprbs;
 
@@ -15,7 +15,6 @@ use Tk::LabFrame;
 use Tk::BrowseEntry;
 use Encode 'decode_utf8';
 use Number::Format;
-#use Data::Dumper;
 
 # Variables válidas dentro del archivo
 # Datos a registrar
@@ -59,7 +58,7 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
-	my $alt = @bancos ? 550 : 520 ;
+	my $alt = @bancos ? 560 : 530 ;
 	$vnt->title("Registra Comprobante de $tipoC");
 	$vnt->geometry("400x$alt+475+4"); # Tamaño y ubicación
 	
@@ -78,8 +77,11 @@ sub crea {
 	my $mBotonesL = $vnt->Frame(-borderwidth => 1);
 	my $mBotonesC = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
-
+	my $mNombre = $vnt->Frame(-borderwidth => 1);
+	
 	# Barra de mensajes y botón de ayuda
+	my $nombre = $mNombre->Label(-textvariable => \$Nombre, -font => $tp{tx},);
+	$nombre->pack(-side => 'right', -expand => 1, -fill => 'none');
 	my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{tx},
 		-bg => '#F2FFE6', -fg => '#800000',);
 	$mnsj->pack(-side => 'right', -expand => 1, -fill => 'x');
@@ -219,7 +221,8 @@ sub crea {
 
 	$mCntaI->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$mDoc->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$mOtros	->pack(-expand => 1);
+	$mOtros->pack(-expand => 1);
+	$mNombre->pack(-expand => 1);
 	$mBotonesL->pack( -expand => 1);
 
 	# Inicialmente deshabilita algunos botones
@@ -287,6 +290,11 @@ sub buscaCta ( ) {
 		$tipoD->configure(-state => 'normal');
 		$documento->configure(-state => 'normal');
 	}
+	# o si debe registrar documentos
+	if ($CntaI eq "D") {
+		$tipoD->configure(-state => 'normal');
+		$documento->configure(-state => 'normal');
+	}
 }
 
 sub muestraLista ( $ ) 
@@ -341,14 +349,19 @@ sub agrega ( )
 		return;
 	}
 	if ($CntaI eq "I" ) {
-		# Control del documento [experimental]
+		# Control del documento [en prueba]
 		if ( not $TipoD ) {
 			$Mnsj = "Seleccione un tipo de documento";
 			$tipoD->focus;
 			return;
 		} elsif (not $tabla eq '' ) {
-			if (not $bd->buscaFct($tabla, $RUT, $Documento) ) {
+			if ( not $bd->buscaFct($tabla, $RUT, $Documento, 'FechaE') ) {
 				$Mnsj = "Ese documento NO está registrado.";
+				$documento->focus;
+				return;
+			}
+			if ( $bd->buscaFct($tabla, $RUT, $Documento, 'Pagada') ) {
+				$Mnsj = "Ese documento ya está pagado.";
 				$documento->focus;
 				return;
 			}
@@ -388,8 +401,8 @@ sub buscaRut ()
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
 
-	# Valida y verifica RUT, siempre que no sea un Banco
-	if ($CntaI eq "B") {
+	# Valida y verifica RUT, siempre que no sea un Banco o cuenta tipo D
+	if ($CntaI eq "B" or $CntaI eq "D") {
 		return ;
 	}
 	$RUT = uc($RUT);
@@ -404,7 +417,7 @@ sub buscaRut ()
 			$cuentaI->focus;
 			return;
 		}
-		$Mnsj = decode_utf8("$nmb");
+		$Nombre = decode_utf8("$nmb");
 	}
 }
 
@@ -463,7 +476,11 @@ sub modifica ( )
 	$RUT = $sItem->[5];
 	$TipoD = $sItem->[6];
 	$Documento = $sItem->[7];
-	$Cuenta = $sItem->[10];	
+	$Cuenta = $sItem->[10];
+	
+	$tipoD->configure(-state => 'normal') if $TipoD ;
+	$documento->configure(-state => 'normal') if $Documento ;
+	$cuentaI->configure(-state => 'normal') if $RUT ;
 	# Obtiene Id del registro
 	$Id = $sItem->[11];
 }
@@ -539,11 +556,10 @@ sub contabiliza ( )
 	$bd->agregaCmp($Numero, $ff, $Glosa, $TotalD, $TipoCmp, $BH);
 	$bd->actualizaCI($Numero, $ff);
 	# Graba documentos de pago, si corresponde
-	my $tabla = ( $TipoCmp eq "I" ) ? 'DocsR': 'DocsE';
-	$bd->agregaDP($Numero, $ff, $tabla);
+	my $tabla = ( $TipoCmp eq "I" ) ? 'DocsR' : 'DocsE' ;
+	$bd->agregaDP($Numero, $ff, $tabla) if not $TipoCmp eq "T";
 	
 	limpiaCampos();
-
 	$bCnt->configure(-state => 'disabled');
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 

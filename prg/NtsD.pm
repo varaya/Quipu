@@ -408,7 +408,7 @@ sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma ND
 		$Nombre = decode_utf8("  $nmb");
 	}
 	# Ahora busca ND
-	my $fct = $bd->buscaFct($TablaD, $RUT, $Documento);
+	my $fct = $bd->buscaFct($TablaD, $RUT, $Documento, 'FechaE');
 	if ($fct) {
 		$Mnsj = "Esa ND ya está registrada.";
 		$documento->focus;
@@ -691,7 +691,7 @@ sub fNula ( )
 	}
 	if ( validaFechaC($ut,$bd) ) {
 		# Ahora busca Factura
-		my $fct = $bd->buscaFct($TablaD, $RUT, $Documento);
+		my $fct = $bd->buscaFct($TablaD, $RUT, $Documento, 'FechaE');
 		if ($fct) {
 			$Mnsj = "Esa Factura ya está registrada.";
 			$documento->focus;

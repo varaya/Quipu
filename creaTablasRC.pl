@@ -172,8 +172,9 @@ $bd->do("CREATE TABLE DocsE (
 	Monto int(8),
 	Comprobante int(5),
 	FechaV char(10),
+	Abonos int(8),
 	FechaP char(10),
-	Cobrado int(1) ,
+	Estado char(1) ,
 	Nulo int(1),
 	Tipo char(2) )" );
 
@@ -188,7 +189,7 @@ $bd->do("CREATE TABLE DocsR (
 	FechaV char(10),
 	Abonos int(8),
 	FechaP char(10),
-	Estado int(1) ,
+	Estado char(1) ,
 	Nulo int(1),
 	Tipo char(2) )" );
 
