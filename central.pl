@@ -5,12 +5,11 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 02.07.2009
+#  UM : 05.07.2009
 
 # use Data::Dumper; 
 
-if (defined $ARGV[0]) { print "\nVersión en red, pendiente.\n\n"; exit ;
-  } else { use prg::BaseDatos; }
+use prg::BaseDatos;
 use strict;
 use subs qw/opRegistra opContabiliza opConsulta opProcesa/;
 
@@ -19,7 +18,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "v0.90 a Julio 2009";
+my $version = "V. 0.90 a Julio 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -42,7 +41,7 @@ my $ut = Utiles->crea($vp);
 
 $version .= " con $pv, Tk $Tk::version y ";
 $version .= "SQLite $bd->{'baseDatos'}->{sqlite_version} en $^O\n";
-print "\nIniciando Quipu - Sistema de Contabilidad\n $version";
+print "\nIniciando Quipu - Sistema de Contabilidad\n$version";
 
 my @ayds = ( ['G','Una Ayuda Básica'], ['O','Las Funciones'],  
 	['E','El Programa'], ['I','Forma de empezar'], ['L','Licencia'] ) ;
@@ -146,7 +145,9 @@ sub opRegistra {
 	DatosP->crea($vp, $bd, $ut, $mt, $CCts ); } ], "-", 
  ['cascade' => "Plan Cuentas", -tearoff => 0, -menuitems => opCuentas() ],
  ['command' => "Tipo Documento", -command => sub { require prg::TipoD;
-	TipoD->crea($vp, $bd, $ut, $mt); } ] ]
+	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
+ ['command' => "Ajustes", -command => sub { require prg::Ajustes; 
+ 	Ajustes->crea($vp, $bd, $ut, $mt ); } ] ]
 }
 
 sub opContabiliza {
@@ -169,7 +170,8 @@ sub opContabiliza {
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
 	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt);}],
 		 qw/Ingreso Egreso Traspaso/,], ], "-",
-['cascade' => "Nulos", -tearoff => 0,	-menuitems => opAnula() ] ]
+['command' => "Anula", -command => sub { require prg::AnulaC; 
+	AnulaC->crea($vp, $mt, $bd, $ut);} ] ]
 }
 
 sub opVentas {
@@ -239,9 +241,10 @@ sub opCuentas {
 }
 
 sub opAnula {
+#	['cascade' => "Nulos", -tearoff => 0,	-menuitems => opAnula() ]
 my $tipoA = '' ;
 [['command' => "Comprobante", -command => sub { require prg::AnulaC; 
-	AnulaC->crea($vp, $bd, $ut);} ],
+	AnulaC->crea($vp, $mt, $bd, $ut);} ],
  ['cascade' => "Documento", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoA , 
 	-command => sub { require prg::AnulaD; 

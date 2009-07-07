@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 04.07.2009
+#  UM: 07.07.2009
 
 package BaseDatos;
 
@@ -831,11 +831,22 @@ sub actualizaCI ( $ $ )
 	}
 }
 
-sub anulaCmp( $ )
+sub anulaCmp( $ $ )
 {
-
-
+	my ($esto, $ref, $numero) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	
+	# Marca el Comprobante
+	my $sql = $bd->prepare("UPDATE DatosC SET Anulado = 1, Ref = ?
+		WHERE Numero = ? ;");
+	$sql->execute($numero,$ref);
+	# Elimina datos de sus items
+	$sql = $bd->prepare("UPDATE ItemsC SET CuentaM = '', CCosto = ''
+		WHERE Numero = ? ;");
+	$sql->execute($ref);
+	$sql->finish();
 }
+
 
 # BANCOS
 sub datosBcs( )
@@ -1024,9 +1035,36 @@ sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 	$sql->finish();
 }
 
-sub anulaFct( )
+sub anulaDct( $ $ $ )
 {
+	my ($esto,$rut,$dcm,$tabla) = @_;
+	my $bd = $esto->{'baseDatos'};
 
+print "$rut - $dcm - $tabla \n";
+	my $sql = $bd->prepare("UPDATE $tabla SET Nulo = 2
+		WHERE RUT = ? AND Numero = ?;");
+	$sql->execute($rut,$dcm);
+	$sql->finish();
+}
+
+sub anulaPago( $ $ $ $ )
+{ 
+	my ($esto, $cm, $td, $tbl, $nmr) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my ($aCta, $algo, $sql);
+	$sql = $bd->prepare("SELECT RUT, Documento, $cm FROM ItemsC
+		WHERE Numero = ? AND RUT <> '' AND TipoD = ?;");
+	$sql->execute($nmr,$td);
+	$aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos - ?, FechaP = ''
+		WHERE RUT = ? AND Numero = ?;");
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$aCta->execute($algo->[2], $algo->[0], $algo->[1]);
+	}
+	# Condición de 'Pagada' se actualiza por un disparador de SQLite
+	$sql->finish();
+	$aCta->finish();
 }
 
 sub listaD( $ $ )

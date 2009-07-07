@@ -222,7 +222,7 @@ sub detalles ( $ $ $ $)
 		$nulo = $algo->[7]; 
 		$ie = $pesos->format_number( $algo->[8] );
 		$ni = $algo->[9];
-		if ( not $nulo ) {
+		if ( $nulo < 2 ) { # Se excluyen las Anuladas: código 2
 			$mov = sprintf("%3s  %10s %8s %10s %-35s %11s %11s %11s %11s %11s", 
 				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt ) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;

@@ -3,13 +3,13 @@
 #  configurar.pl - Define parámetros básicos y agrega empresas
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
-#  incluida en este paquete 
+#  Puede ser utilizado y distribuido en los términos previstos en la 
+#  licencia incluida en este paquete 
+#  UM: 06.07.2009
 
-if (defined $ARGV[0]) { print "\nVersión en red, pendiente.\n\n"; exit ;
-  } else { use prg::BaseDatos; }
+use prg::BaseDatos;
 use Tk;
 use Tk::TList;
 use Tk::LabEntry;

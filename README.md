@@ -11,7 +11,7 @@ Incas antes de la llegada de los españoles. Consiste grupos de cuerdas de
 colores cada una con diversas cantidad de nudos que están amarradas a una
 cuerda principal.
 
-Por cierto se trata de un sistema un tantito más antiguo que la *partida 
+Por cierto se trata de un sistema algo más antiguo que la *partida 
 doble* desarrollada por Luca Paccioli, en la misma época en que Cristobal
 Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa 
 *nudo* en quechua. Visitar el siguiente [sitio][ref] para más información.
@@ -21,7 +21,6 @@ Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa
 
 
 ##Descripción
-
 
 Este programa está basado en las condiciones legales existentes en Chile,
 en especial respecto de las normas tributarias. Pero su propósito explícito
@@ -34,8 +33,7 @@ información necesaria en el control de las gestión de la pequeñas
 empresas.
 
 
-Requisitos
-----------
+##Requisitos
 
 + Perl 5.8 o superior
 + Tk804
@@ -49,49 +47,49 @@ Requisitos
 + Cualquier sistema operativo que soporte lo anterior.
 
 
-
 ##Instalación
 
 (Pendiente)
 
 
 
-##Licencia de Distribución y Uso
+##Licencia
 
 ###Declaración de Principios
 
 Este programa informático no es una mercancía: es libre y gratuito. Por 
 tratarse de un programa de código abierto, puede ser modificado, utilizado 
 y distribuido en las condiciones, mínimamente restrictivas, definidas en 
-este Licencia.
+esta Licencia.
 
 Los intercambios que pueda generar, quedan sujetos a los principios de 
 reciprocidad y retribución del trabajo efectivamente realizado. Por ello,
 este programa *no* está sujeto a una transacción mercantil.
 
+
 ###Condiciones de Uso y Distribución
 
 Está permitido:
 
-1. Hacer y entregar copias del Programa sin restricción,
+1. Hacer y entregar copias de este programa sin restricción,
    con la obligación de incluir el presente documento y 
    traspasar a terceros los derechos previstos en esta
    Licencia.
 
-2. Realizar modificaciones al Programa, dejando constancia en 
+2. Realizar modificaciones al programa, dejando constancia en 
    los archivos respectivos quién, cómo y cuándo realizó la
    modificación, con la obligación de cumplir alguna de las 
    siguientes condiciones:
 
-   a. Dejar las modificaciones libremente disponibles a otros usuarios, enviándolas al autor del Programa original.
+>  a. Dejar las modificaciones libremente disponibles a otros usuarios, enviándolas al autor del programa original.
       
-   b. Utilizarlas exclusivamente en forma personal o dentro de la organización en la cual se está usando el Programa.
+>  b. Utilizarlas exclusivamente en forma personal o dentro de la organización en la cual se está usando el programa.
       
-   c. Hacer un acuerdo directo con el autor del Programa.
+>  c. Hacer un acuerdo directo con el autor de este programa.
 
 3. Cobrar un honorario razonable por instalar, configurar y
-   dar soporte en el uso del Programa, dejando constancia
-   expresa que el Programa en sí es libre y gratuito.
+   dar soporte en el uso de este programa, dejando constancia
+   expresa que el código es libre y gratuito.
 
 4. Utilizar las rutinas y algoritmos incluidos en el Programa,
    como parte de otro programa libre y gratuito.
@@ -102,8 +100,9 @@ NO está permitido:
    obtener es por el trabajo propio, no por el producto de un
    trabajo ajeno.
 
-2. Utilizar el Programa como parte de otro sistema informático
+2. Utilizar el programa como parte de otro sistema informático
    sujeto a distribución comercial.
+
 
 ###Limitación de Responsabilidad
 
@@ -112,4 +111,4 @@ distribuye 'tal como está', sin garantía alguna, ya  sea directa o
 indirecta, respecto de algún uso particular o del rendimiento y calidad 
 del trabajo efectuado con él.
 
-(c) Víctor Araya R., 2009 - varaya@programmer.net
+(c) Víctor Araya R., 2009 - <varaya@programmer.net>

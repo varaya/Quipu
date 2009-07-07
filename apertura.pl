@@ -7,10 +7,9 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
-#  UM: 26.06.2009
+#  UM: 06.07.2009
 
-if (defined $ARGV[0]) { print "\nVersión en red, pendiente.\n\n"; exit ;
-  } else { use prg::BaseDatos; }
+use prg::BaseDatos;
 use strict;
 use subs qw/opSaldos opDocs/;
 use Tk;

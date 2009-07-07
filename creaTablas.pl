@@ -2,9 +2,9 @@
 
 #  creaTablas.pl - inicializa la base de datos con SQLite 3
 #  Forma parte del Programa Quipu
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Propiedad intelectual (c) VÃ­ctor Araya R., 2008
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
+#  Puede ser utilizado y distribuido en los tÃ©rminos previstos en la licencia
 #  incluida en este paquete
 
 use DBI;
@@ -13,7 +13,7 @@ use strict;
 # EMPRESAS y DATOS COMUNES
 # Conecta a la base de datos
 my $bd = DBI->connect( "dbi:SQLite:datosG.db3" ) || 
-	die "Imposible establecer conexión: $DBI::errstr";
+	die "Imposible establecer conexiÃ³n: $DBI::errstr";
 
 # Datos empresas
 $bd->do("CREATE TABLE Config (
@@ -62,8 +62,8 @@ $bd->do("CREATE TABLE Documentos (
 $bd->do("INSERT INTO Documentos VALUES('FV','F.Venta','','') ");
 $bd->do("INSERT INTO Documentos VALUES('FC','F.Compra','','') ");
 $bd->do("INSERT INTO Documentos VALUES('BH','B.Honorario','','') ");
-$bd->do("INSERT INTO Documentos VALUES('NC','N.Crédito'),'','' ");
-$bd->do("INSERT INTO Documentos VALUES('ND','N.Débito','','' )");
+$bd->do("INSERT INTO Documentos VALUES('NC','N.CrÃ©dito'),'','' ");
+$bd->do("INSERT INTO Documentos VALUES('ND','N.DÃ©bito','','' )");
 $bd->do("INSERT INTO Documentos VALUES('CH','Cheque','','' )");
 $bd->do("INSERT INTO Documentos VALUES('LT','Letra','','' )");
 

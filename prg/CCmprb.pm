@@ -1,11 +1,11 @@
-#  CCmprb.pm - Lista, consulta e imprime comprobantes
+#  CCmprb.pm - Muestra e imprime comprobantes
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 24.06.2009
+#  UM: 07.07.2009
 
 package CCmprb;
 
@@ -16,7 +16,7 @@ use Number::Format;
  
 # Variables válidas dentro del archivo
 my @datos = () ;	# Lista items del comprobante
-my ($bCan, $bImp, $rutE) ; 
+my ($bCan, $bImp, $rutE, $cuenta) ; 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
@@ -35,7 +35,7 @@ sub crea {
 	$mes = $nMes = '';
 	# Define ventana
 	my $vnt = $vp->Toplevel();
-	$vnt->title("Procesa Libro Mayor");
+	$vnt->title("Consulta Comprobante");
 	$vnt->geometry("650x430+475+4"); # Tamaño y ubicación
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
@@ -59,7 +59,7 @@ sub crea {
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
-	my $cuenta = $mBotones->LabEntry(-label => "Comprobante #: ", -width => 6,
+	$cuenta = $mBotones->LabEntry(-label => "Comprobante #: ", -width => 6,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Cuenta );
 	# Define botones
@@ -115,13 +115,20 @@ sub muestraC {
 	$glosa = decode_utf8($datos[1]);
 	$total = $pesos->format_number( $datos[4] );
 	$nulo = $datos[5];
+	$ref = $datos[6];
 
 	$marco->delete('0.0','end');
 	$marco->insert('end', 
 	 "\nComprobante de $tipoC   # $nmrC  del  $fecha\n", 'negrita');
 	$marco->insert('end', "Glosa: $glosa\n\n" , 'cuenta');
-	$marco->insert('end', "Movimientos\n" , 'grupo');
-
+	if ( $nulo ) {
+		$marco->insert('end', "Anulado por Comprobante $ref\n" , 'grupo');
+		$Cuenta = '';
+		$cuenta->focus;
+		return ;
+	} else {
+		$marco->insert('end', "Movimientos\n" , 'grupo');
+	}
 	my @data = $bd->itemsC($nmrC);
 
 	my ($algo, $mov, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
@@ -156,38 +163,6 @@ sub muestraC {
 	}
 	$marco->insert('end', "\nTotal: $total\n" , 'grupo');
 	$bImp->configure(-state => 'active');
-}
-
-sub muestraLista ( $ ) 
-{
-	my ($esto) = @_;
-	my $ut = $esto->{'mensajes'};
-	my $bd = $esto->{'baseDatos'};
-	my $listaS = $esto->{'vLista'};
-
-	my ($Numero, $Tipo, $Fecha, $Total, $Glosa) = (0 .. 4);
-	
-	# Obtiene lista con datos de comprobantes registrados
-	my @data = $bd->listaC($mes);
-	if (not @data) {
-		$Mnsj = "No hay comprobantes registrados";
-		return ;
-	}
-
-	# Completa TList con datos básicos del comprobante 
-	my ($algo, $nm, $tp, $fch, $tt, $gl, $mov);
-	$listaS->delete(0,'end');
-	foreach $algo ( @data ) {
-		$nm = $algo->[$Numero]; 
-		$tp = $algo->[$Tipo]; 
-		$fch = $ut->cFecha($algo->[$Fecha]); 
-		$tt = $pesos->format_number( $algo->[$Total] );
-		$gl =  decode_utf8($algo->[$Glosa]);
-		$mov = sprintf("%5s %1s %10s %12s %-25s", $nm, $tp, $fch, $tt, $gl) ;
-		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
-	}
-	# Devuelve una lista de listas con datos de los comprobantes
-	return @data;
 }
 
 sub txt ( $ )

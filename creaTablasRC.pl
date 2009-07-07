@@ -3,9 +3,9 @@
 #  creaTablasRC.pl - inicializa la base de datos con SQLite 3
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: V韈tor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: V铆ctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los t閞minos previstos en la 
+#  Puede ser utilizado y distribuido en los t茅rminos previstos en la 
 #  licencia incluida en este paquete 
 #  UM : 24.06.2009 
 
@@ -13,7 +13,7 @@ use DBI;
 use strict;
 
 my $emp = $ARGV[0]; # directorio de la empresa (RUT)
-my $prd = $ARGV[1]; # Nombre de la base de datos (a駉)
+my $prd = $ARGV[1]; # Nombre de la base de datos (a帽o)
 
 if (not -d $emp) { # Verifica si existe el directorio
 	mkdir $emp ;
@@ -29,11 +29,11 @@ if (-e $base ) {
 	return ;
 }
 my $bd = DBI->connect( "dbi:SQLite:$base" ) || 
-	die "Imposible establecer conexi髇: $DBI::errstr";
+	die "Imposible establecer conexi贸n: $DBI::errstr";
 
 # REGISTROS CONTABLES
 # Cuentas de mayor
-# Nota: Los campos 'TSaldo' y 'Saldo' corresponde a la apertura del a駉
+# Nota: Los campos 'TSaldo' y 'Saldo' corresponde a la apertura del a帽o
 $bd->do("CREATE TABLE Mayor (
 	Codigo char(5) NOT NULL PRIMARY KEY,
 	Debe int(9) ,
@@ -42,7 +42,7 @@ $bd->do("CREATE TABLE Mayor (
 	TSaldo char(1) ,
 	Fecha_UM char(10) )" );
 
-# Actualizaci髇 de Fecha_UM en Cuenta de Mayor
+# Actualizaci贸n de Fecha_UM en Cuenta de Mayor
 $bd->do("CREATE TRIGGER AFechaM AFTER UPDATE OF Debe, Haber ON Mayor
   BEGIN
     UPDATE Mayor SET Fecha_UM = substr(datetime('now'),0,10) 
@@ -59,7 +59,7 @@ $bd->do("CREATE TABLE DatosC (
 	Anulado int(1), 
 	Ref int(5) )" );
 
-# L韓eas del Comprobante de Contabilidad
+# L铆neas del Comprobante de Contabilidad
 $bd->do("CREATE TABLE ItemsC (
 	Numero int(5),
 	CuentaM char(5),
@@ -79,7 +79,9 @@ $bd->do("CREATE TRIGGER Actualiza AFTER INSERT ON ItemsC
 		WHERE Codigo = new.CuentaM ;
   END" );
 
-# Facturas de Compras y Notas de D閎ito y Cr閐ito de Proveedores
+# Facturas de Compras y Notas de D茅bito y Cr茅dito de Proveedores
+# Campo Nulo: 0 Vigente; 1 Emitido como nulo; 2 Anulado luego de emitido
+# Similar para Ventas y BoletasH
 $bd->do("CREATE TABLE Compras (
 	RUT char(10),
 	Numero char(10),
@@ -101,14 +103,14 @@ $bd->do("CREATE TABLE Compras (
 	Orden int(2),
 	IEspec int(8) )" );
 
-# Actualizaci髇 de Pagada en F. Compras
+# Actualizaci贸n de Pagada en F. Compras
 $bd->do("CREATE TRIGGER PagoFC AFTER UPDATE OF Abonos ON Compras
   BEGIN
     UPDATE Compras SET Pagada = CASE WHEN Abonos >= Total THEN 1
 		ELSE 0 END ;
   END" );
 
-# Facturas de Ventas y Notas de D閎ito y Cr閐ito de Clientes
+# Facturas de Ventas y Notas de D茅bito y Cr茅dito de Clientes
 $bd->do("CREATE TABLE Ventas (
 	RUT char(10),
 	Numero char(10),
@@ -130,7 +132,7 @@ $bd->do("CREATE TABLE Ventas (
 	Orden int(2),
 	IEspec int(8) )" );
 
-# Actualizaci髇 de Pagada en F. Ventas
+# Actualizaci贸n de Pagada en F. Ventas
 $bd->do("CREATE TRIGGER PagoFV AFTER UPDATE OF Abonos ON Ventas
   BEGIN
     UPDATE Ventas SET Pagada = CASE WHEN Abonos >= Total THEN 1
@@ -193,7 +195,7 @@ $bd->do("CREATE TABLE DocsR (
 	Nulo int(1),
 	Tipo char(2) )" );
 
-# Actualizaci髇 de Pagada en B. Honorarios
+# Actualizaci贸n de Pagada en B. Honorarios
 $bd->do("CREATE TRIGGER PagoBH AFTER UPDATE OF Abonos ON BoletasH
   BEGIN
     UPDATE BoletasH SET Pagada = CASE WHEN Abonos >= Total THEN 1 
@@ -216,7 +218,7 @@ $bd->do("CREATE TABLE CuentasI (
 	TSaldo char(1),
 	Fecha_UM char(10) )" );
 
-# Actualizaci髇 de Saldo, TSaldo y Fecha_UM en cuenta individual
+# Actualizaci贸n de Saldo, TSaldo y Fecha_UM en cuenta individual
 $bd->do("CREATE TRIGGER AFechaCI AFTER UPDATE OF Debe, Haber ON CuentasI
   BEGIN
     UPDATE CuentasI SET Fecha_UM = substr(datetime('now'),0,10) 
