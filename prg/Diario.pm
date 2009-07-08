@@ -40,7 +40,6 @@ sub crea {
 	$tc->{'E'} = 'Egreso';
 	$tc->{'T'} = 'Traspaso';
 
-
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
@@ -154,7 +153,7 @@ sub informe ( $ $  $) {
 	my ($esto, $marco, $fi, $ff) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
-	my ($Numero, $Tipo, $Fecha, $Total, $Glosa) = (0 .. 4);
+	my ($Numero, $Tipo, $Fecha, $Total, $Glosa, $Nulo, $Ref) = (0 .. 6);
 
 	$fi = substr $fi,0,8 ;
 	$ff = substr $ff,0,8 ;
@@ -165,7 +164,7 @@ sub informe ( $ $  $) {
 		$fechaI->focus;
 		return;
 	}
-	my ($algo, $nm, $tp, $fch, $tt, $gl, $empr,$tg, @datosE);
+	my ($algo, $nm, $tp, $fch, $tt, $gl, $empr,$tg, $ref, @datosE);
 	@datosE = $bd->datosEmpresa($rutE);
 	if (@datosE) {
 		$empr = decode_utf8($datosE[0]); 
@@ -183,8 +182,13 @@ sub informe ( $ $  $) {
 		$tg += $algo->[$Total] ;
 		$tt = $pesos->format_number( $algo->[$Total] );
 		$gl = decode_utf8($algo->[$Glosa]);
+		$ref = $algo->[$Ref] ;
 		$marco->insert('end', "\n$fch -------- $tipoC # $nm --------\n", 'detalle');
-		asiento($bd, $marco, $nm, $tt, $gl);
+		if ($algo->[$Nulo] ) {
+			$marco->insert('end', "           Anulado por Comprobante $ref\n", 'detalle');
+		} else {
+			asiento($bd, $marco, $nm, $tt, $gl);	
+		}
 	}
 	$tt = $pesos->format_number( $tg );
 	$marco->insert('end',"$lin2\n",'detalle');
@@ -248,12 +252,12 @@ sub csv
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 	
-	my ($Numero, $Tipo, $Fecha, $Total, $Glosa) = (0 .. 4);
+	my ($Numero, $Tipo, $Fecha, $Total, $Nulo, $Ref) = (0 .. 6);
 
 	$fi = $ut->analizaFecha($FechaI) ;
 	$ff = $ut->analizaFecha($FechaF) ;
 	my @datosC = $bd->diario($fi,$ff);
-	my ($algo, $fh, $gl, $empr, @datosE, $l, $tg, $d);
+	my ($algo, $fh, $gl, $ref, $empr, @datosE, $l, $tg, $d);
 	$tg = 0;
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
@@ -267,10 +271,16 @@ sub csv
 	foreach $algo ( @datosC ) {
 		$tg += $algo->[$Total] ;
 		$fh = $ut->cFecha($algo->[$Fecha]) ;
+		$ref = $algo->[$Ref] ;
+		$gl = '"'.decode_utf8($algo->[$Glosa]).'"' ;
 		$l = ( "$fh,-------- $tc->{$algo->[$Tipo]} # $algo->[$Numero] --------" );
 		print ARCHIVO "$l\n";
-		$gl = '"'.decode_utf8($algo->[$Glosa]).'"'; 
-		asientoCSV($bd, $algo->[$Numero], $gl, $csv);
+		if ($algo->[$Nulo] ) {
+			$l = ("           Anulado por Comprobante $ref");
+			print ARCHIVO "$l\n";
+		} else {
+			asientoCSV($bd, $algo->[$Numero], $gl, $csv);
+		}
 	}
 	$l = ",, ,$tg,$tg" ;
 	print ARCHIVO "$l\n";

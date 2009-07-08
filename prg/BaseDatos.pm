@@ -628,8 +628,8 @@ sub diario( $ $ )
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $sql = $bd->prepare("SELECT Numero, TipoC, Fecha, Total, Glosa 
-		FROM DatosC WHERE Fecha >= ? AND Fecha <= ?;");
+	my $sql = $bd->prepare("SELECT Numero, TipoC, Fecha, Total, Glosa, 
+		Anulado, Ref FROM DatosC WHERE Fecha >= ? AND Fecha <= ?;");
 	$sql->execute($fi, $ff);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {

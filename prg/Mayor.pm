@@ -183,10 +183,11 @@ sub muestraM ( $ $ )
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
 		}
-		$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s", $nCmp, $tC, 
-			$fecha, $dt, $mntD, $mntH ) ;
-
-		$marco->insert('end', "$mov\n", 'detalle' ) ;
+		if ( not $nulo ) {
+			$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s", $nCmp, $tC, 
+				$fecha, $dt, $mntD, $mntH ) ;
+			$marco->insert('end', "$mov\n", 'detalle' ) ;
+		}
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
 	$dt = "Totales";
