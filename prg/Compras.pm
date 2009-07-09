@@ -41,7 +41,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Compras");
-	$vnt->geometry("950x450+40+150"); 
+	$vnt->geometry("970x450+40+150"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -136,14 +136,14 @@ sub informe ( $ $ ) {
 		$Mnsj = "No hay datos para ese mes"; 
 		return;
 	}
-	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE,%nd);
+	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE,%nd,$cmpr);
 	@datosE = $bd->datosEmpresa($rutE);
 	%nd = $ut->tipoDcmt();
 	$empr = decode_utf8($datosE[0]); 
 	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
 	$marco->insert('end', "Libro Compras  $nMes $cnf[0]\n", 'negrita');
-	my $lin1 = "\nNº  Fecha        Número  RUT        Proveedor                          ";
+	my $lin1 = "\nNº  Fecha        Número  RUT        Proveedor                       ";
 	my $lin1b = "      Afecto      Exento         IVA    I.Espec.       Total";
 	$lin1 .= $lin1b ;
 	my $lin2 = "-"x131;
@@ -214,7 +214,7 @@ sub detalles ( $ $ $ $)
 		$fch = $ut->cFecha($algo->[0]); 
 		$nm = $algo->[1]; 
 		$rt = $algo->[2]; 
-		$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,35 ;
+		$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,32 ;
 		$tt = $pesos->format_number( $algo->[3] );
 		$iva = $pesos->format_number( $algo->[4] );
 		$aft = $pesos->format_number( $algo->[5] );
@@ -222,9 +222,10 @@ sub detalles ( $ $ $ $)
 		$nulo = $algo->[7]; 
 		$ie = $pesos->format_number( $algo->[8] );
 		$ni = $algo->[9];
+		$cmpr = $algo->[10];
 		if ( $nulo < 2 ) { # Se excluyen las Anuladas: código 2
-			$mov = sprintf("%3s  %10s %8s %10s %-35s %11s %11s %11s %11s %11s", 
-				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt ) ;
+			$mov = sprintf("%3s  %10s %8s %10s %-32s %11s %11s %11s %11s %11s %4s", 
+				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt,$cmpr) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[3] ;
 			$Iva += $algo->[4] ;
@@ -266,7 +267,7 @@ sub csv ( $ )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$fch,$nm,$rt,$nmb,$nulo,$a,$d,%nd);
+	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$fch,$nm,$rt,$nmb,$nulo,$a,$d,%nd,$cmpr);
 	%nd = $ut->tipoDcmt();
 	$d = "$rutE/csv/compras$mes.csv";
 	open ARCHIVO, "> $d" or die $! ;
@@ -317,7 +318,7 @@ sub csv ( $ )
 sub detalleCSV ( )
 {
 	my ($ut,$bd,$td,$tf,$stit) = @_;
-	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$l,$a);
+	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$l,$a,$cmp);
 
 	my @datos = $bd->listaFct('Compras',$mes, $td, $tf);
 	if ( not @datos ) {return ;}
@@ -331,8 +332,9 @@ sub detalleCSV ( )
 		$nmb = $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,35 ;
 		$nulo = $a->[7]; 
 		$ni = $a->[9];
+		$cmp = $a->[10];
 		if ( not $nulo ) {
-			$l = "$ni,$fch,$nm,$rt,$nmb,$a->[5],$a->[6],$a->[4],$a->[8],$a->[3]\n";
+			$l = "$ni,$fch,$nm,$rt,$nmb,$a->[5],$a->[6],$a->[4],$a->[8],$a->[3],$cmp\n";
 			print ARCHIVO $l ;
 			$Tt += $a->[3] ;
 			$Iva += $a->[4] ;

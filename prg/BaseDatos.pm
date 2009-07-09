@@ -1096,7 +1096,7 @@ sub listaFct( $ $ $ $)
 	my @datos = ();
 
 	my $sel = "SELECT FechaE, Numero, RUT, Total, IVA, Afecto, Exento, 
-		Nulo, IEspec, Orden FROM $tabla WHERE Mes = ? AND Tipo = ?" ;
+		Nulo, IEspec, Orden, Comprobante FROM $tabla WHERE Mes = ? AND Tipo = ?" ;
 	$sel .= " AND TF = '$tf' " if $tf ;
 	$sel .= " ORDER BY Orden " ; 
 	my $sql = $bd->prepare($sel); 
@@ -1297,7 +1297,7 @@ sub listaBH( $ )
 	my @datos = ();
 	
 	my $sql = $bd->prepare("SELECT b.FechaE, b.Numero, b.RUT, t.Nombre,
-		b.Retenido, b.Total, b.Nulo FROM BoletasH AS b, Terceros AS t 
+		b.Retenido, b.Total, b.Nulo, b.Comprobante FROM BoletasH AS b, Terceros AS t 
 		WHERE b.RUT = t.RUT AND b.Mes = ?");
 	$sql->execute($mes);
 	while (my @fila = $sql->fetchrow_array) {

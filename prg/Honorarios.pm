@@ -41,7 +41,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Honorarios");
-	$vnt->geometry("780x450+40+100"); 
+	$vnt->geometry("790x450+40+100"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -136,7 +136,7 @@ sub informe ( $ $ ) {
 		$Mnsj = "No hay datos para ese mes"; 
 		return;
 	}
-	my ($algo,$fch,$rt,$tt,$im,$nt,$nulo,@datosE);
+	my ($algo,$fch,$rt,$tt,$im,$nt,$nulo,@datosE,$cmpr);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 	# Titulares
@@ -162,9 +162,10 @@ sub informe ( $ $ ) {
 		$im = $pesos->format_number( $algo->[4] );
 		$nt = $pesos->format_number( $algo->[5] - $algo->[4] );
 		$nulo = $algo->[6]; 
+		$cmpr = $algo->[7];
 		if ( not $nulo ) {
-			$mov = sprintf("%10s %8s %10s %-35s %11s %11s %11s ", 
-				$fch,$nm,$rt,$nmb,$nt,$im,$tt ) ;
+			$mov = sprintf("%10s %8s %10s %-35s %11s %11s %11s %4s", 
+				$fch,$nm,$rt,$nmb,$nt,$im,$tt,$cmpr) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[5] ;
 			$Im += $algo->[4] ;
@@ -204,7 +205,7 @@ sub csv ( $ )
 	my @datos = $bd->listaBH($mes);
 	if ( not @datos ) {return ;}
 
-	my ($algo,$fch,$rt,$tt,$im,$nt,$nulo,$a,$d);
+	my ($algo,$fch,$rt,$tt,$im,$nt,$nulo,$a,$d,$cm);
 	$d = "$rutE/csv/honorarios$mes.csv";
 	open ARCHIVO, "> $d" or die $! ;
 	my $l = "$empr\n";
@@ -221,8 +222,9 @@ sub csv ( $ )
 		$nmb =  decode_utf8($a->[3]);
 		$nt = $a->[5]-$a->[4] ;
 		$nulo = $a->[6]; 
+		$cm = $a->[7];
 		if ( not $nulo ) {
-			$l = "$fch,$nm,$rt,$nmb,$nt,$a->[4],$a->[5]\n";
+			$l = "$fch,$nm,$rt,$nmb,$nt,$a->[4],$a->[5],$cm\n";
 			print ARCHIVO $l ;
 			$Tt += $a->[5] ;
 			$Im += $a->[4] ;
