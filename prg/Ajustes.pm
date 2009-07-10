@@ -6,13 +6,15 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
-#  UM: 05.07.2009
+#  UM: 09.07.2009
 
 package Ajustes;
 
 use Tk::LabEntry;
 use Tk::LabFrame;
 use Encode 'decode_utf8';
+
+my ($NumC,$FechaC,$FechaE,$TpD,$NumD,$Ni,$Tabla,$Id,$TipoD,$Mes,$TD);
 
 sub crea {
 	my ($esto, $vp, $bd, $ut, $mt) = @_;
@@ -24,9 +26,10 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Ajustes");
-	$vnt->geometry("280x310+475+2"); # Tamaño y ubicación
+	$vnt->geometry("300x310+475+2"); # Tamaño y ubicación
 
 	my %tp = $ut->tipos();
+	inicializa();
 	# Defime marcos
 	my $mTipoA = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 		-label => 'Seleccione Ajuste:');
@@ -41,7 +44,7 @@ sub crea {
 	my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{fx},
 		-bg => '#F2FFE6', -fg => '#800000',);
 	$mnsj->pack(-side => 'right', -expand => 1, -fill => 'x');
-	$Mnsj = "Mensajes de error o advertencias.";
+	$Mnsj = "Seleccione tipo de ajustes.";
 	my $img = $vnt->Photo(-file => "info.gif") ;
 	my $bAyd = $mMensajes->Button(-image => $img, 
 		-command => sub { $ut->ayuda($mt, 'Ajustes'); } ); 
@@ -49,13 +52,13 @@ sub crea {
 
 	# Define botones
 	$bNvo = $mBtns->Button(-text => "Registra", -command => sub { &registra($esto)}); 
-	$bCan = $mBtns->Button(-text => "Termina", 
-		-command => sub { &termina ($bd, $vnt) });
+	$bCan = $mBtns->Button(-text => "Cancela", -command => sub { &cancela() });
+	$bFin = $mBtns->Button(-text => "Termina", -command => sub { &termina ($bd, $vnt) });
 
 	# Parametros
 	$cn = $mTipoA->Radiobutton( -text => "Número", -value => 'N', 
 		-variable => \$TA , -command => sub { &activa() });
-	$cf = $mTipoA ->Radiobutton( -text => "Fecha", -value => 'F', 
+	$cf = $mTipoA ->Radiobutton( -text => "Fechas", -value => 'F', 
 		-variable => \$TA, -command => sub { &activa() } );
 	$tp = $mTipoA->Radiobutton( -text => "Tipo", -value => 'T', 
 		-variable => \$TA , -command => sub { &activa() });
@@ -89,13 +92,17 @@ sub crea {
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$NumC, -state => 'disabled',
 		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
-	$fechaC = $mDatos->LabEntry(-label => "Fecha: ", -width => 10,
-		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
-		-textvariable => \$FechaC, -disabledbackground => '#FFFFFC', 
-		-disabledforeground => '#000000' );
 	$tipoD = $mDatos->LabEntry(-label => "M o E: ", -width => 3,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
 		-textvariable => \$TpD, -disabledbackground => '#FFFFFC', 
+		-disabledforeground => '#000000' );
+	$fechaE = $mDatos->LabEntry(-label => "Emitida: ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
+		-textvariable => \$FechaE, -disabledbackground => '#FFFFFC', 
+		-disabledforeground => '#000000' );
+	$fechaC = $mDatos->LabEntry(-label => "Contabilizada: ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
+		-textvariable => \$FechaC, -disabledbackground => '#FFFFFC', 
 		-disabledforeground => '#000000' );
 
 	$ni->bind("<FocusOut>", sub { &buscaDoc($esto) } );
@@ -115,11 +122,13 @@ sub crea {
 	$rut->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$numD->grid(-row => 0, -column => 1, -sticky => 'nw');
 	$numC->grid(-row => 1, -column => 0, -sticky => 'nw');
-	$fechaC->grid(-row => 1, -column => 1, -sticky => 'nw');
-	$tipoD->grid(-row => 2, -column => 1, -sticky => 'nw') ;
-
+	$tipoD->grid(-row => 1, -column => 1, -sticky => 'nw') ;
+	$fechaE->grid(-row => 2, -column => 0, -sticky => 'nw');
+	$fechaC->grid(-row => 2, -column => 1, -sticky => 'nw');
+	
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
-	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
+	$bCan->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bFin->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$mTipoA->pack(-expand => 1);
@@ -131,6 +140,7 @@ sub crea {
 	$numD->configure(-state => 'disable');
 	$mes->configure(-state => 'disable');
 	$fechaC->configure(-state => 'disable');
+	$fechaE->configure(-state => 'disable');
 	$tipoD->configure(-state => 'disable');
 
 	$cn->focus ;
@@ -140,30 +150,34 @@ sub crea {
 }
 
 # Funciones internas
-sub validaFechaC ( $ $ )
+sub cancela
 {
-	my ($ut, $bd) = @_;
+	inicializa();
+	$ni->configure(-state => 'disable');
+	$numD->configure(-state => 'disable');
+	$mes->configure(-state => 'disable');
+	$fechaC->configure(-state => 'disable');
+	$fechaE->configure(-state => 'disable');
+	$tipoD->configure(-state => 'disable');
+	$cn->focus ;
+}
+
+sub validaFecha ( $ $ $ $ )
+{
+	my ($ut, $bd, $fch, $txt) = @_;
 	
-	if ($FechaC eq '' ) {
-		$Mnsj = "Anote la fecha de contabilización.";
-		$fechaC->focus;
+	if ($fch eq '' ) {
+		$Mnsj = "Anote la fecha de $txt.";
 		return 0;
 	}
 	# Valida fecha contabilización
 	if (not $FechaC =~ m|\d+/\d+/\d+|) {
 		$Mnsj = "Problema con formato fecha";
-		$fechaC->focus;
 		return 0;
-	} elsif ( not $ut->analizaFecha($FechaC) ) {
+	} elsif ( not $ut->analizaFecha($fch) ) {
 		$Mnsj = "Fecha incorrecta" ;
-		$fechaC->focus ;
 		return 0;
-	}
-	# Determina el número de ingreso
-	$MesC = substr $FechaC,3,2 ; # Extrae mes
-	$MesC =~ s/^0// ; # Elimina '0' al inicio
-	$Ni = $bd->numeroI($Tabla, $mes, $TipoD) + 1 ;
-	
+	}	
 	return 1; 
 }
 
@@ -173,11 +187,28 @@ sub registra ( $ )
 	my $bd = $esto->{'baseDatos'} ;
 	my $ut = $esto->{'mensajes'} ;
 	
-	if ( validaFechaC($ut, $bd) ) {
-		# Actualiza datos
-		$bd->cambiaDcm($esto,$NumC,$FechaC,$TpD,$NumD,$Ni,$MesC,$Tabla,$Id,$TipoD);
-		$Mnsj = "Registro actualizado";
+	if ( not validaFecha($ut,$bd,$FechaE,'emisión') ) {
+		$fechaE->focus;
+		return ;
 	} 
+	if ( not validaFecha($ut,$bd,$FechaC,'contabilización') ) {
+		$fechaC->focus;
+		return ;
+	} 
+	# Actualiza datos
+	my $fc = $ut->analizaFecha($FechaC) ;
+	my $fe = $ut->analizaFecha($FechaE) ;
+	$bd->cambiaDcm($NumC,$fc,$fe,$TpD,$NumD,$Ni,$Tabla,$Id,$TD);
+
+	$Mnsj = "Registro actualizado";
+	inicializa();
+	$cn->focus;
+}
+
+sub inicializa 
+{
+	$NumC = $FechaC = $FechaE = $TpD = $NumD = $Ni = $Tabla = $Id = '';
+	$TipoD = $Mes = $Rut = $TA = $TD = '';
 }
 
 sub buscaDoc ( $ )
@@ -186,8 +217,18 @@ sub buscaDoc ( $ )
 	my $bd = $esto->{'baseDatos'} ;
 	my $ut = $esto->{'mensajes'} ;
 	
-	$TipoD .= substr $Tabla,0,1 if $TipoD eq 'F' ;
-	my @datos = $bd->buscaNI($Tabla,$Mes,$Ni,$TipoD);
+	if ($TipoD eq '') {
+		$Mnsj = "Indicar tipo";
+		$fc->focus ;
+		return ;
+	}
+	if ($Tabla eq '' ) {
+		$Mnsj = "Marcar Emitida o Recibida";
+		$de->focus;
+		return ;
+	}
+	$TD = $TipoD eq 'F' ? $TipoD . substr $Tabla,0,1 : $TipoD ;
+	my @datos = $bd->buscaNI($Tabla,$Mes,$Ni,$TD);
 	if (not @datos) {
 		$Mnsj = "NO existe documento con esos datos";
 		$mes->focus;
@@ -197,7 +238,8 @@ sub buscaDoc ( $ )
 	$NumD = $datos[1];
 	$NumC = $datos[2];
 	$TpD =  $datos[3];
-	$Id  =  $datos[4];
+	$Id  =  $datos[5];
+	$FechaE = $ut->cFecha($datos[4]) ;
 	my @dtsC = $bd->consultaC($NumC);
 	$FechaC = $ut->cFecha($dtsC[2]);
 }
@@ -208,15 +250,18 @@ sub activa ( )
 	$ni->configure(-state => 'normal');
 	if ( $TA eq 'F') {
 		$numD->configure(-state => 'disable');
+		$fechaE->configure(-state => 'normal');
 		$fechaC->configure(-state => 'normal');
 		$tipoD->configure(-state => 'disable');
 	} elsif ($TA eq 'N') {
 		$numD->configure(-state => 'normal');
 		$fechaC->configure(-state => 'disable');
+		$fechaE->configure(-state => 'disable');
 		$tipoD->configure(-state => 'disable');
 	} else {
 		$numD->configure(-state => 'disable');
 		$fechaC->configure(-state => 'disable');
+		$fechaE->configure(-state => 'disable');
 		$tipoD->configure(-state => 'normal');
 	}
 }

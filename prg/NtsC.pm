@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 23.06.2009
+#  UM : 09.07.2009
 
 package NtsC;
 
@@ -348,7 +348,6 @@ sub buscaCC ( $ ) {
 
 	my ($bd) = @_;
 
-#	$Mnsj = " ";
 	# La cuenta debe ser de Pérdida o Ganancia para aplicar C Costo
 	if (not $SGrupo =~ /^[34]/) { 
 		$Mnsj = "No aplica el Centro de Costo.";
@@ -467,9 +466,14 @@ sub validaNI ( $ )
 {
 	my ($bd) = @_;
 	
+	if ($NmrI == 0) {
+		$Mnsj = "Debe indicar un número";
+		$nmrO->focus;
+		return ;		
+	}
 	my $mes = substr $FechaC,3,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
-	if ( $bd->numeroI($TablaD, $mes, $tpD, $NmrI) ) {
+	if ( $bd->numeroI($TablaD, $mes, $TipoD, $NmrI) ) {
 		$Mnsj = "Número existe";
 		$nmrO->focus;
 		return ;

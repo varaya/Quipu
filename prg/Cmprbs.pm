@@ -18,12 +18,12 @@ use Number::Format;
 
 # Variables válidas dentro del archivo
 # Datos a registrar
-my ($Numero, $Id, $Glosa, $Fecha, $TotalD, $TotalH, $TotalDf, $TotalHf ) ;
-my ($Codigo,$Detalle,$Monto,$DH,$CntaI,$RUT,$Documento,$Cuenta,$Nmb) ;
+my ($Numero,$Id,$Glosa, $Fecha, $TotalD, $TotalH, $TotalDf, $TotalHf ) ;
+my ($Codigo,$Detalle,$Monto,$DH,$CntaI,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
 my ($TipoCmp, $TipoD, $cTipoD, $BH, $Bco, $nBanco, $cBanco, $mBco, $Mnsj ) ; 
 # Campos
-my ($codigo, $detalle, $glosa, $fecha, $totalD, $totalH, $bcos ) ;
-my ($monto, $debe, $haber, $cuentaI, $tipoD, $documento, $numero, $cuenta) ;
+my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
+my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta) ;
 
 my ($bReg, $bEle, $bNvo, $bCnt) ; 	# Botones
 my @dCuenta = () ;	# Lista datos cuenta
@@ -44,10 +44,11 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
+	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
 	$Numero = $bd->numeroC() + 1;
 	$Monto = $TotalD = $TotalH = $BH = 0;
-	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = '';
+	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = $FechaV = '';
 	$TipoCmp = substr $tipoC, 0, 1 ;
 	$Bco = $bd->ctaEsp("B");
 	@bancos = $bd->datosBcs();
@@ -58,7 +59,7 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
-	my $alt = @bancos ? 560 : 530 ;
+	my $alt = @bancos ? 565 : 535 ;
 	$vnt->title("Registra Comprobante de $tipoC");
 	$vnt->geometry("400x$alt+475+4"); # Tamaño y ubicación
 	
@@ -68,20 +69,14 @@ sub crea {
 	my $mLista = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 		-label => 'Movimientos');
 	my $mItems = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => 'Detalle ');
-	my $mOtros = $vnt->Frame(-borderwidth => 0);
-	my $mCntaI = $mOtros->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => 'Cuenta individual ');
-	my $mDoc = $mOtros->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => 'Datos documento ');
+		-label => 'Detalle Movimiento');
+	my $mOtros = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
+		-label => 'Cuenta Individual ');
 	my $mBotonesL = $vnt->Frame(-borderwidth => 1);
 	my $mBotonesC = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
-	my $mNombre = $vnt->Frame(-borderwidth => 1);
 	
 	# Barra de mensajes y botón de ayuda
-	my $nombre = $mNombre->Label(-textvariable => \$Nombre, -font => $tp{tx},);
-	$nombre->pack(-side => 'right', -expand => 1, -fill => 'none');
 	my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{tx},
 		-bg => '#F2FFE6', -fg => '#800000',);
 	$mnsj->pack(-side => 'right', -expand => 1, -fill => 'x');
@@ -145,10 +140,12 @@ sub crea {
 	$detalle = $mItems->LabEntry(-label => " Detalle: ", -width => 40,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Detalle);
-	$cuentaI = $mCntaI->LabEntry(-label => " RUT: ", -width => 15,
+	$cuentaI = $mOtros->LabEntry(-label => " RUT: ", -width => 15,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-justify => 'left', -textvariable => \$RUT);	
-	$tipoD = $mDoc->BrowseEntry( -variable => \$TipoD, -state => 'readonly',
+		-justify => 'left', -textvariable => \$RUT);
+	$nombre = $mOtros->Label(-textvariable => \$Nombre, -font => $tp{tx},);	
+	$doc = $mOtros->Label(-text => ' Doc.');
+	$tipoD = $mOtros->BrowseEntry( -variable => \$TipoD, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -width => 12, -listwidth => 30,
 		-browse2cmd => \&seleccionaD );
@@ -169,9 +166,12 @@ sub crea {
 	foreach $algo ( @listaD ) {
 		$tipoD->insert('end', decode_utf8($algo->[1]) ) ;
 	}
-	$documento = $mDoc->LabEntry(-label => "# ", -width => 12,
+	$documento = $mOtros->LabEntry(-label => "# ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Documento);		
+	$fechaV = $mOtros->LabEntry(-label => "Vence: ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$FechaV );
 	
 	@datos = muestraLista($esto);
 	if ( not @datos ) {
@@ -179,6 +179,8 @@ sub crea {
 			-text => "No hay movimientos registrados" ) ;
 	}
 	# Habilita validaciones
+	$fecha->bind("<FocusOut>", sub { &validaFecha($ut,\$Fecha,\$fecha,1) } );
+	$fechaV->bind("<FocusOut>", sub{ &validaFecha($ut,\$FechaV,\$fechaV,0)});
 	$monto->bind("<FocusIn>", sub { &buscaCta($esto) } );
 	$detalle->bind("<FocusIn>", sub { &monto() } );	
 	$tipoD->bind("<FocusIn>", sub { &buscaRut($esto) } );
@@ -203,9 +205,12 @@ sub crea {
 		$mBco->grid(-row => 3, -column => 0, -sticky => 'ne');
 		$bcos->grid(-row => 3, -column => 1, -sticky => 'nw');
 	}
-	$cuentaI->pack();
-	$tipoD->grid(-row => 0, -column => 0, -sticky => 'nw');
-	$documento->grid(-row => 0, -column => 1, -sticky => 'nw');
+	$cuentaI->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'nw');
+	$nombre->grid(-row => 0, -column => 2, -columnspan => 2, -sticky => 'nw');
+	$doc->grid(-row => 1, -column => 0, -sticky => 'nw');
+	$tipoD->grid(-row => 1, -column => 1, -sticky => 'nw');
+	$documento->grid(-row => 1, -column => 2, -sticky => 'nw');
+	$fechaV->grid(-row => 1, -column => 3, -sticky => 'nw');
 
 	$bReg->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bEle->pack(-side => 'left', -expand => 0, -fill => 'none');
@@ -219,10 +224,7 @@ sub crea {
 	$mLista->pack(-expand => 1);
 	$mItems->pack(-expand => 1);
 
-	$mCntaI->pack(-side => 'left', -expand => 0, -fill => 'none');
-	$mDoc->pack(-side => 'right', -expand => 0, -fill => 'none');
-	$mOtros->pack(-expand => 1);
-	$mNombre->pack(-expand => 1);
+	$mOtros->pack(-side => 'top', -expand => 1, -fill => 'none');
 	$mBotonesL->pack( -expand => 1);
 
 	# Inicialmente deshabilita algunos botones
@@ -234,6 +236,7 @@ sub crea {
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
+	$fechaV->configure(-state => 'disabled');
 	
 	bless $esto;
 	return $esto;
@@ -283,17 +286,20 @@ sub buscaCta ( ) {
 		$cuentaI->configure(-state => 'disabled');
 		$documento->configure(-state => 'normal');
 		$tipoD->configure(-state => 'normal');
+		$fechaV->configure(-state => 'normal');
 	}
 	# o si agrupa cuentas individuales
 	if ($CntaI eq "I") {
 		$cuentaI->configure(-state => 'normal');
 		$tipoD->configure(-state => 'normal');
 		$documento->configure(-state => 'normal');
+		$fechaV->configure(-state => 'normal');
 	}
 	# o si debe registrar documentos
 	if ($CntaI eq "D") {
 		$tipoD->configure(-state => 'normal');
 		$documento->configure(-state => 'normal');
+		$fechaV->configure(-state => 'normal');
 	}
 }
 
@@ -412,10 +418,13 @@ sub buscaRut ()
 		return;
 	} else {
 		my $nmb = $bd->buscaT($RUT);
-		if ( not $nmb ) {
-			$Mnsj = "Ese RUT No esta registrado" ;
-			$cuentaI->focus;
-			return;
+		if ( not $nmb ) { # Si no está en Terceros lo busca en Personal
+			$nmb = $bd->buscaP($RUT);
+			if ( not $nmb ) {
+				$Mnsj = "Ese RUT No esta registrado" ;
+				$cuentaI->focus;
+				return;
+			}
 		}
 		$Nombre = decode_utf8("$nmb");
 	}
@@ -556,8 +565,9 @@ sub contabiliza ( )
 	$bd->agregaCmp($Numero, $ff, $Glosa, $TotalD, $TipoCmp, $BH);
 	$bd->actualizaCI($Numero, $ff);
 	# Graba documentos de pago, si corresponde
+	my $fv = $ut->analizaFecha($FechaV);
 	my $tabla = ( $TipoCmp eq "I" ) ? 'DocsR' : 'DocsE' ;
-	$bd->agregaDP($Numero, $ff, $tabla) if not $TipoCmp eq "T";
+	$bd->agregaDP($Numero, $ff, $tabla, $fv) if not $TipoCmp eq "T";
 	
 	limpiaCampos();
 	$bCnt->configure(-state => 'disabled');
@@ -571,6 +581,29 @@ sub contabiliza ( )
 	$glosa->delete(0,'end');
 	$tipoD->delete(0,'end');
 	$fecha->focus;
+}
+
+sub validaFecha ($ $ $ $ ) 
+{
+	my ($ut, $v, $c, $x) = @_;
+	
+	$Mnsj = " ";
+	if ( not $$v ) {	
+		if ($x == 0) { 
+			$FechaV = $Fecha ;
+			return; 
+		}
+		$Mnsj = "Debe colocar fecha de emisión";
+		$$c->focus;
+		return ;
+	} 
+	if ( not $$v =~ m|\d+/\d+/\d+| ) {
+		$Mnsj = "Formato errado: debe ser dd/mm/aaa";
+		$$c->focus;
+	} elsif ( not $ut->analizaFecha($$v) ) {
+		$Mnsj = "Fecha incorrecta";
+		$$c->focus;
+	}
 }
 
 sub cancela ( )
@@ -588,7 +621,7 @@ sub limpiaCampos ( )
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
 	$Monto = $BH = 0;
-	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = '';
+	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = '';
 	
 	# Activa o no contabilizar el comprobante
 	if ($TotalH == $TotalD) {

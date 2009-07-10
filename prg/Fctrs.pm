@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 23.06.2009
+#  UM : 09.07.2009
 
 package Fctrs;
 
@@ -477,6 +477,11 @@ sub validaNI ( $ )
 {
 	my ($bd) = @_;
 	
+	if ($NmrI == 0) {
+		$Mnsj = "Debe indicar un número";
+		$nmrO->focus;
+		return ;		
+	}
 	my $mes = substr $FechaC,3,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
 	if ( $bd->numeroI($TablaD, $mes, $TipoD, $NmrI) ) {

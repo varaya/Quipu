@@ -159,6 +159,8 @@ sub buscaRUT ( $ ) {
 		$rut->focus;
 		return;
 	}
+	$Rut = uc($Rut); # Convierte k en K
+	$Rut =~ s/^0// ; # Elimina 0 al inicio
 	if ( not $ut->vRut($Rut) ) {
 		$Mnsj = "RUT no es válido";
 		$rut->focus;

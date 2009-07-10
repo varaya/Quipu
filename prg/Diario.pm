@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 29.06.2009
+#  UM: 09.07.2009
 
 package Diario;
 
@@ -183,12 +183,9 @@ sub informe ( $ $  $) {
 		$tt = $pesos->format_number( $algo->[$Total] );
 		$gl = decode_utf8($algo->[$Glosa]);
 		$ref = $algo->[$Ref] ;
+		$gl = "Anulado por Comprobante $ref" if $algo->[$Nulo] ;
 		$marco->insert('end', "\n$fch -------- $tipoC # $nm --------\n", 'detalle');
-		if ($algo->[$Nulo] ) {
-			$marco->insert('end', "           Anulado por Comprobante $ref\n", 'detalle');
-		} else {
-			asiento($bd, $marco, $nm, $tt, $gl);	
-		}
+		asiento($bd, $marco, $nm, $tt, $gl);	
 	}
 	$tt = $pesos->format_number( $tg );
 	$marco->insert('end',"$lin2\n",'detalle');

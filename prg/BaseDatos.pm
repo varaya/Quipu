@@ -788,9 +788,9 @@ sub actualizaP ( $ $ $ $ )
 	$aCta->finish();
 }
 
-sub agregaDP ( $ $ $ )
+sub agregaDP ( $ $ $ $ )
 {
-	my ($esto, $nmr, $ff, $tabla) = @_;	
+	my ($esto, $nmr, $ff, $tabla, $fv ) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my ($cm, $x, $sql, $rDoc);
 
@@ -802,13 +802,13 @@ sub agregaDP ( $ $ $ )
 	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?,?);");
 	while (my @fila = $sql->fetchrow_array) {
 		$x = \@fila;
-		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,'','',0,'',0,'CH');
+		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,$fv,0,'','',0,'CH');
 	}
 	# Busca letras y agrega, si existen
 	$sql->execute($nmr,'LT');
 	while (my @fila = $sql->fetchrow_array) {
 		$x = \@fila;
-		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,'','',0,'',0,'LT');
+		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,$fv,0,'','',0,'LT');
 	}
 	$sql->finish();
 	$rDoc->finish();
@@ -841,8 +841,7 @@ sub anulaCmp( $ $ )
 		WHERE Numero = ? ;");
 	$sql->execute($numero,$ref);
 	# Elimina datos de sus items
-	$sql = $bd->prepare("UPDATE ItemsC SET CuentaM = '', CCosto = ''
-		WHERE Numero = ? ;");
+	$sql = $bd->prepare("UPDATE ItemsC SET CCosto = '' WHERE Numero = ? ;");
 	$sql->execute($ref);
 	$sql->finish();
 }
@@ -990,7 +989,7 @@ sub buscaNI ()
 	my ($esto, $tbl, $mes, $ni, $td) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
-	my $sql = $bd->prepare("SELECT Rut, Numero, Comprobante, TF, ROWID FROM $tbl 
+	my $sql = $bd->prepare("SELECT Rut,Numero,Comprobante,TF,FechaE,ROWID FROM $tbl 
 		WHERE Orden = ? AND Tipo = ? AND Mes = ?;");
 	$sql->execute($ni,$td,$mes);
 	my @dato = $sql->fetchrow_array;
@@ -1112,18 +1111,22 @@ sub listaFct( $ $ $ $)
 
 sub cambiaDcm ( ) 
 {
-	my ($esto,$NumC,$FechaC,$TpD,$NumD,$Ni,$MesC,$Tabla,$Id,$TD) = @_ ;
+	my ($esto,$NumC,$fc,$fe,$TpD,$NumD,$Ni,$Tabla,$Id,$TD) = @_ ;
 	my $bd = $esto->{'baseDatos'};
-	
-	my $sql = $bd->prepare("UPDATE $Tabla SET Fecha = ?, Mes = ?, Orden = ? ,
+
+	my $mes = substr $fc,4,2 ;
+	$mes =~ s/^0// ;
+	print "$fe, $mes, $Ni, $TpD, $Id, $Tabla\n";
+	return :
+	my $sql = $bd->prepare("UPDATE $Tabla SET FechaE = ?, Mes = ?, Orden = ? ,
 		TF = ? WHERE ROWID = ?"); 
-	$sql->execute($FechaC,$Ni,$MesC,$TpD,$Id);
+	$sql->execute($fe,$mes,$Ni,$TpD,$Id);
 
 	$sql = $bd->prepare("UPDATE DatosC SET Fecha = ? WHERE Numero = ?");
-	$sql->execute($FechaC,$NumC);
+	$sql->execute($fc,$NumC);
 	
 	$sql = $bd->prepare("UPDATE ItemsC SET Mes = ? WHERE Numero = ?");
-	$sql->execute($MesC,$NumC);
+	$sql->execute($mes,$NumC);
 
 	$sql = $bd->prepare("UPDATE ItemsC SET Documento = ? 
 		WHERE Numero = ? AND TipoD = ? ");

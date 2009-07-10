@@ -1,10 +1,11 @@
 #  DatosE.pm - Registra o modifica la información de la empresa
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la 
+#  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
+#  UM : 09.07.2009
 
 package DatosE;
 
@@ -145,6 +146,8 @@ sub vRUT ($ $ )
 		$$crt->focus;
 		return;
 	}
+	$$rt = uc($$rt);
+	$$rt =~ s/^0// ; # Elimina 0 al inicio
 	if ( not $ut->vRut($$rt) ) {
 		$Mnsj = "RUT no es válido";
 		$$crt->focus;
