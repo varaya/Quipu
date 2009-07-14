@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 013.07.2009
+#  UM: 14.07.2009
 
 package BaseDatos;
 
@@ -1054,8 +1054,7 @@ sub anulaDct( $ $ $ )
 	my ($esto,$rut,$dcm,$tabla) = @_;
 	my $bd = $esto->{'baseDatos'};
 
-print "$rut - $dcm - $tabla \n";
-	my $sql = $bd->prepare("UPDATE $tabla SET Nulo = 2
+	my $sql = $bd->prepare("UPDATE $tabla SET Nulo = 2, RUT = 'Anulada'
 		WHERE RUT = ? AND Numero = ?;");
 	$sql->execute($rut,$dcm);
 	$sql->finish();
@@ -1133,18 +1132,16 @@ sub cambiaDcm ( )
 
 	my $mes = substr $fc,4,2 ;
 	$mes =~ s/^0// ;
-	print "$fe, $mes, $Ni, $TpD, $Id, $Tabla\n";
-	return :
-	my $sql = $bd->prepare("UPDATE $Tabla SET FechaE = ?, Mes = ?, Orden = ? ,
-		TF = ? WHERE ROWID = ?"); 
-	$sql->execute($fe,$mes,$Ni,$TpD,$Id);
-
+	# Actualiza documento
+	my $sql = $bd->prepare("UPDATE $Tabla SET FechaE = ?, Mes = ?, Orden = ?,
+		TF = ?, Numero = ? WHERE ROWID = ?"); 
+	$sql->execute($fe,$mes,$Ni,$TpD,$NumD,$Id);
+	# Cambia fecha en Comprobante
 	$sql = $bd->prepare("UPDATE DatosC SET Fecha = ? WHERE Numero = ?");
 	$sql->execute($fc,$NumC);
-	
 	$sql = $bd->prepare("UPDATE ItemsC SET Mes = ? WHERE Numero = ?");
 	$sql->execute($mes,$NumC);
-
+	# Modifica Nº documento
 	$sql = $bd->prepare("UPDATE ItemsC SET Documento = ? 
 		WHERE Numero = ? AND TipoD = ? ");
 	$sql->execute($NumD,$NumC,$TD);

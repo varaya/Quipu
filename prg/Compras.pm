@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 29.06.2009 
+#  UM : 14.07.2009 
 
 package Compras;
 
@@ -214,7 +214,6 @@ sub detalles ( $ $ $ $)
 		$fch = $ut->cFecha($algo->[0]); 
 		$nm = $algo->[1]; 
 		$rt = $algo->[2]; 
-		$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,32 ;
 		$tt = $pesos->format_number( $algo->[3] );
 		$iva = $pesos->format_number( $algo->[4] );
 		$aft = $pesos->format_number( $algo->[5] );
@@ -224,6 +223,7 @@ sub detalles ( $ $ $ $)
 		$ni = $algo->[9];
 		$cmpr = $algo->[10];
 		if ( $nulo < 2 ) { # Se excluyen las Anuladas: código 2
+			$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,32 ;
 			$mov = sprintf("%3s  %10s %8s %10s %-32s %11s %11s %11s %11s %11s %4s", 
 				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt,$cmpr) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;

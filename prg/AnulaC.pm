@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 07.07.2009
+#  UM: 14.07.2009
 
 package AnulaC;
 
@@ -220,6 +220,7 @@ sub anula
 	$tabla = 'BoletasH' if $td eq 'BH';
 	$tabla = 'Compras' if $td eq 'FC';
 	$tabla = 'Ventas' if $td eq 'FV';
+	$Mnsj = "$rut - $dcm - $tabla";
 	$bd->anulaDct($rut,$dcm,$tabla) if $aD and $tpC eq "T" ;
 	# o bien elimina el pago contabilizado
 	if ($aD and $tpC eq 'I') { # Facturas de Venta, si es ingreso
