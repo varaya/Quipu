@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 07.07.2009
+#  UM: 013.07.2009
 
 package BaseDatos;
 
@@ -552,13 +552,14 @@ sub itemsC( $ )
 
 sub itemsM( $ ) # Movimientos de cuentas de mayor
 {
-	my ($esto, $NmrC) = @_;	
+	my ($esto, $NmrC,$mes) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado 
-		FROM ItemsC AS i, DatosC AS d WHERE i.CuentaM = ? AND i.Numero = d.Numero;");
-	$sql->execute($NmrC);
+		FROM ItemsC AS i, DatosC AS d WHERE i.CuentaM = ? AND i.Numero = d.Numero
+		AND Mes = ?;");
+	$sql->execute($NmrC,$mes);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
 		push @datos, \@fila;
@@ -732,6 +733,20 @@ sub sumas( $ )
 	my $sql = $bd->prepare("SELECT sum(Debe),sum(Haber) FROM ItemsT
 		WHERE Numero = ?;");
 	$sql->execute($Nmr);
+	my @dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return ( $dato[0], $dato[1] ); 
+}
+
+sub totales( $ $ )
+{
+	my ($esto, $cta, $mes) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("SELECT sum(Debe),sum(Haber) FROM ItemsC
+		WHERE CuentaM = ? AND Mes <= ?;");
+	$sql->execute($cta,$mes);
 	my @dato = $sql->fetchrow_array;
 	$sql->finish();
 
@@ -1094,10 +1109,12 @@ sub listaFct( $ $ $ $)
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
+	my $orden = 'Orden';
+	$orden = 'Numero' if $tabla eq 'Ventas';
 	my $sel = "SELECT FechaE, Numero, RUT, Total, IVA, Afecto, Exento, 
 		Nulo, IEspec, Orden, Comprobante FROM $tabla WHERE Mes = ? AND Tipo = ?" ;
 	$sel .= " AND TF = '$tf' " if $tf ;
-	$sel .= " ORDER BY Orden " ; 
+	$sel .= " ORDER BY $orden " ; 
 	my $sql = $bd->prepare($sel); 
 	$sql->execute($mes,$td);
 	# crea una lista con referencias a las listas de registros

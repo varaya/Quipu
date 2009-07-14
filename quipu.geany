@@ -9,6 +9,6 @@ run_cmd=
 [files]
 current_page=3
 FILE_NAME_0=0;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
-FILE_NAME_1=18311;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
+FILE_NAME_1=16590;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
 FILE_NAME_2=2113;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
-FILE_NAME_3=946;3;0;0;1;1;0;/home/varaya/cntb/prg/Cmprbs.pm;
+FILE_NAME_3=4396;3;0;0;1;1;0;/home/varaya/cntb/prg/Mayor.pm;

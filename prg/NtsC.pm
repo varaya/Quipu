@@ -746,7 +746,7 @@ sub limpiaCampos ( )
 sub inicializaV ( )
 {
 	$Monto = $TotalI = $Total = $Neto = $Iva = 0;
-	$Codigo = $RUT = $Glosa = $Detalle = $CtaIVA = $CtaT = $NmrI = '';
+	$Codigo = $RUT = $Glosa = $Detalle = $CtaIVA = $CtaT = '';
 	$NombreCi = $NombreCt = $Nombre = $Fecha = $NmrI = '';
 }
 

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 09.07.2009 
+#  UM : 13.07.2009 
 
 package Ventas;
 
