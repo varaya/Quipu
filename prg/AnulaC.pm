@@ -31,7 +31,7 @@ sub crea {
 	$rutE = $rt ;
 	my %tp = $ut->tipos();
 	$Fecha = $ut->fechaHoy();
-	$mes = $nMes = '';
+	$mes = $nMes = $Cuenta = '';
 	$Numero = $bd->numeroC() + 1;
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
@@ -141,15 +141,14 @@ sub muestraC {
 	} else {
 		$marco->insert('end', "Movimientos\n" , 'grupo');
 	}
-	# FALTA: evitar la anulación de un comprobante que contabilizó un
-	# documento que ya está pagado
 	
 	@data = $bd->itemsC($nmrC);
-	my ($algo, $mov, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
+	my ($algo, $mov, $cm,$ncta, $mntD, $mntH, $dt, $ci,$td, $dcm,$pago);
 	my $lin1 = "Cuenta                                      Debe       Haber Detalle";
 	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
+	$pago = 0;
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
 		$ncta = decode_utf8($bd->nmbCuenta($cm) );
@@ -157,14 +156,17 @@ sub muestraC {
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
 		$ci = $dcm = $dt = '' ;
+		$td =  $algo->[6] ;
 		if ($algo->[4]) {
 			$dt = decode_utf8($algo->[4]);
 		} 
 		if ($algo->[5]) {
 			$ci = "RUT $algo->[5]";
 		}
-		if ($algo->[6]) {
-			$dcm = "$algo->[6] $algo->[7]";
+		if ( $td ) {
+			$dcm = "$td $algo->[7]";
+			$tabla = tbl( $td );
+			$pago = $bd->buscaFct($tabla, $algo->[5], $algo->[7], 'Pagada')
 		}
 		$mov1 = sprintf("%-5s %-30s %11s %11s  %-15s", $cm, substr($ncta,0,30) ,
 			$mntD, $mntH, $dt ) ;
@@ -176,9 +178,17 @@ sub muestraC {
 		}
 	}
 	$marco->insert('end', "\nTotal: $total\n" , 'grupo');
-	
-	$bImp->configure(-state => 'active');
-	$fecha->focus;
+	if ($pago) {
+		$marco->insert('end', "\nDocumento Pagado: no se puede anular\n" , 'negrita');
+		$marco->insert('end', "Debe anular previamente el pago.\n" , 'negrita');
+	}
+	if ( not $pago ) {
+		$bImp->configure(-state => 'active');
+		$fecha->focus;
+	} else {
+		$cuenta->focus;
+		$bImp->configure(-state => 'disabled');
+	}
 }
 
 sub anula 
@@ -217,9 +227,7 @@ sub anula
 	$bd->agregaCmp($Numero,$ff,$glosa,$total,'T',0);
 	$bd->actualizaCI($Numero,$ff);
 	# Anula documento, si corresponde
-	$tabla = 'BoletasH' if $td eq 'BH';
-	$tabla = 'Compras' if $td eq 'FC';
-	$tabla = 'Ventas' if $td eq 'FV';
+	$tabla = tbl( $td );
 	$Mnsj = "$rut - $dcm - $tabla";
 	$bd->anulaDct($rut,$dcm,$tabla) if $aD and $tpC eq "T" ;
 	# o bien elimina el pago contabilizado
@@ -248,5 +256,14 @@ sub cancela ( )
 	$vn->destroy();
 }
 
+sub tbl ( $ )
+{
+	my ($td) = @_;
+	
+	$tabla = 'BoletasH' if $td eq 'BH';
+	$tabla = 'Compras' if $td eq 'FC';
+	$tabla = 'Ventas' if $td eq 'FV';
+	return $tabla;
+}
 # Fin del paquete
 1;

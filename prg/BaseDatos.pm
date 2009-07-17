@@ -157,7 +157,7 @@ sub datosP( )
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 	
-	my $sql = $bd->prepare("SELECT * FROM Personal ORDER BY Rut");
+	my $sql = $bd->prepare("SELECT * FROM Personal ORDER BY Nombre");
 	$sql->execute();
 	
 	# crea una lista con referencias a las listas de registros
@@ -214,7 +214,7 @@ sub datosT( )
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 	
-	my $sql = $bd->prepare("SELECT * FROM Terceros ORDER BY Rut");
+	my $sql = $bd->prepare("SELECT * FROM Terceros ORDER BY Nombre");
 	$sql->execute();
 	
 	# crea una lista con referencias a las listas de registros
@@ -1028,16 +1028,16 @@ sub datosFct( $ $ $ )
 	return @dts; 
 }
 
-sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
+sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 {
-	my ($esto,$tb,$rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$td,$fv,$fc,$cta,$tf,$no,$nl,$ie) = @_;	
+	my ($esto,$tb,$rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$td,$fv,$fc,$cta,$tf,$no,$nl,$ie,$ivr) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my ($mnD, $mnH, $mes, $sql);
 
 	$mes = substr $fc,4,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
-	$sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,$mes,$nl,$cta,$tf,$no,$ie);
+	$sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,$mes,$nl,$cta,$tf,$no,$ie,$ivr);
 	
 	# Actualiza cuenta individual
 	$mnD = $mnH = 0;
@@ -1111,7 +1111,7 @@ sub listaFct( $ $ $ $)
 	my $orden = 'Orden';
 	$orden = 'Numero' if $tabla eq 'Ventas';
 	my $sel = "SELECT FechaE, Numero, RUT, Total, IVA, Afecto, Exento, 
-		Nulo, IEspec, Orden, Comprobante FROM $tabla WHERE Mes = ? AND Tipo = ?" ;
+		Nulo, IEspec, Orden, Comprobante, IRetenido FROM $tabla WHERE Mes = ? AND Tipo = ?" ;
 	$sel .= " AND TF = '$tf' " if $tf ;
 	$sel .= " ORDER BY $orden " ; 
 	my $sql = $bd->prepare($sel); 
@@ -1197,24 +1197,26 @@ $bd->do("CREATE TEMPORARY TABLE RFcts (
 	IVA int(8),
 	Afecto int(8),
 	Exento int(8),
-	IEspec int(8) ,
+	IEspec int(8),
+	IRetenido int(8),
 	Tipo char(2) )" );
 
-$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,'$td' ) " );
-$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,'NC' ) " );
-$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,'ND' ) " );
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'$td' ) " );
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'NC' ) " );
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'ND' ) " );
 
 }
 
-sub actualizaRF( $ $ $ $ $ $ $ )
+sub actualizaRF( $ $ $ $ $ $ $ $ )
 {
-	my ($esto, $td, $n, $t, $i, $a, $e, $ie) = @_;	
+	my ($esto, $td, $n, $t, $i, $a, $e, $ie, $ir) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
 	my $sql = $bd->prepare("UPDATE RFcts SET Numero = Numero + ?, 
 		Total = Total + ?, IVA = IVA + ?, Afecto = Afecto + ?,
-		Exento = Exento + ?, IEspec = IEspec + ?  WHERE Tipo = ?;");
-	$sql->execute( $n, $t, $i, $a, $e, $ie, $td );	
+		Exento = Exento + ?, IEspec = IEspec + ?, IRetenido = IRetenido + ? 
+		WHERE Tipo = ?;");
+	$sql->execute( $n, $t, $i, $a, $e, $ie, $ir, $td );	
 	$sql->finish();
 }
 

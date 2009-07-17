@@ -170,7 +170,7 @@ sub muestraLista ($ )
 	# Obtiene lista con datos registrados
 	my @data = $bd->datosT();
 
-	# Completa TList con nombres de los socios
+	# Completa TList con nombres de los terceros
 	my ($algo, $nm);
 	$listaS->delete(0,'end');
 	foreach $algo ( @data ) {

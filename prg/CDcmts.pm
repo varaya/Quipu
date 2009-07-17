@@ -1,10 +1,11 @@
 #  CDcmts.pm - Consulta e imprime documentos individuales
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM: 14.07.2009
 
 package CDcmts;
 
@@ -12,7 +13,6 @@ use Tk::TList;
 use Tk::LabFrame;
 use Encode 'decode_utf8';
 use Number::Format;
-#use Data::Dumper;
 
 # Variables válidas dentro del archivo
 my @datos = () ;	# Lista items del documento
@@ -35,7 +35,7 @@ sub crea {
 	$ord = 'RUT' ; # ordenamiento primario
 	$Tipo = $tipo;
 	my $tx = 'FV';
-	if ($Tipo eq 'Proveedores') { $tx = 'FC';}
+	if ($Tipo eq 'Recibidos') { $tx = 'FC';}
 	
 	$Fecha = $ut->fechaHoy();
 	
@@ -47,7 +47,7 @@ sub crea {
 	
 	# Define marcos
 	my $mListaT = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => "Documentos de $tipo");
+		-label => "Documentos $tipo");
 	my $mLista = $vnt->Frame(-borderwidth => 1);
 	my $mOrden = $vnt->Frame(-borderwidth => 1);
 	my $mMes = $vnt->Frame(-borderwidth => 1);
@@ -74,7 +74,7 @@ sub crea {
 	my $tdND = $mListaT->Radiobutton( -text => "N. Debito",-variable => \$td,
 	-value => 'ND', -command => sub { muestraL($esto);} );
 	$tdND->pack(-side => "left", -anchor => "e");
-	if ($Tipo eq 'Proveedores') {
+	if ($Tipo eq 'Recibidos') {
 		my $tdBH = $mListaT->Radiobutton( -text => "B. Honorarios", -value => 'BH',
 			-variable => \$td, -command => sub { muestraL($esto);});
 		$tdBH->pack(-side => "left", -anchor => "e");
@@ -215,9 +215,8 @@ sub muestraL ( $ )
 	my $bd = $esto->{'baseDatos'};
 	my $listaS = $esto->{'vLista'};
 	$tabla = 'Ventas';
-
-	if ($Tipo eq 'Proveedores') { $tabla = 'Compras'; } 
-	if ($td eq 'BH') { $tabla = 'BoletasH';}
+	$tabla = 'Compras' if $Tipo eq 'Recibidos' ;
+	$tabla = 'BoletasH' if $td eq 'BH' ;
 	my ($Rut, $Numero, $Fecha, $Total, $Nombre) = (0 .. 4);
 	# Obtiene lista con datos de comprobantes registrados
 	my @data = $bd->listaD($tabla,$td,$ord,$mes);

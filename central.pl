@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 05.07.2009
+#  UM : 16.07.2009
 
 # use Data::Dumper; 
 
@@ -22,9 +22,9 @@ my $version = "V. 0.90 a Julio 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
-my ($tipo, $Ayd, $Rut, $Empr, $bd, @cnf, $base, $multiE, $interE, $iva, $CBco);
-my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$Titulo,$CCts,$CPto);
-$tipo = $Ayd = $Rut = $Empr = $Titulo = '';
+my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt);
+my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$Titulo,$CCts,$CPto,$TipoL);
+$tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 
 # Datos de configuración
 $bd = BaseDatos->crea('datosG.db3');
@@ -82,13 +82,19 @@ my $bFin = $marcoBM->Button(-text => "Termina", -relief => 'ridge',
 my $ayd = $marcoAyd->Label(	-text => "Ayudas: ");
 my $opA = $marcoAyd->BrowseEntry( -variable => \$Ayd, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
-		-disabledforeground => '#000000', -autolistwidth => 1,
-		-browse2cmd => \&selecciona );
+		-disabledforeground => '#000000', -listwidth => 40,
+		-width => 16, -browse2cmd => \&selecciona );
 foreach my $algo ( @ayds ) {
 		$opA->insert('end', $algo->[1] ) ;
 }
+my $lst = $marcoAyd->Label(	-text => "  Muestra: ");
+$lt = $marcoAyd->Radiobutton( -text => "T ", -value => 'Terceros', 
+		-variable => \$TipoL, -command => sub { &listados($TipoL) } );
+$lp = $marcoAyd->Radiobutton( -text => "P", -value => 'Personal', 
+		-variable => \$TipoL, -command => sub { &listados($TipoL) } );
+
 my $aydPC = $marcoAyd->Button( -text => "P.Cuentas",
-	 -command => sub { $Ayd = ''; $ut->muestraPC($mt,$bd,0,$Rut);});
+	 -command => sub { $Ayd = $TipoL = ''; $ut->muestraPC($mt,$bd,0,$Rut);});
 # Contenido título
 my $cEmpr = $marcoT->Label(-textvariable => \$Titulo, -bg => '#FEFFE6', 
 		-fg => '#800000',);
@@ -115,6 +121,9 @@ $bFin->pack(-side => 'right');
 # opciones de ayuda
 $ayd->pack(-side => "left", -anchor => "e");
 $opA->pack(-side => "left", -anchor => "e");
+$lst->pack(-side => "left", -anchor => "e");
+$lt->pack(-side => "left", -anchor => "e");
+$lp->pack(-side => "left", -anchor => "e");
 $aydPC->pack(-side => "right", -anchor => "e");
 
 if ( not $multiE ) {
@@ -176,18 +185,18 @@ sub opContabiliza {
 
 sub opVentas {
 [['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
-	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva);} ], 
- ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
- 	FTrcrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva);} ] ]
+	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
+ ['command' => "F.Terceros", -command => sub { require prg::Fctrs;
+ 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]
 }
 
 sub opCompras {
 [['command' => "F. Recibidas", -command => sub { require prg::Fctrs; 
-	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva); } ],
+	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,0); } ],
  ['command' => "F. Especiales", -command => sub { require prg::FcmpE; 
 	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
- ['command' => "-Terceros", -command => sub { require prg::FTrcrs;
- 	FTrcrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva);} ] ]
+ ['command' => "F.Terceros", -command => sub { require prg::Fctrs;
+ 	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,1);} ] ]
 }
 
 sub opConsulta {
@@ -199,7 +208,7 @@ my $tipoD = $tipo = '';
  ['cascade' => "Documentos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoD ,  
 	-command => sub { require prg::CDcmts; CDcmts->crea($vp,$mt,$bd,$ut,$tipoD);}], 
-	qw/Proveedores Clientes/,],], "-", 
+	qw/Recibidos Emitidos/,],], "-", 
  ['cascade' => "-Impagos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipo , 
 	-command => sub { require prg::Impgs; Impgs->crea($vp,$mt,$bd,$ut,$tipo);} ], 
@@ -373,6 +382,25 @@ sub selecciona {
 	my ($jc, $Index) = @_;
 	$Ayd = $ayds[$Index]->[1];
 	$ut->ayuda($mt, $ayds[$Index]->[0]);
+}
+
+sub listados ( $ )
+{
+	my ($lstd) = @_ ;
+	
+	my ($algo, $nm, @data);
+	$Ayd = '';
+	if ($lstd eq 'Terceros' ) {
+		@data = $bd->datosT();
+	} else {
+		@data = $bd->datosP();
+	}
+	$mt->delete('0.0','end');
+	$mt->insert('end',"$lstd\n\n", 'grupo');
+	foreach $algo ( @data ) {
+		$nm = sprintf("%10s  %-35s", $algo->[0], decode_utf8($algo->[1])) ;
+		$mt->insert('end', "$nm\n") ;
+	}
 }
 
 # Termina la ejecución del programa

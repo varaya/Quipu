@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 14.07.2009 
+#  UM : 16.07.2009 
 
 package Compras;
 
@@ -41,7 +41,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Compras");
-	$vnt->geometry("970x450+40+150"); 
+	$vnt->geometry("970x450+40+100"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -172,7 +172,7 @@ sub informe ( $ $ ) {
 		$aft = $pesos->format_number( $algo->[3] );
 		$ext = $pesos->format_number( $algo->[4] ); 
 		$ie = $pesos->format_number( $algo->[5] );
-		$tp = $algo->[6] ;
+		$tp = $algo->[7] ;
 		if ( not $tp eq '' ) {
 			$mov = sprintf("%-29s %5s  %11s %11s %11s %11s %11s", 
 				$nd{$tp}, $ni,$aft,$ext,$iva,$ie,$tt ) ;
@@ -236,7 +236,7 @@ sub detalles ( $ $ $ $)
 		}
 	}	
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %10s %8s %10s %-35s %11s %11s %11s %11s %11s",'','','',
+	$mov = sprintf("%4s %10s %8s %10s %-32s %11s %11s %11s %11s %11s",'','','',
 		'', 'Totales', $pesos->format_number( $Aft ) ,
 		$pesos->format_number( $Ext ),
 		$pesos->format_number( $Iva ),
@@ -267,7 +267,7 @@ sub csv ( $ )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$fch,$nm,$rt,$nmb,$nulo,$a,$d,%nd,$cmpr);
+	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$fch,$nm,$rt,$nmb,$nulo,$a,$d,%nd,$cmpr,$ie);
 	%nd = $ut->tipoDcmt();
 	$d = "$rutE/csv/compras$mes.csv";
 	open ARCHIVO, "> $d" or die $! ;
@@ -296,7 +296,7 @@ sub csv ( $ )
 		$aft = $algo->[3] ;
 		$ext = $algo->[4] ; 
 		$ie = $algo->[5] ;
-		$tp = $algo->[6] ;
+		$tp = $algo->[7] ;
 		if ( not $tp eq '' ) {
 			$l = ",,,,$nd{$tp},$aft,$ext,$iva,$ie,$tt,$ni\n" ;
 			print ARCHIVO $l ;

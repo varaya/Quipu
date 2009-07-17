@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 24.06.2009 
+#  UM : 16.07.2009 
 
 use DBI;
 use strict;
@@ -101,7 +101,8 @@ $bd->do("CREATE TABLE Compras (
 	Cuenta int(4),
 	TF char(1),
 	Orden int(2),
-	IEspec int(8) )" );
+	IEspec int(8),
+	IRetenido int(8) )" );
 
 # Actualización de Pagada en F. Compras
 $bd->do("CREATE TRIGGER PagoFC AFTER UPDATE OF Abonos ON Compras
@@ -130,7 +131,8 @@ $bd->do("CREATE TABLE Ventas (
 	Cuenta int(4),
 	TF char(1),
 	Orden int(2),
-	IEspec int(8) )" );
+	IEspec int(8),
+	IRetenido int(8) )" );
 
 # Actualización de Pagada en F. Ventas
 $bd->do("CREATE TRIGGER PagoFV AFTER UPDATE OF Abonos ON Ventas

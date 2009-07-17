@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 14.07.2009 
+#  UM : 16.07.2009 
 
 package Ventas;
 
@@ -41,7 +41,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Ventas");
-	$vnt->geometry("970x450+40+150"); 
+	$vnt->geometry("970x450+40+100"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -171,17 +171,17 @@ sub informe ( $ $ ) {
 		$iva = $pesos->format_number( $algo->[2] );
 		$aft = $pesos->format_number( $algo->[3] );
 		$ext = $pesos->format_number( $algo->[4] ); 
-		$ie = $pesos->format_number( $algo->[5] );
-		$tp = $algo->[6] ;
+		$ir = $pesos->format_number( $algo->[6] );
+		$tp = $algo->[7] ;
 		if ( not $tp eq '' ) {
 			$mov = sprintf("%-29s %5s  %11s %11s %11s %11s %11s", 
-				$nd{$tp}, $ni,$aft,$ext,$iva,$ie,$tt ) ;
+				$nd{$tp}, $ni,$aft,$ext,$iva,$ir,$tt ) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[1] ;
 			$Iva += $algo->[2] ;
 			$Aft += $algo->[3] ;
 			$Ext += $algo->[4] ;
-			$IEsp += $algo->[5];
+			$IvaR += $algo->[6];
 			$TDcmt += $algo->[0];			
 		}
 	}
@@ -191,7 +191,7 @@ sub informe ( $ $ ) {
 			$pesos->format_number($Aft),
 			$pesos->format_number($Ext),
 			$pesos->format_number($Iva),
-			$pesos->format_number($IEsp),
+			$pesos->format_number($IvaR),
 			$pesos->format_number($Tt) ) ;
 	$marco->insert('end', "$mov\n",'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');	
@@ -209,7 +209,7 @@ sub detalles ( $ $ $ $)
 	$marco->insert('end', "\n$nmb", 'negrita');
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
-	$Tt = $Iva = $Aft = $Ext = $IEsp = $TDcmt = 0;
+	$Tt = $Iva = $Aft = $Ext = $IEsp = $TDcmt = $IvaR = 0;
 	foreach $algo ( @datos ) {
 		$fch = $ut->cFecha($algo->[0]); 
 		$nm = $algo->[1]; 
@@ -222,30 +222,32 @@ sub detalles ( $ $ $ $)
 		$ie = $pesos->format_number( $algo->[8] );
 		$ni = $algo->[9];
 		$cmpr = $algo->[10];
+		$ivaR = $pesos->format_number( $algo->[11] );
 		if ( $nulo < 2 ) { # Se excluyen las Anuladas: código 2
 			$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,32 ;
 			$mov = sprintf("%3s  %10s %8s %10s %-32s %11s %11s %11s %11s %11s %4s", 
-				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$tt,$cmpr) ;
+				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ivaR,$tt,$cmpr) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[3] ;
 			$Iva += $algo->[4] ;
 			$Aft += $algo->[5] ;
 			$Ext += $algo->[6] ;
 			$IEsp += $algo->[8];
+			$IvaR += $algo->[11] ;
 			$TDcmt += 1 if $algo->[3];
 		}
 	}	
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %10s %8s %10s %-35s %11s %11s %11s %11s %11s",'','','',
+	$mov = sprintf("%4s %10s %8s %10s %-32s %11s %11s %11s %11s %11s",'','','',
 		'', 'Totales', $pesos->format_number( $Aft ) ,
 		$pesos->format_number( $Ext ),
 		$pesos->format_number( $Iva ),
-		$pesos->format_number( $IEsp ),
+		$pesos->format_number( $IvaR ),
 		$pesos->format_number( $Tt ) );
 	$marco->insert('end', "$mov\n",'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
 	# Registra totales para Resumen
-	$bd->actualizaRF($td,$TDcmt,$Tt,$Iva,$Aft,$Ext,$IEsp);
+	$bd->actualizaRF($td,$TDcmt,$Tt,$Iva,$Aft,$Ext,$IEsp,$IvaR);
 }
 
 sub txt ( $ )
@@ -267,7 +269,7 @@ sub csv ( $ )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$fch,$nm,$rt,$nmb,$nulo,$a,$d,%nd,$cmpr);
+	my ($Tt,$Iva,$Aft,$Ext,$IvaR,$fch,$nm,$rt,$nmb,$nulo,$a,$d,%nd,$cmpr,$ir);
 	%nd = $ut->tipoDcmt();
 	$d = "$rutE/csv/ventas$mes.csv";
 	open ARCHIVO, "> $d" or die $! ;
@@ -288,27 +290,27 @@ sub csv ( $ )
 	$l = ",,,,Tipo de Documento,Afecto,Exento,IVA,I.Reten.,Total,Cant.\n";
 	print ARCHIVO $l ;
 	my @dtsR = $bd->datosRF();
-	$Tt = $Iva = $Aft = $Ext = $IEsp = $TDcmt = 0;
+	$Tt = $Iva = $Aft = $Ext = $IvaR = $TDcmt = 0;
 	foreach $algo ( @dtsR ) {
 		$ni = $algo->[0] ;
 		$tt = $algo->[1] ;
 		$iva = $algo->[2] ;
 		$aft = $algo->[3] ;
 		$ext = $algo->[4] ; 
-		$ie = $algo->[5] ;
-		$tp = $algo->[6] ;
+		$ir = $algo->[6] ;
+		$tp = $algo->[7] ;
 		if ( not $tp eq '' ) {
-			$l = ",,,,$nd{$tp},$aft,$ext,$iva,$ie,$tt,$ni\n" ;
+			$l = ",,,,$nd{$tp},$aft,$ext,$iva,$ir,$tt,$ni\n" ;
 			print ARCHIVO $l ;
 			$Tt += $algo->[1] ;
 			$Iva += $algo->[2] ;
 			$Aft += $algo->[3] ;
 			$Ext += $algo->[4] ;
-			$IEsp += $algo->[5];
+			$IvaR += $algo->[6];
 			$TDcmt += $algo->[0];			
 		}
 	}
-	$l = ",,,,Totales,$Aft,$Ext,$Iva,$IEsp,$Tt,$TDcmt\n" ;
+	$l = ",,,,Totales,$Aft,$Ext,$Iva,$IvaR,$Tt,$TDcmt\n" ;
 	print ARCHIVO $l ;
 	
 	close ARCHIVO ;
@@ -318,13 +320,13 @@ sub csv ( $ )
 sub detalleCSV ( )
 {
 	my ($ut,$bd,$td,$tf,$stit) = @_;
-	my ($Tt,$Iva,$Aft,$Ext,$IEsp,$l,$a);
+	my ($Tt,$Iva,$Aft,$Ext,$IvaR,$l,$a);
 
 	my @datos = $bd->listaFct('Ventas', $mes, $td, $tf);
 	if ( not @datos ) { return ;}
 	
 	print ARCHIVO "$stit\n ";
-	$Tt = $Iva = $Aft = $Ext = $IEsp = 0;
+	$Tt = $Iva = $Aft = $Ext = $IvaR = 0;
 	foreach $a ( @datos ) {
 		$fch = $ut->cFecha($a->[0]); 
 		$nm = $a->[1]; 
@@ -334,16 +336,16 @@ sub detalleCSV ( )
 		$ni = $a->[9];
 		$cmpr = $a->[10];
 		if ( not $nulo ) {
-			$l = "$ni,$fch,$nm,$rt,$nmb,$a->[5],$a->[6],$a->[4],$a->[8],$a->[3],$cmpr\n";
+			$l = "$ni,$fch,$nm,$rt,$nmb,$a->[5],$a->[6],$a->[4],$a->[11],$a->[3],$cmpr\n";
 			print ARCHIVO $l ;
 			$Tt += $a->[3] ;
 			$Iva += $a->[4] ;
 			$Aft += $a->[5] ;
 			$Ext += $a->[6] ;
-			$IEsp += $a->[8];
+			$IvaR += $a->[11];
 		}
 	}
-	$l = ",,,,Totales,$Aft,$Ext,$Iva,$IEsp,$Tt\n";
+	$l = ",,,,Totales,$Aft,$Ext,$Iva,$IvaR,$Tt\n";
 	print ARCHIVO $l ;
 }
 
