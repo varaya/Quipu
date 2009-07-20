@@ -8,3 +8,6 @@
 *.csv
 # Documento de trabajo OO
 *.od?
+*.jpg
+*.png
+

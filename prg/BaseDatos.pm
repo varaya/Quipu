@@ -1463,5 +1463,22 @@ sub registraD ( )
 	$sql->finish();
 }
 
+sub actualizaCM ( $ $ )
+{
+	my ($esto, $Numero ) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my ($sql, $algo, $aCta);
+
+	$sql = $bd->prepare("SELECT CuentaM, Debe, Haber FROM ItemsC 
+		WHERE Numero = ? ;");
+	$sql->execute($Numero);
+	$aCta = $bd->prepare("UPDATE Mayor SET Debe = Debe + ?, Haber = Haber + ?
+		 WHERE Codigo = ?;");
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$aCta->execute($algo->[1], $algo->[2], $algo->[0]);
+	}
+}
+
 # Termina el paquete
 1;

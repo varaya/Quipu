@@ -1,10 +1,11 @@
 #  Balance.pm - Consulta e imprime Balance tributario
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM: 20.07.2009
 
 package Balance;
 
@@ -37,7 +38,7 @@ sub crea {
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Procesa Balance");
-	$vnt->geometry("810x395+40+150"); 
+	$vnt->geometry("940x400+20+100"); 
 	$esto->{'ventana'} = $vnt;
 
 	# Define marco para mostrar resultado
@@ -177,7 +178,7 @@ sub muestra ( $ $ )
 	$mt->insert('end',"$lin2\n",'detalle');
 	$tAc = $tPa = $tPe = $tGa = $tmD = $tmH = $tsD = $tsH = 0;
 	foreach $algo ( @data ) {
-		$cta = abrev($algo->[0]) ;
+		$cta = substr abrev($algo->[0]),0,25 ;
 		my $tSaldo = $algo->[5];
 		my $saldoI = $algo->[4];
 		$mntD = $algo->[2] ;

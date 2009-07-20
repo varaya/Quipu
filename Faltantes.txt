@@ -1,7 +1,5 @@
 Faltantes:
 
-- Facturas de compra de terceros
-- Nulos: Comprobante, Documento (Cliente, Proveedor)
 - Impagos
 - Conciliación Banco
 - Resultados por Centro de Costo
