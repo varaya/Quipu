@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 09.07.2009
+#  UM: 20.07.2009
 
 package Diario;
 
@@ -15,7 +15,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 
 # Variables válidas dentro del archivo
-my ($FechaI, $FechaF, $tc, $Mnsj, @cnf, $rutE) ;	# Variables
+my ($FechaI, $FechaF, $tc, $Mnsj, @cnf, $rutE, $tgD, $tgH) ;	# Variables
 my ($fechaI, $fechaF) ; # Campos
 
 my ($bCan, $bImp) ; # Botones
@@ -164,12 +164,12 @@ sub informe ( $ $  $) {
 		$fechaI->focus;
 		return;
 	}
-	my ($algo, $nm, $tp, $fch, $tt, $gl, $empr,$tg, $ref, @datosE);
+	my ($algo,$nm,$tp,$fch,$ttD,$ttH,$gl,$empr,$ref,@datosE);
 	@datosE = $bd->datosEmpresa($rutE);
 	if (@datosE) {
 		$empr = decode_utf8($datosE[0]); 
 	}
-	$tg = 0;
+	$tgD = $tgH = 0;
 	$marco->insert('end', "Libro Diario  $cnf[0]  -  $empr\n", 'negrita');
 	my $lin1 = "\nFecha      Detalle                            Código        Debe        Haber";
 	my $lin2 = "-"x77;
@@ -179,7 +179,6 @@ sub informe ( $ $  $) {
 		$nm = $algo->[$Numero]; 
 		$tipoC = $tc->{$algo->[$Tipo]}; 
 		$fch = $ut->cFecha($algo->[$Fecha]); 
-		$tg += $algo->[$Total] ;
 		$tt = $pesos->format_number( $algo->[$Total] );
 		$gl = decode_utf8($algo->[$Glosa]);
 		$ref = $algo->[$Ref] ;
@@ -187,9 +186,10 @@ sub informe ( $ $  $) {
 		$marco->insert('end', "\n$fch -------- $tipoC # $nm --------\n", 'detalle');
 		asiento($bd, $marco, $nm, $tt, $gl);	
 	}
-	$tt = $pesos->format_number( $tg );
+	$ttD = $pesos->format_number( $tgD );
+	$ttH = $pesos->format_number( $tgH );
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov1 = sprintf("           %-35s %-5s %11s  %11s", 'Totales', '', $tt, $tt) ;
+	$mov1 = sprintf("           %-35s %-5s %11s  %11s", 'Totales', '', $ttD, $ttH) ;
 	$marco->insert('end', "$mov1\n", 'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
 	$bImp->configure(-state => 'active');
@@ -208,6 +208,8 @@ sub asiento ( $ $ $ $ $ ) {
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
+		$tgD += $algo->[2] ;
+		$tgH += $algo->[3] ;
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[4]) {
 			$dt = decode_utf8($algo->[4]);
@@ -218,7 +220,8 @@ sub asiento ( $ $ $ $ $ ) {
 		if ($algo->[6]) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
-		$mov1 = sprintf("           %-35s %-5s %11s  %11s", $ncta, 
+		# el texto en el item puede ser $dt o $ncnta
+		$mov1 = sprintf("           %-35s %-5s %11s  %11s", $dt, 
 			$cm, $mntD, $mntH) ;
 		$mov2 = sprintf("            %-15s %-20s", $ci, $dcm ) ;
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
