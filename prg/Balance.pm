@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 20.07.2009
+#  UM: 21.07.2009
 
 package Balance;
 
@@ -38,7 +38,7 @@ sub crea {
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Procesa Balance");
-	$vnt->geometry("980x450+20+100"); 
+	$vnt->geometry("1010x450+0+100"); 
 	$esto->{'ventana'} = $vnt;
 
 	# Define marco para mostrar resultado
@@ -127,19 +127,19 @@ sub csv ( $ )
 			$sldD = $mntD -  $mntH;
 			$tsD += $sldD ;
 			$tAc += $sldD if $gr eq '1' or $gr eq '2';
-			$tPe += $sldD if $gr eq '4';
+			$tPe += $sldD if $gr eq '4' or $gr eq '3';
 		} else {
 			$sldH = $mntH - $mntD ;
 			$tsH += $sldH ;
 			$tPa += $sldH if $gr eq '2' or $gr eq '1';
-			$tGa += $sldH if $gr eq '3';
+			$tGa += $sldH if $gr eq '3' or $gr eq '4';
 		}
 		$l .= ",$sldD,$sldH";
 		$ac = $pa = $pe = $ga = 0;
 		$ac = $sldD if $gr eq '1' or $gr eq '2';
 		$pa = $sldH if $gr eq '2' or $gr eq '1';
-		$pe = $sldD if $gr eq '4';
-		$ga = $sldH if $gr eq '3';
+		$pe = $sldD if $gr eq '4' or $gr eq '3';
+		$ga = $sldH if $gr eq '3' or $gr eq '4';
 		$l .= ",$ac,$pa,$pe,$ga";
 		print ARCHIVO "$l\n";
 	}
@@ -181,15 +181,15 @@ sub muestra ( $ $ )
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
 	$mt->insert('end', "Balance Tributario  $cnf[0]\n\n", 'negrita');
-	my $lin1 = sprintf("%-5s %-23s", 'Cod.', 'Cuenta') ;
-	$lin1 .= "         Debe        Haber       Deudor     Acreedor",
-	$lin1 .= "       Activo       Pasivo     Pérdidas    Ganancias";
-	my $lin2 = "-"x133;
+	my $lin1 = sprintf("%-5s %-21s", 'Cod.', 'Cuenta') ;
+	$lin1 .= "           Debe          Haber        Deudor      Acreedor",
+	$lin1 .= "        Activo       Pasivo      Pérdidas    Ganancias";
+	my $lin2 = "-"x139;
 	$mt->insert('end',"$lin1\n",'detalle');
 	$mt->insert('end',"$lin2\n",'detalle');
 	$tAc = $tPa = $tPe = $tGa = $tmD = $tmH = $tsD = $tsH = 0;
 	foreach $algo ( @data ) {
-		$cta = substr abrev($algo->[0]),0,23 ;
+		$cta = substr abrev($algo->[0]),0,21 ;
 		my $tSaldo = $algo->[5];
 		my $saldoI = $algo->[4];
 		$mntD = $algo->[2] ;
@@ -198,7 +198,7 @@ sub muestra ( $ $ )
 		$mntH += $saldoI if $tSaldo eq 'A';
 		$tmD += $mntD ;
 		$tmH += $mntH ;
-		$mov = sprintf("%-5s %-23s %12s %12s", $algo->[1], $cta,
+		$mov = sprintf("%-5s %-21s %14s %14s", $algo->[1], $cta,
 			$pesos->format_number($mntD), $pesos->format_number($mntH)) ;
 		$gr = substr $algo->[1],0,1;
 		$sldD = $sldH = $pesos->format_number(0);
@@ -206,21 +206,21 @@ sub muestra ( $ $ )
 			$sldD = $pesos->format_number($mntD -  $mntH);
 			$tsD += $mntD -  $mntH ;
 			$tAc += $mntD -  $mntH if $gr eq '1' or $gr eq '2' ;
-			$tPe += $mntD -  $mntH if $gr eq '4';
+			$tPe += $mntD -  $mntH if $gr eq '4' or $gr eq '3';
 		} else {
 			$sldH = $pesos->format_number($mntH - $mntD) ;
 			$tsH += $mntH - $mntD ;
-			$tPa += $mntH - $mntD if $gr eq '2'  or $gr eq '1' ;
-			$tGa += $mntH - $mntD if $gr eq '3';
+			$tPa += $mntH - $mntD if $gr eq '2' or $gr eq '1' ;
+			$tGa += $mntH - $mntD if $gr eq '3' or $gr eq '4';
 		}
-		$mov .= sprintf(" %12s %12s",$sldD, $sldH);
+		$mov .= sprintf(" %13s %13s",$sldD, $sldH);
 		# Distribuye saldo 
 		$ac = $pa = $pe = $ga = $pesos->format_number(0) ;
 		$ac = $sldD if $gr eq '1' or $gr eq '2' ;
 		$pa = $sldH if $gr eq '2' or $gr eq '1' ;
-		$pe = $sldD if $gr eq '4';
-		$ga = $sldH if $gr eq '3';
-		$mov .= sprintf(" %12s %12s %12s %12s",$ac, $pa, $pe, $ga);
+		$pe = $sldD if $gr eq '4' or $gr eq '3';
+		$ga = $sldH if $gr eq '3' or $gr eq '4';
+		$mov .= sprintf(" %13s %13s %12s %12s",$ac, $pa, $pe, $ga);
 		$mt->insert('end', "$mov\n", 'detalle' ) ;
 	}
 	$mt->insert('end',"$lin2\n",'detalle');
@@ -229,7 +229,7 @@ sub muestra ( $ $ )
 	$ftmH = $pesos->format_number($tmH);
 	$ftsD = $pesos->format_number($tsD);
 	$ftsH = $pesos->format_number($tsH);
-	$mov = sprintf("%5s %23s %12s %12s %12s %12s %12s %12s %12s %12s", 
+	$mov = sprintf("%5s %21s %14s %14s %13s %13s %13s %13s %12s %12s", 
 		' ', 'Totales', $ftmD,$ftmH,$ftsD,$ftsH,
 		$pesos->format_number($tAc),
 		$pesos->format_number($tPa),
@@ -245,19 +245,19 @@ sub muestra ( $ $ )
 	my ($pPrd , $pGnc) = (0, 0) ;
 	$pPrd = $tPa - $tAc if $tPa > $tAc ; 
 	$pGnc = $tAc - $tPa if $tPa < $tAc ;	
-	$mov = sprintf("%5s %23s %51s %12s %12s %12s %12s",' ',$rs,' ',
+	$mov = sprintf("%5s %21s %57s %13s %13s %12s %12s",' ',$rs,' ',
 		$pesos->format_number($pPrd),
 		$pesos->format_number($pGnc),$fGnc,$fPrd);
 	$mt->insert('end',"$mov\n",'detalle');
 	$mt->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%5s %23s %12s %12s %12s %12s %12s %12s %12s %12s", 
+	$mov = sprintf("%5s %21s %14s %14s %13s %13s %13s %13s %12s %12s", 
 		' ', 'Sumas iguales', $ftmD,$ftmH,$ftsD,$ftsH,
 		$pesos->format_number($tAc + $pPrd),
 		$pesos->format_number($tPa + $pGnc),
 		$pesos->format_number($tPe + $Gnc),
 		$pesos->format_number($tGa + $Prd)) ;
 	$mt->insert('end',"$mov\n",'detalle');
-	$lin2 = "="x133;
+	$lin2 = "="x139;
 	$mt->insert('end',"$lin2\n",'detalle');
 }
 

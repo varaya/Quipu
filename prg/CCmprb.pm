@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 07.07.2009
+#  UM: 21.07.2009
 
 package CCmprb;
 
@@ -32,11 +32,11 @@ sub crea {
 	$rutE = $rt ;
 	my %tp = $ut->tipos();
 	$Fecha = $ut->fechaHoy();
-	$mes = $nMes = '';
+	$mes = $nMes = $Cuenta = '';
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Consulta Comprobante");
-	$vnt->geometry("650x430+475+4"); # Tamaño y ubicación
+	$vnt->geometry("680x430+475+4"); # Tamaño y ubicación
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -121,27 +121,23 @@ sub muestraC {
 	$marco->insert('end', 
 	 "\nComprobante de $tipoC   # $nmrC  del  $fecha\n", 'negrita');
 	$marco->insert('end', "Glosa: $glosa\n\n" , 'cuenta');
-	if ( $nulo ) {
-		$marco->insert('end', "Anulado por Comprobante $ref\n" , 'grupo');
-		$Cuenta = '';
-		$cuenta->focus;
-		return ;
-	} else {
-		$marco->insert('end', "Movimientos\n" , 'grupo');
-	}
+	$marco->insert('end', "Movimientos\n" , 'grupo');
 	my @data = $bd->itemsC($nmrC);
 
 	my ($algo, $mov, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
-	my $lin1 = "Cuenta                                      Debe       Haber Detalle";
-	my $lin2 = "-"x80;
+	my ($tD, $tH) = (0, 0);
+	my $lin1 = "Cuenta                                       Debe        Haber  Detalle";
+	my $lin2 = "-"x85;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
-		$ncta = decode_utf8($bd->nmbCuenta($cm) );
+		$ncta = decode_utf8( substr $bd->nmbCuenta($cm),0,30 );
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
+		$tD += $algo->[2] ;
 		$mntH = $pesos->format_number( $algo->[3] );
+		$tH += $algo->[3] ;
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[4]) {
 			$dt = decode_utf8($algo->[4]);
@@ -152,16 +148,23 @@ sub muestraC {
 		if ($algo->[6]) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
-		$mov1 = sprintf("%-5s %-30s %11s %11s  %-15s", $cm, substr($ncta,0,30) ,
+		$mov1 = sprintf("%-5s %-30s %12s %12s  %-15s", $cm, $ncta,
 			$mntD, $mntH, $dt ) ;
 		$mov2 = sprintf("       %-15s %-20s", $ci, $dcm ) ;
 
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
 		if ( not ($ci eq '' ) ) { #	and $dcm eq ''
-			$marco->insert('end', "$mov2\n", 'detalle' ) ;
+#			$marco->insert('end', "$mov2\n", 'detalle' ) ;
 		}
 	}
-	$marco->insert('end', "\nTotal: $total\n" , 'grupo');
+	$marco->insert('end',"$lin2\n",'detalle');
+	$mov1 = sprintf("%36s %12s %12s", "Totales" ,
+			$pesos->format_number($tD), $pesos->format_number($tH) );
+	$marco->insert('end', "$mov1\n\n", 'detalle' ) ;
+	if ( $nulo ) {
+		$marco->insert('end', "Anulado por Comprobante $ref\n" , 'grupo');
+	}
+	$Cuenta = '' ;
 	$bImp->configure(-state => 'active');
 }
 

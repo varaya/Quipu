@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 20.07.2009
+#  UM: 21.07.2009
 
 package Diario;
 
@@ -170,9 +170,10 @@ sub informe ( $ $  $) {
 		$empr = decode_utf8($datosE[0]); 
 	}
 	$tgD = $tgH = 0;
+	$marco->delete('0.0','end');
 	$marco->insert('end', "Libro Diario  $cnf[0]  -  $empr\n", 'negrita');
 	my $lin1 = "\nFecha      Detalle                            Código        Debe        Haber";
-	my $lin2 = "-"x77;
+	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	foreach $algo ( @datosC ) {
@@ -189,7 +190,7 @@ sub informe ( $ $  $) {
 	$ttD = $pesos->format_number( $tgD );
 	$ttH = $pesos->format_number( $tgH );
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov1 = sprintf("           %-35s %-5s %11s  %11s", 'Totales', '', $ttD, $ttH) ;
+	$mov1 = sprintf("           %-35s %-5s %12s  %12s", 'Totales', '', $ttD, $ttH) ;
 	$marco->insert('end', "$mov1\n", 'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
 	$bImp->configure(-state => 'active');
@@ -202,14 +203,17 @@ sub asiento ( $ $ $ $ $ ) {
 	my @data = $bd->itemsC($nmrC);
 
 	my ($algo, $mov1, $mov2, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
+	my ($tcD, $tcH) = (0, 0) ;
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
-		$ncta = substr decode_utf8( $bd->nmbCuenta($cm) ),0,35 ;
+#		$ncta = substr decode_utf8( $bd->nmbCuenta($cm) ),0,35 ; REVISAR
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
 		$tgD += $algo->[2] ;
 		$tgH += $algo->[3] ;
+		$tcD += $algo->[2] ;
+		$tcH += $algo->[3] ;
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[4]) {
 			$dt = decode_utf8($algo->[4]);
@@ -221,7 +225,7 @@ sub asiento ( $ $ $ $ $ ) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
 		# el texto en el item puede ser $dt o $ncnta
-		$mov1 = sprintf("           %-35s %-5s %11s  %11s", $dt, 
+		$mov1 = sprintf("           %-35s %-5s %12s  %12s", $dt, 
 			$cm, $mntD, $mntH) ;
 		$mov2 = sprintf("            %-15s %-20s", $ci, $dcm ) ;
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
@@ -230,6 +234,8 @@ sub asiento ( $ $ $ $ $ ) {
 	if ( not ($ci eq '' ) ) { #	and $dcm eq ''
 		$marco->insert('end', "$mov2\n", 'detalle' ) ;
 	}
+	# Por si acaso, se produjera algún extraño suceso en la grabación
+	print "$nmrC " if not $tcD == $tcH ;
 }
 
 sub txt ( $ )

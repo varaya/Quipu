@@ -1004,8 +1004,8 @@ sub buscaNI ()
 	my ($esto, $tbl, $mes, $ni, $td) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
-	my $sql = $bd->prepare("SELECT Rut,Numero,Comprobante,TF,FechaE,ROWID FROM $tbl 
-		WHERE Orden = ? AND Tipo = ? AND Mes = ?;");
+	my $sql = $bd->prepare("SELECT Rut,Numero,Comprobante,TF,FechaE,ROWID 
+		FROM $tbl WHERE Orden = ? AND Tipo = ? AND Mes = ?;");
 	$sql->execute($ni,$td,$mes);
 	my @dato = $sql->fetchrow_array;
 	$sql->finish();

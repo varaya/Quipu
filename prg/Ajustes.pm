@@ -6,7 +6,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
-#  UM: 09.07.2009
+#  UM: 21.07.2009
 
 package Ajustes;
 
@@ -53,7 +53,7 @@ sub crea {
 	# Define botones
 	$bNvo = $mBtns->Button(-text => "Registra", -command => sub { &registra($esto)}); 
 	$bCan = $mBtns->Button(-text => "Cancela", -command => sub { &cancela() });
-	$bFin = $mBtns->Button(-text => "Termina", -command => sub { &termina ($bd, $vnt) });
+	$bFin = $mBtns->Button(-text => "Termina", -command => sub { $vnt->destroy(); });
 
 	# Parametros
 	$cn = $mTipoA->Radiobutton( -text => "Número", -value => 'N', 
@@ -228,6 +228,7 @@ sub buscaDoc ( $ )
 		return ;
 	}
 	$TD = $TipoD eq 'F' ? $TipoD . substr $Tabla,0,1 : $TipoD ;
+	print "$Tabla, $Mes, $Ni, $TD";
 	my @datos = $bd->buscaNI($Tabla,$Mes,$Ni,$TD);
 	if (not @datos) {
 		$Mnsj = "NO existe documento con esos datos";
@@ -264,14 +265,6 @@ sub activa ( )
 		$fechaE->configure(-state => 'disable');
 		$tipoD->configure(-state => 'normal');
 	}
-}
-
-sub termina ( $ $ )
-{
-	my ($bd, $vn ) = @_;
-
-	$bd->cierra();
-	$vn->destroy(); 
 }
 
 # Fin del paquete

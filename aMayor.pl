@@ -6,10 +6,13 @@ my ($Rut, $base) = ('96537850-2','2009.db3');
 my $bd = DBI->connect( "dbi:SQLite:$Rut/$base" ) || 
 	die "Imposible establecer conexión: $DBI::errstr";
 
-$bd->do("UPDATE Mayor SET Debe = 0, Haber = 0");
+$bd->do("UPDATE Mayor SET Debe = 0, Haber = 0, Saldo = 0");
 my $sql = $bd->prepare("SELECT count(*) FROM DatosC;");
 $sql->execute();
-my $nmrC = $sql->fetchrow_array;;
+
+my $nmrC = $sql->fetchrow_array;
+$sql->finish;
+print "$nmrC\n";
 while ($nmrC > 0) {
 	actualizaCM();
 	$nmrC--;
@@ -26,4 +29,5 @@ sub actualizaCM {
 		$algo = \@fila;
 		$aCta->execute($algo->[1], $algo->[2], $algo->[0]);
 	}
+	$aCta->finish;
 }
