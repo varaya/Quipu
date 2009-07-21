@@ -3,5 +3,4 @@ Faltantes:
 - Impagos
 - Conciliación Banco
 - Resultados por Centro de Costo
-- Otros listados
 - Cierre
