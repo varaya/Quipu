@@ -49,6 +49,15 @@ $bd->do("CREATE TRIGGER AFechaM AFTER UPDATE OF Debe, Haber ON Mayor
 	WHERE rowid = old.rowid ;
   END" );
 
+# Balances mensuales
+$bd->do("CREATE TABLE BMensual (
+	Codigo char(5) NOT NULL PRIMARY KEY,
+	Debe int(9) ,
+	Haber int(9) ,
+	Saldo int(9) ,
+	TSaldo char(1) ,
+	Mes char(2) )" );
+
 # Encabezado del Comprobante de Contabilidad
 $bd->do("CREATE TABLE DatosC (
 	Numero int(5),

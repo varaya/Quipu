@@ -1463,5 +1463,52 @@ sub registraD ( )
 	$sql->finish();
 }
 
+sub datosBM ( $ )
+{
+	my ($esto,$mes) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+
+	my $sql = $bd->prepare("SELECT c.Cuenta, m.* FROM BMensual AS m, 
+		dg.Cuentas AS c WHERE m.Debe + m.Haber > 0 AND m.Codigo = c.Codigo
+		AND m.Mes = ? ORDER BY m.Codigo ;");
+	$sql->execute($mes);
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	
+	return @datos; 	
+}
+
+sub aBMensual ( $ )
+{
+	my ($esto,$mes) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my ($sql,$algo,$dato,$aCta);
+
+	$sql = $bd->prepare("SELECT count(*) FROM ItemsC WHERE Mes = ?;");
+	$sql->execute($mes);
+	$dato = $sql->fetchrow_array;
+	$sql->finish();
+	return 0 if not $dato ;
+	
+	# Actualiza Balance mensual
+	$sql = $bd->prepare("SELECT CuentaM, Debe, Haber FROM ItemsC 
+		WHERE Mes = ? ;");
+	$sql->execute($mes);
+	
+	$aCta = $bd->prepare("UPDATE BMensual SET Debe = Debe + ?, Haber = Haber + ?
+		 WHERE Codigo = ?;");
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$aCta->execute($algo->[1], $algo->[2], $algo->[0]);
+	}
+	$aCta->finish();
+	$sql->finish();
+	return 1;
+}
+
 # Termina el paquete
 1;

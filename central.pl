@@ -240,6 +240,15 @@ sub opListados {
  	Prsnl->crea($vp, $mt, $bd, $ut);} ] ]
 }
 
+sub opCierre {
+[['command' => "Mensual", -command => sub { require prg::CierreM;
+	CierreM->crea($vp, $mt, $bd, $ut, $Rut);} ], 
+ ['command' => "Provisorio", -command => sub { require prg::CierreA;
+ 	CierreA->crea($vp, $mt, $bd, $ut, $Rut,0);} ],
+ ['command' => "Final", -command => sub { require prg::CierreA;
+ 	CierreA->crea($vp, $mt, $bd, $ut, $Rut,1);} ] ]
+}
+
 sub opCuentas {
 [['command' => "SubGrupos", -command => sub { require prg::SGrupos; 
 	SGrupos->crea($vp, $bd, $ut, $mt);} ], 
@@ -331,8 +340,8 @@ sub activaE {
 		
 	}
 	# Esto es para que siempre quede al final
-	$mMuestra->AddItems("-", ['command' => "-Cierre", -command => sub {
- 		$ut->mError("También falta implementar.");}] );
+	$mMuestra->AddItems("-", ['cascade' => "Cierre", -tearoff => 0, 
+		-menuitems => opCierre() ] );
 	if ($BltsCV) {
 		$mRegistro->AddItems("-", ['command' => "Resumen BCV",
 		-command => sub { use prg::RBltsCV; RBltsCV->crea($vp,$bd,$ut,$mt);}] );

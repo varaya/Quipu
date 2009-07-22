@@ -2,11 +2,12 @@
 use DBI;
 use strict;
 
-my ($Rut, $base) = ('96537850-2','2009.db3');
-my $bd = DBI->connect( "dbi:SQLite:$Rut/$base" ) || 
-	die "Imposible establecer conexión: $DBI::errstr";
+my ($Rut, $base) = ('96537850-2','2008.db3');
+my $bd = DBI->connect( "dbi:SQLite:$Rut/$base", 
+	{ RaiseError => 1, AutoCommit => 0 }) ;
 
 $bd->do("UPDATE Mayor SET Debe = 0, Haber = 0, Saldo = 0");
+	
 my $sql = $bd->prepare("SELECT count(*) FROM DatosC;");
 $sql->execute();
 
