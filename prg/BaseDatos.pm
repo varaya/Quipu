@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 20.07.2009
+#  UM: 23.07.2009
 
 package BaseDatos;
 
@@ -773,7 +773,7 @@ sub agregaCmp( $ $ $ $ $ $ )
 	$bd->do("INSERT INTO ItemsC SELECT Numero, CuentaM, Debe, Haber, Detalle,  
 		RUT, TipoD, Documento,CCosto, Mes FROM ItemsT WHERE Numero = $Numero ;") ;
 	# Las Cuentas de Mayor las actualiza SQLite [trigger]
-
+	$bd->do("DELETE FROM ItemsT");
 	# Actualiza pago de documentos 
 	if ($Tipo eq 'I') { # Facturas de Venta, si es ingreso
 		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha) ;

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 09.07.2009
+#  UM : 23.07.2009
 
 package NtsC;
 
@@ -57,17 +57,17 @@ sub crea {
 	if ($tipoF eq 'Recibida') {
 		$TablaD = 'Compras'; # Donde se registra el documento
 		# como se contabiliza el detalle de la NC
-		$DH = 'D';
+		$DH = 'H';
 		$tipoD = 'Cargo'; # sólo titulo
 		# como se contabiliza total NC
-		$CC = 'H';
+		$CC = 'D';
 		$TCtaT = 'abono'; # es parte de un mensaje
 		$tpD = "FC";
 	} else { # NC emitida
-		$DH = 'H';
+		$DH = 'D';
 		$tipoD = 'Abono';
 		$TablaD = 'Ventas';
-		$CC = 'D';
+		$CC = 'H';
 		$TCtaT = 'cargo';
 		$tpD =  "FV";
 	}
