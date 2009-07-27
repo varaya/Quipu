@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 23.07.2009
+#  UM: 27.07.2009
 
 package BaseDatos;
 
@@ -1493,17 +1493,19 @@ sub aBMensual ( $ )
 	$dato = $sql->fetchrow_array;
 	$sql->finish();
 	return 0 if not $dato ;
-	
+	# Agrega registros para el mes
+	$bd->do("INSERT INTO BMensual SELECT Codigo,Debe,Haber,Saldo,TSaldo,Saldo
+		 FROM Mayor");
+	$bd->do("UPDATE BMensual SET Debe = 0, Haber = 0, Mes = $mes");
 	# Actualiza Balance mensual
 	$sql = $bd->prepare("SELECT CuentaM, Debe, Haber FROM ItemsC 
-		WHERE Mes = ? ;");
-	$sql->execute($mes);
-	
+		WHERE Mes <= ? ;");
+	$sql->execute($mes);	
 	$aCta = $bd->prepare("UPDATE BMensual SET Debe = Debe + ?, Haber = Haber + ?
-		 WHERE Codigo = ?;");
+		 WHERE Codigo = ? AND Mes = ?;");
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
-		$aCta->execute($algo->[1], $algo->[2], $algo->[0]);
+		$aCta->execute($algo->[1], $algo->[2], $algo->[0], $mes);
 	}
 	$aCta->finish();
 	$sql->finish();

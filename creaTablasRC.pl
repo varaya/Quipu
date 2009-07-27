@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 16.07.2009 
+#  UM : 27.07.2009 
 
 use DBI;
 use strict;
@@ -56,7 +56,7 @@ $bd->do("CREATE TABLE BMensual (
 	Haber int(9) ,
 	Saldo int(9) ,
 	TSaldo char(1) ,
-	Mes char(2) )" );
+	Mes int(2) )" );
 
 # Encabezado del Comprobante de Contabilidad
 $bd->do("CREATE TABLE DatosC (

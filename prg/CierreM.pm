@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 21.07.2009
+#  UM: 27.07.2009
 
 package CierreM;
 
@@ -211,7 +211,6 @@ sub muestra ( $ $ )
 	my ($ac,$pa,$pe,$ga,$gr,$tAc,$tPa,$tPe,$tGa,$tmD,$tmH,$tsD,$tsH,$tbl);
 
 	# Obtiene lista de cuentas con movimiento
-
 	@data = $bd->datosBM($mes);
 	if (not @data) {
 		$Mnsj = "No hay Balance para $nMes.";
@@ -220,16 +219,14 @@ sub muestra ( $ $ )
 			return ;
 		} else {
 			$Mnsj = "Procesando $nMes.";
-#			@data = $bd->datosBM($mes);
+			@data = $bd->datosBM($mes);
 		}
 	}
-	$mt->insert('end', "En desarrollo", 'negrita');
-return ;
 	# Datos generales
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 	@cnf = $bd->leeCnf(); 
-
+	# Muestra el Balance
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
 	$mt->insert('end', "Balance a $nMes $cnf[0]\n\n", 'negrita');
@@ -311,6 +308,14 @@ return ;
 	$mt->insert('end',"$mov\n",'detalle');
 	$lin2 = "="x139;
 	$mt->insert('end',"$lin2\n",'detalle');
+}
+
+sub reprocesa ( $ ) 
+{
+	my ($esto,$mt) = @_;
+	my $bd = $esto->{'baseDatos'};
+	
+	$Mnsj = "En desarrollo.";
 }
 
 sub abrev ( $ )
