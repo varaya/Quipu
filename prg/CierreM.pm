@@ -1,11 +1,11 @@
-#  CierreM.pm - Consulta e imprime Balance tributario
+#  CierreM.pm - Consulta e imprime Balance mensual
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 27.07.2009
+#  UM: 28.07.2009
 
 package CierreM;
 
@@ -64,8 +64,6 @@ sub crea {
 	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
 	[ ['command' => "texto", -command => sub { txt($mtA);} ],
  	  ['command' => "planilla", -command => sub { csv($bd);} ] ] );
- 	my $bRpr = $mBotonesC->Button(-text => "Reprocesa", 
-		-command => sub {&reprocesa($esto, $mtA) } );
 	my $bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy();} );
 
@@ -84,15 +82,13 @@ sub crea {
 	$tMes->pack(-side => "left", -anchor => "w");
 	$meses->pack(-side => "left", -anchor => "w");
 	$bMst->pack(-side => 'left', -expand => 0, -fill => 'none');
-	$bRpr->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$bImp->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$mBotonesC->pack();
 	$mtA->pack(-fill => 'both');
-	
-#	muestra($bd,$mtA);
+
 	$bImp->configure(-state => 'disabled');
-	$bRpr->configure(-state => 'disabled');
+
 	bless $esto;
 	return $esto;
 }
@@ -106,7 +102,6 @@ sub selecciona {
 sub valida ( $ ) 
 {
 	my ($esto,$mt) = @_;
-	my ($fi, $ff, $mnsj);
 	my $bd = $esto->{'baseDatos'};
 	
 	$Mnsj = " ";
@@ -124,7 +119,7 @@ sub txt ( $ )
 	
 	my $algo = $marco->get('0.0','end');
 	# Genera archivo de texto
-	my $d = "$rutE/txt/balance.txt" ;
+	my $d = "$rutE/txt/balance$mes.txt" ;
 	open ARCHIVO, "> $d" or die $! ;
 	print ARCHIVO $algo ;
 	close ARCHIVO ;
@@ -138,7 +133,7 @@ sub csv ( $ )
 	my ($algo,$l,$cta,$mntD,$mntH,$sldD,$sldH,$sld,$Prd,$Gnc);
 	my ($ac,$pa,$pe,$ga,$gr,$tAc,$tPa,$tPe,$tGa,$tmD,$tmH,$tsD,$tsH,$d);
 
-	$d = "$rutE/csv/balance.csv" ;
+	$d = "$rutE/csv/balance$mes.csv" ;
 	open ARCHIVO, "> $d" or die $! ;
 
 	print ARCHIVO "$empr\n";
@@ -210,22 +205,21 @@ sub muestra ( $ $ )
 	my (@datosE,$algo,$mov,$cta,$mntD,$mntH,$sldD,$sldH,$sld,$Prd,$Gnc);
 	my ($ac,$pa,$pe,$ga,$gr,$tAc,$tPa,$tPe,$tGa,$tmD,$tmH,$tsD,$tsH,$tbl);
 
-	# Obtiene lista de cuentas con movimiento
-	@data = $bd->datosBM($mes);
-	if (not @data) {
-		$Mnsj = "No hay Balance para $nMes.";
-		if ( not $bd->aBMensual($mes) ) {
-			$Mnsj = "No hay datos para $nMes.";
-			return ;
-		} else {
-			$Mnsj = "Procesando $nMes.";
-			@data = $bd->datosBM($mes);
-		}
+	# Procesa datos
+	$bd->creaBM();
+	if ( not $bd->aBMensual($mes) ) {
+		$Mnsj = "No hay datos para $nMes.";
+		return ;
+	} else {
+		$Mnsj = "Procesando $nMes.";
+		@data = $bd->datosBM();
 	}
+	$bd->borraBM(); 
 	# Datos generales
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 	@cnf = $bd->leeCnf(); 
+
 	# Muestra el Balance
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
@@ -308,14 +302,7 @@ sub muestra ( $ $ )
 	$mt->insert('end',"$mov\n",'detalle');
 	$lin2 = "="x139;
 	$mt->insert('end',"$lin2\n",'detalle');
-}
-
-sub reprocesa ( $ ) 
-{
-	my ($esto,$mt) = @_;
-	my $bd = $esto->{'baseDatos'};
-	
-	$Mnsj = "En desarrollo.";
+	$bImp->configure(-state => 'active');
 }
 
 sub abrev ( $ )

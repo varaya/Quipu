@@ -1,6 +1,7 @@
 # Archivos que debe ignorarse
 # Paquetes o respaldos comprimidos
 *.gz
+*.zip
 # Las bases de datos
 *.db3
 # Los informes generados

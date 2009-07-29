@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 27.07.2009
+#  UM: 28.07.2009
 
 package BaseDatos;
 
@@ -1463,23 +1463,44 @@ sub registraD ( )
 	$sql->finish();
 }
 
-sub datosBM ( $ )
+# Balances mensuales
+sub datosBM ( )
 {
-	my ($esto,$mes) = @_ ;
+	my ($esto) = @_ ;
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT c.Cuenta, m.* FROM BMensual AS m, 
 		dg.Cuentas AS c WHERE m.Debe + m.Haber > 0 AND m.Codigo = c.Codigo
-		AND m.Mes = ? ORDER BY m.Codigo ;");
-	$sql->execute($mes);
+		ORDER BY m.Codigo ;");
+	$sql->execute();
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
 		push @datos, \@fila;
 	}
 	$sql->finish();
-	
 	return @datos; 	
+}
+
+sub creaBM ( ) 
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("CREATE TEMPORARY TABLE BMensual (
+	Codigo char(5) NOT NULL PRIMARY KEY,
+	Debe int(9) ,
+	Haber int(9) ,
+	Saldo int(9) ,
+	TSaldo char(1) )" );
+}
+
+sub borraBM( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DROP Table BMensual;");
 }
 
 sub aBMensual ( $ )
@@ -1494,22 +1515,118 @@ sub aBMensual ( $ )
 	$sql->finish();
 	return 0 if not $dato ;
 	# Agrega registros para el mes
-	$bd->do("INSERT INTO BMensual SELECT Codigo,Debe,Haber,Saldo,TSaldo,Saldo
+	$bd->do("INSERT INTO BMensual SELECT Codigo,Debe,Haber,Saldo,TSaldo
 		 FROM Mayor");
-	$bd->do("UPDATE BMensual SET Debe = 0, Haber = 0, Mes = $mes");
+	$bd->do("UPDATE BMensual SET Debe = 0, Haber = 0");
 	# Actualiza Balance mensual
 	$sql = $bd->prepare("SELECT CuentaM, Debe, Haber FROM ItemsC 
 		WHERE Mes <= ? ;");
 	$sql->execute($mes);	
 	$aCta = $bd->prepare("UPDATE BMensual SET Debe = Debe + ?, Haber = Haber + ?
-		 WHERE Codigo = ? AND Mes = ?;");
+		 WHERE Codigo = ?;");
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
-		$aCta->execute($algo->[1], $algo->[2], $algo->[0], $mes);
+		$aCta->execute($algo->[1], $algo->[2], $algo->[0]);
 	}
 	$aCta->finish();
 	$sql->finish();
 	return 1;
+}
+
+sub creaER ( ) 
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("CREATE TEMP TABLE RMensual (
+	Codigo char(5) NOT NULL PRIMARY KEY,
+	Cuenta text(25),
+	Ene int(9) ,
+	Feb int(9) ,
+	Mar int(9) ,
+	Abr int(9) ,
+	May int(9) ,
+	Jun int(9) ,
+	Jul int(9) ,
+	Ago int(9) ,
+	Sep int(9) , 
+	Oct int(9) ,
+	Nov int(9) ,
+	Dic int(9) ,
+	Total int(10) )" );
+}
+
+sub aRMensual ( $ )
+{
+	my ($esto,$mes) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my ($sql,$algo,$dato,$aCta);
+
+	$sql = $bd->prepare("SELECT count(*) FROM ItemsC WHERE Mes = ?;");
+	$sql->execute($mes);
+	$dato = $sql->fetchrow_array;
+	$sql->finish();
+	return 0 if not $dato ;
+	# Crea archivo temporal
+	$bd->do("INSERT INTO RMensual SELECT Codigo,Cuenta,0,0,0,0,0,0,0,0,0,0,0,0,0
+		 FROM dg.Cuentas WHERE SGrupo > 29");
+	my @m = ('z','Ene','Feb','Mar','Abr','May','Jun', 
+		'Jul','Ago','Sep','Oct','Nov','Dic' ) ;
+	$sql = $bd->prepare("SELECT CuentaM, Haber - Debe FROM ItemsC 
+		WHERE Mes = ? AND CuentaM > 2999 ;");
+	# Actualiza 
+	my @i = (1..$mes);
+	foreach ( @i ) {
+		$sql->execute($_);	
+		$aCta = $bd->prepare("UPDATE RMensual SET $m[$_] = $m[$_] + ?
+			 WHERE Codigo = ?;");
+		while (my @fila = $sql->fetchrow_array) {
+			$algo = \@fila;
+			$aCta->execute($algo->[1], $algo->[0]);
+		}
+	}
+	$aCta->finish();
+	$sql->finish();
+	$bd->do("UPDATE RMensual 
+		SET Total = Ene+Feb+Mar+Abr+May+Jun+Jul+Ago+Sep+Oct+Nov+Dic");
+	return 1;
+}
+
+sub sumaRM ( $ )
+{
+	my ($esto,$mes) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my $sql = $bd->prepare("SELECT sum($mes) FROM RMensual;");
+	$sql->execute();
+	my $dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return $dato ; 
+
+}
+
+sub datosRM ( )
+{
+	my ($esto) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+
+	my $sql = $bd->prepare("SELECT * FROM RMensual WHERE Total <> 0 ORDER BY Codigo ;");
+	$sql->execute();
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	return @datos; 	
+}
+
+sub borraER( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DROP Table RMensual;");
 }
 
 # Termina el paquete

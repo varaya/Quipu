@@ -201,7 +201,9 @@ sub opCompras {
 
 sub opConsulta {
 my $tipoD = $tipo = '';
-[['command' => "+Cuenta Individual", -command => sub { require prg::CIndvdl;
+[ ['command' => "Balance al día", -command => sub { require prg::Balance;
+	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ],
+ ['command' => "+Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ], "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
 	CCmprb->crea($vp, $mt, $bd, $ut, $Rut);} ],
@@ -216,8 +218,8 @@ my $tipoD = $tipo = '';
 }
 
 sub opProcesa {
-[['command' => "Balance", -command => sub { require prg::Balance;
-	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ],
+[['cascade' => "Balances",-tearoff => 0, -menuitems => opBalances() ],
+ ['cascade' => "Resultados",-tearoff => 0, -menuitems => opResultados() ],"-",
  ['command' => "Libro Diario", -command => sub { require prg::Diario;
 	Diario->crea($vp, $mt, $bd, $ut, $Rut);} ], 
  ['command' => "Libro Mayor", -command => sub { require prg::Mayor;
@@ -231,6 +233,24 @@ sub opProcesa {
  ['cascade' => "Listados", -tearoff => 0, -menuitems => opListados() ] ]
 }
 
+sub opBalances {
+[['command' => "Mensuales", -command => sub { require prg::CierreM;
+	CierreM->crea($vp, $mt, $bd, $ut, $Rut);} ], 
+ ['command' => "Clasificado", -command => sub { require prg::Trcrs;
+ 	Trcrs->crea($vp, $mt, $bd, $ut);} ],
+ ['command' => "-Otros", -command => sub { require prg::Prsnl;
+ 	Prsnl->crea($vp, $mt, $bd, $ut);} ] ]
+}
+
+sub opResultados {
+[['command' => "Mensuales", -command => sub { require prg::Rsltds;
+	Rsltds->crea($vp, $mt, $bd, $ut, $Rut);} ], 
+ ['command' => "por Centro Costo", -command => sub { require prg::CCCsts;
+ 	CCCsts->crea($vp, $mt, $bd, $ut);} ],
+ ['command' => "-Otros", -command => sub { require prg::Prsnl;
+ 	Prsnl->crea($vp, $mt, $bd, $ut);} ] ]
+}
+
 sub opListados {
 [['command' => "Plan de Cuentas", -command => sub { require prg::PlanC;
 	PlanC->crea($vp, $mt, $bd, $ut, $Rut);} ], 
@@ -241,9 +261,7 @@ sub opListados {
 }
 
 sub opCierre {
-[['command' => "Mensual", -command => sub { require prg::CierreM;
-	CierreM->crea($vp, $mt, $bd, $ut, $Rut);} ], 
- ['command' => "Provisorio", -command => sub { require prg::CierreA;
+[['command' => "Provisorio", -command => sub { require prg::CierreA;
  	CierreA->crea($vp, $mt, $bd, $ut, $Rut,0);} ],
  ['command' => "Final", -command => sub { require prg::CierreA;
  	CierreA->crea($vp, $mt, $bd, $ut, $Rut,1);} ] ]
@@ -333,8 +351,6 @@ sub activaE {
 	if ($CCts) { 
 		$mRegistro->AddItems("-", ['command' => "Centros Costos",
 		-command => sub { use prg::RCCsts; RCCsts->crea($vp,$mt,$bd,$ut);}] );
-		$mMuestra->AddItems( ['command' => "-Resultados CC",
-		-command => sub { use prg::CCCsts; CCCsts->crea($vp,$mt,$bd,$ut);}] );
 	}
 	if ($OtrosI) {
 		
