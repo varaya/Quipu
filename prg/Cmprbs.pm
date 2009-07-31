@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 04.07.2009
+#  UM: 29.07.2009
 
 package Cmprbs;
 
@@ -18,9 +18,9 @@ use Number::Format;
 
 # Variables válidas dentro del archivo
 # Datos a registrar
-my ($Numero,$Id,$Glosa, $Fecha, $TotalD, $TotalH, $TotalDf, $TotalHf ) ;
+my ($Numero,$Id,$Glosa,$Fecha,$TotalD,$TotalH,$TotalDf,$TotalHf ) ;
 my ($Codigo,$Detalle,$Monto,$DH,$CntaI,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
-my ($TipoCmp, $TipoD, $cTipoD, $BH, $Bco, $nBanco, $cBanco, $mBco, $Mnsj ) ; 
+my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj) ; 
 # Campos
 my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
 my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta) ;
@@ -30,6 +30,7 @@ my @dCuenta = () ;	# Lista datos cuenta
 my @datos = () ;	# Lista items del comprobante
 my @listaD = () ;	# Lista tipos de documentos
 my @bancos = () ;	# Lista nombre de bancos
+my %tabla = () ; # Lista de tablas según tipo de documento
 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -44,15 +45,17 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
+	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', '' => '' ) ;
 	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
 	$Numero = $bd->numeroC() + 1;
 	$Monto = $TotalD = $TotalH = $BH = 0;
-	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = $FechaV = '';
+	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = $FechaV = $Cuenta = '';
+	$TipoD = $Bco = $nBanco = $cBanco = $mBco = '' ;
 	$TipoCmp = substr $tipoC, 0, 1 ;
 	$Bco = $bd->ctaEsp("B");
 	@bancos = $bd->datosBcs();
-	
+
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
 		
@@ -333,11 +336,6 @@ sub agrega ( )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 	
-	# Define tabla según tipo de documento
-	my $tabla = '' ;
-	$tabla = 'BoletasH' if $cTipoD eq 'BH';
-	$tabla = 'Compras' if $cTipoD eq 'FC';
-	$tabla = 'Ventas' if $cTipoD eq 'FV';
 	# Verifica que se completen datos de detalle
 	if (length $Codigo < 4) {
 		$Mnsj = "Registre el código de la cuenta";
@@ -354,26 +352,25 @@ sub agrega ( )
 		$cuentaI->focus;
 		return;
 	}
-	if ($CntaI eq "I" ) {
-		# Control del documento [en prueba]
+	if ($CntaI eq "I" ) { # Control del documento
 		if ( not $TipoD ) {
 			$Mnsj = "Seleccione un tipo de documento";
 			$tipoD->focus;
 			return;
-		} elsif (not $tabla eq '' ) {
-			if ( not $bd->buscaFct($tabla, $RUT, $Documento, 'FechaE') ) {
+		} elsif (not $tabla{$cTipoD} eq '' ) {
+			if ( not $bd->buscaFct($tabla{$cTipoD}, $RUT, $Documento, 'FechaE') ) {
 				$Mnsj = "Ese documento NO está registrado.";
 				$documento->focus;
 				return;
 			}
-			if ( $bd->buscaFct($tabla, $RUT, $Documento, 'Pagada') ) {
+			if ( $bd->buscaFct($tabla{$cTipoD}, $RUT, $Documento, 'Pagada') ) {
 				$Mnsj = "Ese documento ya está pagado.";
 				$documento->focus;
 				return;
 			}
 		}
 	}
-	$Mnsj = " ";
+#	$Mnsj = " ";
 	# Graba datos
 	if ($CntaI eq "B") {
 		$RUT = $cBanco ;
@@ -483,7 +480,8 @@ sub modifica ( )
 	$Codigo = $sItem->[1];
 	$Detalle = decode_utf8($sItem->[4]);
 	$RUT = $sItem->[5];
-	$TipoD = $sItem->[6];
+	$cTipoD = $sItem->[6];
+	$TipoD = buscaTD( $cTipoD );
 	$Documento = $sItem->[7];
 	$Cuenta = $sItem->[10];
 	
@@ -494,11 +492,27 @@ sub modifica ( )
 	$Id = $sItem->[11];
 }
 
+sub buscaTD ( $ )
+{
+	my ($td) = @_;
+	my $e ;
+	for $e (@listaD) {
+		return $e->[1] if $e->[0] eq $td ; 
+	}
+}
+
 sub registra ( )
 {
 	my ($esto) = @_;
 	my $bd = $esto->{'baseDatos'};
-	
+	# Verifica la existencia del documento 
+	if ($CntaI eq "I" ) {
+		if ( not $bd->buscaFct($tabla{$cTipoD}, $RUT, $Documento, 'FechaE') ) {
+			$Mnsj = "Ese documento NO está registrado.";
+			$documento->focus;
+			return;
+		}
+	}
 	# Graba datos
 	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $TipoD, $Documento, 
 		'', $Cuenta, $Id);
@@ -510,7 +524,13 @@ sub registra ( )
 	$TotalHf = $pesos->format_number($TotalH);
 
 	limpiaCampos();
-	
+
+	$bcos->configure(-state => 'disabled');
+	$cuentaI->configure(-state => 'disabled');
+	$tipoD->configure(-state => 'disabled');
+	$documento->configure(-state => 'disabled');
+	$fechaV->configure(-state => 'disabled');
+
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
 	$bReg->configure(-state => 'disabled');
@@ -621,8 +641,7 @@ sub limpiaCampos ( )
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
 	$Monto = $BH = 0;
-	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = '';
-	
+	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = '';
 	# Activa o no contabilizar el comprobante
 	if ($TotalH == $TotalD) {
 		$bCnt->configure(-state => 'active');

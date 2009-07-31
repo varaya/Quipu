@@ -6,7 +6,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
-#  UM: 21.07.2009
+#  UM: 30.07.2009
 
 package Ajustes;
 
@@ -14,7 +14,7 @@ use Tk::LabEntry;
 use Tk::LabFrame;
 use Encode 'decode_utf8';
 
-my ($NumC,$FechaC,$FechaE,$TpD,$NumD,$Ni,$Tabla,$Id,$TipoD,$Mes,$TD);
+my ($NumC,$FechaC,$FechaE,$TpD,$NumD,$Ni,$Tabla,$Id,$TipoD,$Mes,$TD,$Rut);
 
 sub crea {
 	my ($esto, $vp, $bd, $ut, $mt) = @_;
@@ -198,7 +198,7 @@ sub registra ( $ )
 	# Actualiza datos
 	my $fc = $ut->analizaFecha($FechaC) ;
 	my $fe = $ut->analizaFecha($FechaE) ;
-	$bd->cambiaDcm($NumC,$fc,$fe,$TpD,$NumD,$Ni,$Tabla,$Id,$TD);
+	$bd->cambiaDcm($Rut,$NumC,$fc,$fe,$TpD,$NumD,$Ni,$Tabla,$Id,$TD);
 
 	$Mnsj = "Registro actualizado";
 	inicializa();

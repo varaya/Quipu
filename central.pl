@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 16.07.2009
+#  UM : 30.07.2009
 
 # use Data::Dumper; 
 
@@ -155,10 +155,16 @@ sub opRegistra {
  ['cascade' => "Plan Cuentas", -tearoff => 0, -menuitems => opCuentas() ],
  ['command' => "Tipo Documento", -command => sub { require prg::TipoD;
 	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
- ['command' => "Ajustes", -command => sub { require prg::Ajustes; 
- 	Ajustes->crea($vp, $bd, $ut, $mt ); } ] ]
+ ['cascade' => "Ajustes", -tearoff => 0, -menuitems => opAjustes() ] ]
 }
 
+sub opAjustes {
+[ ['command' => "F - NC - ND", -command => sub { require prg::Ajustes; 
+ 	Ajustes->crea($vp, $bd, $ut, $mt ); } ],
+ ['command' => "BH", -command => sub { require prg::AjustaBH; 
+ 	AjustaBH->crea($vp, $bd, $ut, $mt ); } ]]
+}
+ 
 sub opContabiliza {
  my ($tipoC, $tipoB, $tipoNC, $tipoND, $tipoA );
  $tipoC = $tipoB = $tipoNC = $tipoND = $tipoA = ' ';

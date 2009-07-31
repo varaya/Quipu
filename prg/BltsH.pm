@@ -53,10 +53,14 @@ sub crea {
 	$CtaNt =  $dtc[1];
 	$CtaIm =  $dtc[2];
 	# y sus nombres
-	@dtc = $bd->dtCuenta($CtaNt);
-	$NombreCn = decode_utf8("$dtc[0] ");
-	@dtc = $bd->dtCuenta($CtaIm);
-	$NombreCi = decode_utf8("$dtc[0] ");
+	if ($CtaNt) {
+		@dtc = $bd->dtCuenta($CtaNt);
+		$NombreCn = decode_utf8("$dtc[0] ");
+	}
+	if ($CtaIm) {
+		@dtc = $bd->dtCuenta($CtaIm);
+		$NombreCi = decode_utf8("$dtc[0] ");
+	}
 
 	# Defime marcos
 	my $mDatosC = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
