@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 30.07.2009
+#  UM : 03.08.2009
 
 # use Data::Dumper; 
 
@@ -209,7 +209,7 @@ sub opConsulta {
 my $tipoD = $tipo = '';
 [ ['command' => "Balance al día", -command => sub { require prg::Balance;
 	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ],
- ['command' => "+Cuenta Individual", -command => sub { require prg::CIndvdl;
+ ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ], "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
 	CCmprb->crea($vp, $mt, $bd, $ut, $Rut);} ],

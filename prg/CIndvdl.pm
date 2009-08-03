@@ -1,10 +1,11 @@
 #  CIndvdl.pm - Consulta e imprime Cuenta Invididual
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete 
+#  licencia incluida en este paquete
+#  UM : 03.08.2009
 
 package CIndvdl;
 
@@ -39,7 +40,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Cuenta Invididual");
-	$vnt->geometry("650x380+40+150"); 
+	$vnt->geometry("690x380+40+150"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white');
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -167,9 +168,9 @@ sub informeH ( $ $ ) {
 	$marco->insert('end', "Cuenta Corriente $Nombre  Rut: $RUT\n\n", 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 
-	my $lin1 = "   # T Fecha      Glosa                                      ";
+	my $lin1 = "   # T Fecha      Glosa                                 ";
 	$lin1 .= "Debe       Haber  Documento";
-	my $lin2 = "-"x90;
+	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = 0 ;
@@ -183,31 +184,31 @@ sub informeH ( $ $ ) {
 		$mntH = $pesos->format_number( $saldoI );
 		$tHaber += $saldoI;
 	}
-	$mov = sprintf("%4s %-1s %10s %-35s %11s %11s",
+	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",
 		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
-		$fecha = $ut->cFecha($algo->[9]);
-		$tC = $algo->[10];
-		$nulo = $algo->[11];
+		$fecha = $ut->cFecha($algo->[10]);
+		$tC = $algo->[11];
+		$nulo = $algo->[12];
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$tDebe += $algo->[2];
 		$mntH = $pesos->format_number( $algo->[3] );
 		$tHaber += $algo->[3];
 		$ci = $dcm = $dt = '' ;
-		if ($algo->[12]) {
-			$dt = decode_utf8($algo->[12]);
+		if ($algo->[13]) {
+			$dt = decode_utf8($algo->[13]);
 		} 
 		if ($algo->[6]) {
-			$dcm = "$algo->[6] $algo->[7]";
+			$dcm = substr "$algo->[6] $algo->[7]",0,20 ;
 		}
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
 		}
-		$mov = sprintf("%4s %-1s %10s %-35s %11s %11s  %-20s", $nCmp, $tC, 
+		$mov = sprintf("%4s %-1s %10s %-30s %11s %11s  %-20s", $nCmp, $tC, 
 			$fecha, $dt, $mntD, $mntH, $dcm ) ;
 
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
@@ -216,7 +217,7 @@ sub informeH ( $ $ ) {
 	$dt = "Totales";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
-	$mov = sprintf("%4s %-1s %10s %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
 	$dt = "Saldo al $fechaUM";
@@ -224,7 +225,7 @@ sub informeH ( $ $ ) {
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %-1s %10s %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 
 	$bImp->configure(-state => 'active');
