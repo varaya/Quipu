@@ -82,6 +82,7 @@ sub crea {
 		-command => sub { $vnt->destroy();} );
 	
 	# Dibuja interfaz
+	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$rut->pack(-side => "left", -anchor => "w");
 	$historial->pack(-side => "left", -anchor => "w");
 	$pendiente->pack(-side => "left", -anchor => "w");
@@ -90,7 +91,7 @@ sub crea {
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$mBotonesC->pack();
 	$mtA->pack(-fill => 'both');
-	$mMensajes->pack(-expand => 1, -fill => 'both');
+
 
 	$bImp->configure(-state => 'disabled');
 	$rut->focus;
@@ -121,9 +122,11 @@ sub valida ( $ )
 	} else {
 		my $nmb = $bd->buscaT($RUT);
 		if (not $nmb) {
-			$Mnsj = "Curioso: ese RUT no aparece registrado.";
-			$rut->focus;
-			return;
+			if (not $nmb = $bd->buscaP($RUT) ) {
+				$Mnsj = "Curioso: ese RUT no aparece registrado.";
+				$rut->focus;
+				return;
+			}
 		} 
 		$Nombre = decode_utf8("  $nmb");
 	}
@@ -139,7 +142,7 @@ sub valida ( $ )
 
 sub informeP ( $ $ ) {
 
-	$Mnsj = "Informe Pendientes";
+	$Mnsj = "Informe en desarrollo";
 
 }
 

@@ -110,7 +110,7 @@ sub crea {
 		-textvariable => \$CCto );	
 	  $nCCto = $mDatosC->Label(-textvariable => \$NCCto, -font => $tp{tx});		
 	}
-	$neto = $mDatosC->LabEntry(-label => "Neto:    ", -width => 12,
+	$neto = $mDatosC->LabEntry(-label => "Líquido:    ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Neto);
 	$ctaNt = $mDatosC->LabEntry(-label => "Cuenta:  ", -width => 5,

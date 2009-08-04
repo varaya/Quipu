@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 29.07.2009
+#  UM: 03.08.2009
 
 package Cmprbs;
 
@@ -45,7 +45,8 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
-	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', '' => '' ) ;
+	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 
+	'LT' => '', 'CH' => '', '' => '' ) ;
 	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
 	$Numero = $bd->numeroC() + 1;
@@ -585,7 +586,8 @@ sub contabiliza ( )
 	$bd->agregaCmp($Numero, $ff, $Glosa, $TotalD, $TipoCmp, $BH);
 	$bd->actualizaCI($Numero, $ff);
 	# Graba documentos de pago, si corresponde
-	my $fv = $ut->analizaFecha($FechaV);
+	my $fv = '';
+	$fv = $ut->analizaFecha($FechaV) if $FechaV ;
 	my $tabla = ( $TipoCmp eq "I" ) ? 'DocsR' : 'DocsE' ;
 	$bd->agregaDP($Numero, $ff, $tabla, $fv) if not $TipoCmp eq "T";
 	
@@ -640,7 +642,7 @@ sub limpiaCampos ( )
 {
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
-	$Monto = $BH = 0;
+	$Monto = 0;
 	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = '';
 	# Activa o no contabilizar el comprobante
 	if ($TotalH == $TotalD) {

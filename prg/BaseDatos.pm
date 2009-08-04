@@ -778,7 +778,7 @@ sub agregaCmp( $ $ $ $ $ $ )
 	if ($Tipo eq 'I') { # Facturas de Venta, si es ingreso
 		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha) ;
 	}
-	if ($Tipo eq 'E') { # Si es egreso Facturas de Compra 
+	if ($Tipo eq 'E') { # Si es egreso Factura Compra o Boleta Honorarios
 		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha) ;
 		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha) if $bh ;
 	}
@@ -990,7 +990,7 @@ sub buscaFct( $ $ $ $ )
 {
 	my ($esto, $tbl, $rut, $doc, $campo) = @_;	
 	my $bd = $esto->{'baseDatos'};
-	
+
 	my $sql = $bd->prepare("SELECT $campo FROM $tbl WHERE RUT = ? AND Numero = ?;");
 	$sql->execute($rut, $doc);
 	my $dato = $sql->fetchrow_array;

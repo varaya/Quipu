@@ -167,6 +167,13 @@ $bd->do("CREATE TABLE BoletasH (
 	Nulo int(1),
 	Cuenta int(4) )" );
 
+# Actualización de Pagada en B. Honorarios
+$bd->do("CREATE TRIGGER PagoBH AFTER UPDATE OF Abonos ON BoletasH
+  BEGIN
+    UPDATE BoletasH SET Pagada = CASE WHEN Abonos >= Total - Retenido THEN 1 
+		ELSE 0 END ;
+  END" );
+
 # Documentos emitidos (cheques y letras)
 $bd->do("CREATE TABLE DocsE (
 	Numero char(10),
@@ -196,13 +203,6 @@ $bd->do("CREATE TABLE DocsR (
 	Estado char(1) ,
 	Nulo int(1),
 	Tipo char(2) )" );
-
-# Actualización de Pagada en B. Honorarios
-$bd->do("CREATE TRIGGER PagoBH AFTER UPDATE OF Abonos ON BoletasH
-  BEGIN
-    UPDATE BoletasH SET Pagada = CASE WHEN Abonos >= Total THEN 1 
-		ELSE 0 END ;
-  END" );
 
 # Impuestos especiales
 $bd->do("CREATE TABLE ImptosE (
