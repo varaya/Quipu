@@ -264,6 +264,20 @@ sub buscaT( )
 	return $dato; 
 }
 
+sub infoT( )
+{
+	my ($esto, $rt) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	
+	my $sql = $bd->prepare("SELECT Nombre,Cliente,Proveedor,Socio,Honorario 
+		FROM Terceros WHERE RUT = ?;");
+	$sql->execute($rt);
+	my @datos = $sql->fetchrow_array;
+	$sql->finish();
+
+	return @datos; 
+}
+
 sub datosCI( $ )
 {
 	my ($esto, $rt) = @_;	
@@ -1278,13 +1292,15 @@ sub datosRF( )
 	return @datos; 
 }
 
-sub datosFacts( $ )
+sub datosFacts( $ $ )
 {
-	my ($esto, $Rut) = @_;	
+	my ($esto, $Rut, $tbl, $impg) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
-
-	my $sql = $bd->prepare("SELECT *,ROWID FROM Facts WHERE RUT = ?;");
+	my $imp = ($tbl eq 'BoletasH') ? 'Retenido' : 'IVA';
+	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,$imp FROM $tbl WHERE RUT = ?" ;
+	$cns .= " AND Pagada = 0 ORDER BY FechaE " if $impg ;
+	my $sql = $bd->prepare($cns);
 	$sql->execute($Rut);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 03.08.2009
+#  UM : 10.08.2009
 
 package CIndvdl;
 
@@ -17,7 +17,7 @@ use Number::Format;
 my ($Mnsj, $rut, $RUT, @cnf, $empr, $Tipo, $Nombre, $rutE) ;	# Variables
 my @lMeses = () ;
 my @datos = ();
-my ($bCan, $bImp) ; # Botones
+my ($bCan, $bImp, $bBrr) ; # Botones
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
@@ -78,8 +78,8 @@ sub crea {
 	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
 	[ ['command' => "texto", -command => sub { txt($mtA);} ],
  	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
-	$bCan = $mBotonesC->Button(-text => "Cancela", 
-		-command => sub { $vnt->destroy();} );
+	$bBrr = $mBotonesC->Button(-text => "Borra", -command => sub { $mtA->delete('0.0','end');} );
+	$bCan = $mBotonesC->Button(-text => "Cancela", -command => sub { $vnt->destroy();} );
 	
 	# Dibuja interfaz
 	$mMensajes->pack(-expand => 1, -fill => 'both');
@@ -88,10 +88,10 @@ sub crea {
 	$pendiente->pack(-side => "left", -anchor => "w");
 	$bMst->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bBrr->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 	$mBotonesC->pack();
 	$mtA->pack(-fill => 'both');
-
 
 	$bImp->configure(-state => 'disabled');
 	$rut->focus;
@@ -108,7 +108,7 @@ sub valida ( $ )
 	my $ut = $esto->{'mensajes'};
 	
 	$Mnsj = " ";
-
+	my $prs = 0;
 	# Busca RUT
 	if (not $RUT) {
 		$Mnsj = "Debe indicar un RUT.";
@@ -127,6 +127,7 @@ sub valida ( $ )
 				$rut->focus;
 				return;
 			}
+			$prs = 1 ;
 		} 
 		$Nombre = decode_utf8("  $nmb");
 	}
@@ -136,14 +137,61 @@ sub valida ( $ )
 		return;
 	} else {
 		informeH($esto,$mt) if $Tipo eq "H" ;
-		informeP($esto,$mt) if $Tipo eq "P" ;
+		informeP($esto,$mt,$prs) if $Tipo eq "P" ;
 	}
 }
 
-sub informeP ( $ $ ) {
+sub informeP ( $ $ $ ) {
 
-	$Mnsj = "Informe en desarrollo";
+	my ($esto, $marco, $prs) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $ut = $esto->{'mensajes'};
 
+	if ($prs) {
+		$Mnsj = "Ese informe no está disponiblen para el Personal.";
+		return ;
+	}
+	my @info = $bd->infoT($RUT) ;
+	my ($nmb,$cl,$pr,$sc,$hn,$tbl) = (decode_utf8($info[0]),$info[1],$info[2],$info[3],$info[4],'');
+	$tbl = "Ventas" if $cl ;
+	$tbl = "Compras" if $pr ;
+	$tbl = "BoletasH" if $hn ;
+	my @data = $bd->datosFacts($RUT,$tbl,1);
+	
+	if (not @data) {
+		$Mnsj = "NO hay datos para $nmb";
+		return ;
+	}
+	$marco->insert('end', "Documentos Pendientes $nmb  Rut: $RUT\n\n", 'grupo');
+	$marco->insert('end', "$tbl\n", 'grupo');
+	my $lin1 = sprintf("%10s  %10s %12s %12s  %10s  %5s",'#','Fecha','Monto','Abonos','Vence','Cmpr') ;
+	my $lin2 = "-"x67;
+	$marco->insert('end',"$lin1\n",'detalle');
+	$marco->insert('end',"$lin2\n",'detalle');
+	my ($algo,$fe,$fv,$nmr,$tt,$ab,$nulo,$cmp,$mov,$stt,$sab,$mnt);
+	$stt = $sab = 0;
+	foreach $algo ( @data ) {
+		$fe =  $ut->cFecha($algo->[1]);
+		$fv =  $ut->cFecha($algo->[4]);
+		$nmr = $algo->[0];
+		$mnt = $hn ? $algo->[2] - $algo->[7] : $algo->[2] ;
+		$tt = $pesos->format_number($mnt);
+		$stt += $mnt ;
+		$ab = $pesos->format_number($algo->[3]);
+		$sab += $algo->[3] ;
+		$nulo = $algo->[6];
+		$cmp = $algo->[5];
+		$mov = sprintf("%10s  %10s %12s %12s  %10s  %5s",$nmr,$fe,$tt,$ab,$fv,$cmp) ;
+		$marco->insert('end', "$mov\n", 'detalle' ) ;
+	}
+	$marco->insert('end',"$lin2\n",'detalle');
+	$tt = $pesos->format_number($stt);
+	$ab = $pesos->format_number($sba) if $sab ;
+	$mov = sprintf("%10s  %10s %12s %12s",'','',$tt,$ab) ;
+	$marco->insert('end', "$mov\n", 'detalle' ) ;
+	$marco->insert('end',"$lin2\n\n",'detalle') ;
+
+	$bImp->configure(-state => 'active');	
 }
 
 sub informeH ( $ $ ) {
@@ -153,7 +201,6 @@ sub informeH ( $ $ ) {
 	my $ut = $esto->{'mensajes'};
 
 	my @data = $bd->itemsCI($RUT);
-	$marco->delete('0.0','end');
 	$Mnsj = " ";
 	if (not @data) { 
 		$Mnsj = "No hay datos para $Nombre"; 
@@ -229,7 +276,7 @@ sub informeH ( $ $ ) {
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
 	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
-	$marco->insert('end', "$mov\n", 'detalle' ) ;
+	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
 
 	$bImp->configure(-state => 'active');
 }
