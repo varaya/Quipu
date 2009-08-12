@@ -590,14 +590,14 @@ sub itemsCI( $ ) # Movimientos de cuentas individuales
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado, d.Glosa 
-		FROM ItemsC AS i, DatosC AS d WHERE i.RUT = ? AND i.Numero = d.Numero;");
+		FROM ItemsC AS i, DatosC AS d WHERE i.RUT = ? AND i.Numero = d.Numero
+		ORDER BY i.TipoD DESC, i.Documento ASC;");
 	$sql->execute($Rut);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
 		push @datos, \@fila;
 	}
 	$sql->finish();
-	
 	return @datos; 
 }	
 
@@ -825,7 +825,7 @@ sub agregaDP ( $ $ $ $ )
 
 	$cm = ($tabla eq 'DocsR') ? 'Debe' : 'Haber' ;
 	# Busca cheques y agrega docs
-	$sql = $bd->prepare("SELECT  Documento, CuentaM, RUT, $cm FROM ItemsC
+	$sql = $bd->prepare("SELECT Documento, CuentaM, RUT, $cm FROM ItemsC
 		WHERE Numero = ? AND TipoD = ?;");
 	$sql->execute($nmr,'CH');
 	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?,?);");

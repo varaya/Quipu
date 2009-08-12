@@ -165,7 +165,7 @@ sub crea {
 	}
 	# Crea opciones para elegir tipo de documento
 	@listaD = $bd->datosDocs();
-	push @listaD, ['XZ','N.Documento','','',0];
+	push @listaD, ['SD','N.Documento','','',0];
 	my $algo;
 	foreach $algo ( @listaD ) {
 		$tipoD->insert('end', decode_utf8($algo->[1]) ) ;
@@ -251,7 +251,7 @@ sub seleccionaD {
 	my ($jc, $Index) = @_;
 	$cTipoD = $listaD[$Index]->[0];
 	$BH = 1 if $cTipoD eq 'BH';
-	if ( $cTipoD eq 'XZ' ) {
+	if ( $cTipoD eq 'SD' ) {
 		$documento->configure(-state => 'disabled');
 	} else {
 		$documento->focus;
@@ -376,6 +376,7 @@ sub agrega ( )
 	if ($CntaI eq "B") {
 		$RUT = $cBanco ;
 	}
+	print "$cTipoD\n";
 	$bd->agregaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
 		$Cuenta, $Numero,'');
 	# Muestra lista modificada de cuentas
@@ -482,6 +483,7 @@ sub modifica ( )
 	$Detalle = decode_utf8($sItem->[4]);
 	$RUT = $sItem->[5];
 	$cTipoD = $sItem->[6];
+	print "- $cTipoD\n";
 	$TipoD = buscaTD( $cTipoD );
 	$Documento = $sItem->[7];
 	$Cuenta = $sItem->[10];
@@ -515,7 +517,7 @@ sub registra ( )
 		}
 	}
 	# Graba datos
-	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $TipoD, $Documento, 
+	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
 		'', $Cuenta, $Id);
 	# Muestra lista actualizada de items
 	@datos = muestraLista($esto);

@@ -16,7 +16,8 @@ use Number::Format;
 # Variables válidas dentro del archivo
 my ($Mnsj, $rut, $RUT, @cnf, $empr, $Tipo, $Nombre, $rutE) ;	# Variables
 my @lMeses = () ;
-my @datos = ();
+my @datos = () ;
+my %tabla = () ; # Lista de nombres según tipo de documento
 my ($bCan, $bImp, $bBrr) ; # Botones
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -35,7 +36,9 @@ sub crea {
 	@cnf = $bd->leeCnf();
 	$RUT = $Tipo = '' ;
 	$rutE = $rtE;
-	
+	%tabla = ('BH' => 'Boletas Honorarios' ,'FC' => 'Facturas de Compras' ,
+		'FV' => 'Facturas de Ventas', 'LT' => 'Letras', 'CH' => 'Cheques',
+		'NC' => 'Notas de Crédito', 'ND' => 'Notas de Débito' ) ;
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
@@ -206,21 +209,21 @@ sub informeH ( $ $ ) {
 		$Mnsj = "No hay datos para $Nombre"; 
 		return;
 	}
-	my ($algo,@datosE,@datosCI,$tC,$fecha,$nulo,$tDebe,$tHaber,$mntD,$mntH);
+	my ($algo,@datosE,@datosCI,$tC,$fecha,$nulo,$tDebe,$tHaber,$mntD,$mntH,$cTd);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 	@datosCI = $bd->datosCI($RUT);
 	my $saldoI = $datosCI[3];
 	my $tSaldo = $datosCI[4];
 	my $fechaUM = $datosCI[5];
-
+	my $lst = "-"x54 ;
+	my $movST = sprintf("%17s %-52s",'',$lst) ;
 	$marco->insert('end', "$empr  $cnf[0]\n", 'negrita');
 	$marco->insert('end', "Cuenta Corriente $Nombre  Rut: $RUT\n\n", 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
-
 	my $lin1 = "   # T Fecha      Glosa                                 ";
 	$lin1 .= "Debe       Haber  Documento";
-	my $lin2 = "-"x80;
+	my $lin2 = "-"x83;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = 0 ;
@@ -237,8 +240,27 @@ sub informeH ( $ $ ) {
 	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",
 		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
-	$marco->insert('end',"$lin2\n",'detalle');
+#	$marco->insert('end',"$lin2\n",'detalle');
+	my $aTd = '' ;
+	my ($stD, $stH);
 	foreach $algo ( @data ) {
+		$cTd = $algo->[6] ;
+		if (not $cTd eq $aTd) {
+			if (not $aTd eq '' ) {
+				$mntD = $mntH = $pesos->format_number(0);
+				$mntD = $pesos->format_number( $stD );
+				$mntH = $pesos->format_number( $stH );
+				$marco->insert('end', "$movST\n", 'detalle' ) ;
+				$dt = "Subtotal $tabla{$aTd}";
+				$mov = sprintf("%17s %30s %11s %11s",'',$dt,$mntD,$mntH ) ;
+				$marco->insert('end', "$mov\n", 'detalle' ) ;
+			}
+			$aTd = $cTd ;
+			($stD, $stH) = (0,0);
+			$marco->insert('end', "$tabla{$cTd}\n", 'grupo' ) ;
+		}
+		$stD += $algo->[2];
+		$stH += $algo->[3];
 		$nCmp = $algo->[0];  # Numero comprobante
 		$fecha = $ut->cFecha($algo->[10]);
 		$tC = $algo->[11];
@@ -252,18 +274,24 @@ sub informeH ( $ $ ) {
 		if ($algo->[13]) {
 			$dt = decode_utf8($algo->[13]);
 		} 
-		if ($algo->[6]) {
-			$dcm = substr "$algo->[6] $algo->[7]",0,20 ;
+		if ($cTd) {
+			$dcm = substr "$algo->[7]",0,20 ;
 		}
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
 		}
 		$mov = sprintf("%4s %-1s %10s %-30s %11s %11s  %-20s", $nCmp, $tC, 
 			$fecha, $dt, $mntD, $mntH, $dcm ) ;
-
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
-	$marco->insert('end',"$lin2\n",'detalle');
+	$mntD = $mntH = $pesos->format_number(0);
+	$mntD = $pesos->format_number( $stD );
+	$mntH = $pesos->format_number( $stH );
+	$marco->insert('end', "$movST\n", 'detalle' ) ;
+	$dt = "Subtotal $tabla{$aTd}";
+	$mov = sprintf("%17s %30s %11s %11s",'',$dt,$mntD,$mntH ) ;
+	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
+	$marco->insert('end', "$movST\n", 'detalle' ) ;
 	$dt = "Totales";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
@@ -274,7 +302,7 @@ sub informeH ( $ $ ) {
 	$mntD = $mntH = '';
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
-	$marco->insert('end',"$lin2\n",'detalle');
+
 	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
 
