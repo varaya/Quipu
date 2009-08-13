@@ -1,13 +1,13 @@
-#  Balance.pm - Consulta e imprime Balance tributario
+#  BalanceI.pm - Consulta e imprime Balance tributario
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 21.07.2009
+#  UM: 13.08.2009
 
-package Balance;
+package BalanceI;
 
 use Encode 'decode_utf8';
 use Number::Format;
@@ -29,7 +29,7 @@ sub crea {
 	my %tp = $ut->tipos();
 
 	# Obtiene lista de cuentas con movimiento
-	@data = $bd->datosCcM(0);
+	@data = $bd->datosCcM(1);
 	if (not @data) {
 		$ut->mError("No hay datos para el Balance.");
 		return ;
@@ -37,8 +37,8 @@ sub crea {
 	
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
-	$vnt->title("Procesa Balance");
-	$vnt->geometry("1010x450+0+100"); 
+	$vnt->title("Balance Inicial");
+	$vnt->geometry("650x450+0+100"); 
 	$esto->{'ventana'} = $vnt;
 
 	# Define marco para mostrar resultado
@@ -87,7 +87,7 @@ sub txt ( $ )
 	
 	my $algo = $marco->get('0.0','end');
 	# Genera archivo de texto
-	my $d = "$rutE/txt/balance.txt" ;
+	my $d = "$rutE/txt/balanceI.txt" ;
 	open ARCHIVO, "> $d" or die $! ;
 	print ARCHIVO $algo ;
 	close ARCHIVO ;
@@ -98,68 +98,45 @@ sub csv ( $ )
 {
 	my ($bd) = @_;	
 
-	my ($algo,$l,$cta,$mntD,$mntH,$sldD,$sldH,$sld,$Prd,$Gnc);
-	my ($ac,$pa,$pe,$ga,$gr,$tAc,$tPa,$tPe,$tGa,$tmD,$tmH,$tsD,$tsH,$d);
+	my ($algo,$l,$cta,$mntD,$mntH,$sldD,$sldH,$sld);
+	my ($ac,$pa,$gr,$tAc,$tPa,$tsD,$tsH,$d);
 
-	$d = "$rutE/csv/balance.csv" ;
+	$d = "$rutE/csv/balanceI.csv" ;
 	open ARCHIVO, "> $d" or die $! ;
 
 	print ARCHIVO "$empr\n";
-	$l = "Balance Tributario  $cnf[0]";
+	$l = "Balance Inicial  $cnf[0]";
 	print ARCHIVO "$l\n";
-	$l = "Cod.,Cuenta,Debe,Haber,Deudor,Acreedor,Activo,Pasivo,Pérdidas,Ganancias";
+	$l = "Cod.,Cuenta,Deudor,Acreedor,Activo,Pasivo";
 	print ARCHIVO "$l\n";
-	$tAc = $tPa = $tPe = $tGa = $tmD = $tmH = $tsD = $tsH = 0;
+	$tAc = $tPa = $tsD = $tsH = 0;
 	foreach $algo ( @data ) {
 		$cta = abrev($algo->[0]) ;
 		my $tSaldo = $algo->[5];
 		my $saldoI = $algo->[4];
-		$mntD = $algo->[2] ;
-		$mntH = $algo->[3] ;
+		($mntD,$mntH) = (0,0) ;
 		$mntD += $saldoI if $tSaldo eq 'D';
 		$mntH += $saldoI if $tSaldo eq 'A';
-		$tmD += $mntD ;
-		$tmH += $mntH ;
-		$l = "$algo->[1],$cta,$mntD,$mntH" ;
+		$l = "$algo->[1],$cta" ;
 		$gr = substr $algo->[1],0,1;
 		$sldD = $sldH = 0;
 		if ( $mntD > $mntH ) {
 			$sldD = $mntD -  $mntH;
 			$tsD += $sldD ;
 			$tAc += $sldD if $gr eq '1' or $gr eq '2';
-			$tPe += $sldD if $gr eq '4' or $gr eq '3';
 		} else {
 			$sldH = $mntH - $mntD ;
 			$tsH += $sldH ;
 			$tPa += $sldH if $gr eq '2' or $gr eq '1';
-			$tGa += $sldH if $gr eq '3' or $gr eq '4';
 		}
 		$l .= ",$sldD,$sldH";
-		$ac = $pa = $pe = $ga = 0;
+		$ac = $pa = 0;
 		$ac = $sldD if $gr eq '1' or $gr eq '2';
 		$pa = $sldH if $gr eq '2' or $gr eq '1';
-		$pe = $sldD if $gr eq '4' or $gr eq '3';
-		$ga = $sldH if $gr eq '3' or $gr eq '4';
-		$l .= ",$ac,$pa,$pe,$ga";
+		$l .= ",$ac,$pa";
 		print ARCHIVO "$l\n";
 	}
-	$l = ",Totales,$tmD,$tmH,$tsD,$tsH,$tAc,$tPa,$tPe,$tGa" ;
-	print ARCHIVO "$l\n";
-	$Prd = $Gnc = 0 ;
-	$Prd = $tPe - $tGa if $tPe > $tGa ; 
-	$Gnc = $tGa - $tPe if $tPe < $tGa ;
-	my $rs = ($Prd == 0) ? "Ganancia" :"Pérdida" ;
-	$l = ",$rs,,,,,$Prd,$Gnc,$Gnc,$Prd";
-	print ARCHIVO "$l\n";
-	my ($pPrd , $pGnc) = (0, 0) ;
-	$pPrd = $tPa - $tAc if $tPa > $tAc ; 
-	$pGnc = $tAc - $tPa if $tPa < $tAc ;
-	my ($sAc,$sPa,$sPe,$sGa);
-	$sAc = $tAc + $pPrd ;	
-	$sPa = $tPa + $pGnc ;
-	$sPe = $tPe + $Gnc ;
-	$sGa = $tGa + $Prd ;
-	$l = ",Suma iguales,$tmD,$tmH,$tsD,$tsH,$sAc,$sPa,$sPe,$sGa";
+	$l = ",Totales,$tsD,$tsH,$tAc,$tPa" ;
 	print ARCHIVO "$l\n";
 	close ARCHIVO ;
 	
@@ -170,8 +147,8 @@ sub muestra ( $ $ )
 {
 	my ($bd, $mt) = @_;
 		
-	my (@datosE,$algo,$mov,$cta,$mntD,$mntH,$sldD,$sldH,$sld,$Prd,$Gnc);
-	my ($ac,$pa,$pe,$ga,$gr,$tAc,$tPa,$tPe,$tGa,$tmD,$tmH,$tsD,$tsH);
+	my (@datosE,$algo,$mov,$cta,$mntD,$mntH,$sldD,$sldH,$sld);
+	my ($ac,$pa,$gr,$tAc,$tPa,$tsD,$tsH);
 
 	# Datos generales
 	@datosE = $bd->datosEmpresa($rutE);
@@ -180,84 +157,50 @@ sub muestra ( $ $ )
 
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
-	$mt->insert('end', "Balance Tributario  $cnf[0]\n\n", 'negrita');
+	$mt->insert('end', "Balance Inicial  $cnf[0]\n\n", 'negrita');
 	my $lin1 = sprintf("%-5s %-21s", 'Cod.', 'Cuenta') ;
-	$lin1 .= "           Debe          Haber        Deudor      Acreedor",
-	$lin1 .= "        Activo       Pasivo      Pérdidas    Ganancias";
-	my $lin2 = "-"x139;
+	$lin1 .= "           Deudor      Acreedor        Activo       Pasivo";
+	my $lin2 = "-"x85;
 	$mt->insert('end',"$lin1\n",'detalle');
 	$mt->insert('end',"$lin2\n",'detalle');
-	$tAc = $tPa = $tPe = $tGa = $tmD = $tmH = $tsD = $tsH = 0;
+	$tAc = $tPa = $tsD = $tsH = 0;
 	foreach $algo ( @data ) {
 		$cta = substr abrev($algo->[0]),0,21 ;
 		my $tSaldo = $algo->[5];
 		my $saldoI = $algo->[4];
-		$mntD = $algo->[2] ;
-		$mntH = $algo->[3] ;
-		$mntD += $saldoI if $tSaldo eq 'D';
-		$mntH += $saldoI if $tSaldo eq 'A';
-		$tmD += $mntD ;
-		$tmH += $mntH ;
-		$mov = sprintf("%-5s %-21s %14s %14s", $algo->[1], $cta,
-			$pesos->format_number($mntD), $pesos->format_number($mntH)) ;
+		($mntD,$mntH) = (0,0) ;
+		$mntD = $saldoI if $tSaldo eq 'D';
+		$mntH = $saldoI if $tSaldo eq 'A';
+		$mov = sprintf("%-5s %-21s  ", $algo->[1], $cta ) ;
 		$gr = substr $algo->[1],0,1;
 		$sldD = $sldH = $pesos->format_number(0);
 		if ( $mntD > $mntH ) {
 			$sldD = $pesos->format_number($mntD -  $mntH);
 			$tsD += $mntD -  $mntH ;
 			$tAc += $mntD -  $mntH if $gr eq '1' or $gr eq '2' ;
-			$tPe += $mntD -  $mntH if $gr eq '4' or $gr eq '3';
 		} else {
 			$sldH = $pesos->format_number($mntH - $mntD) ;
 			$tsH += $mntH - $mntD ;
 			$tPa += $mntH - $mntD if $gr eq '2' or $gr eq '1' ;
-			$tGa += $mntH - $mntD if $gr eq '3' or $gr eq '4';
 		}
 		$mov .= sprintf(" %13s %13s",$sldD, $sldH);
 		# Distribuye saldo 
-		$ac = $pa = $pe = $ga = $pesos->format_number(0) ;
+		$ac = $pa = $pesos->format_number(0) ;
 		$ac = $sldD if $gr eq '1' or $gr eq '2' ;
 		$pa = $sldH if $gr eq '2' or $gr eq '1' ;
-		$pe = $sldD if $gr eq '4' or $gr eq '3';
-		$ga = $sldH if $gr eq '3' or $gr eq '4';
-		$mov .= sprintf(" %13s %13s %12s %12s",$ac, $pa, $pe, $ga);
+		$mov .= sprintf(" %13s %13s",$ac, $pa);
 		$mt->insert('end', "$mov\n", 'detalle' ) ;
 	}
 	$mt->insert('end',"$lin2\n",'detalle');
-	my ($ftmD, $ftmH, $ftsD, $ftsH );
-	$ftmD = $pesos->format_number($tmD);
-	$ftmH = $pesos->format_number($tmH);
+	my ( $ftsD, $ftsH );
 	$ftsD = $pesos->format_number($tsD);
 	$ftsH = $pesos->format_number($tsH);
-	$mov = sprintf("%5s %21s %14s %14s %13s %13s %13s %13s %12s %12s", 
-		' ', 'Totales', $ftmD,$ftmH,$ftsD,$ftsH,
+	$mov = sprintf("%5s %21s   %13s %13s %13s %13s", 
+		' ', 'Totales', $ftsD,$ftsH,
 		$pesos->format_number($tAc),
-		$pesos->format_number($tPa),
-		$pesos->format_number($tPe),
-		$pesos->format_number($tGa)) ;
+		$pesos->format_number($tPa)) ;
 	$mt->insert('end',"$mov\n",'detalle');
-	$Prd = $Gnc = 0 ;
-	$Prd = $tPe - $tGa if $tPe > $tGa ; 
-	$Gnc = $tGa - $tPe if $tPe < $tGa ;
-	my $fGnc = $pesos->format_number($Gnc) ;
-	my $fPrd = $pesos->format_number($Prd) ;
-	my $rs = ($Prd == 0) ? "Ganancia" :"Pérdida" ;
-	my ($pPrd , $pGnc) = (0, 0) ;
-	$pPrd = $tPa - $tAc if $tPa > $tAc ; 
-	$pGnc = $tAc - $tPa if $tPa < $tAc ;	
-	$mov = sprintf("%5s %21s %57s %13s %13s %12s %12s",' ',$rs,' ',
-		$pesos->format_number($pPrd),
-		$pesos->format_number($pGnc),$fGnc,$fPrd);
-	$mt->insert('end',"$mov\n",'detalle');
-	$mt->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%5s %21s %14s %14s %13s %13s %13s %13s %12s %12s", 
-		' ', 'Sumas iguales', $ftmD,$ftmH,$ftsD,$ftsH,
-		$pesos->format_number($tAc + $pPrd),
-		$pesos->format_number($tPa + $pGnc),
-		$pesos->format_number($tPe + $Gnc),
-		$pesos->format_number($tGa + $Prd)) ;
-	$mt->insert('end',"$mov\n",'detalle');
-	$lin2 = "="x139;
+	$lin2 = "="x85;
 	$mt->insert('end',"$lin2\n",'detalle');
 }
 

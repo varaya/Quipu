@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 03.08.2009
+#  UM: 12.08.2009
 
 package Cmprbs;
 
@@ -603,7 +603,6 @@ sub contabiliza ( )
 	$TotalDf = $TotalHf = '';
 	$Numero = $bd->numeroC() + 1;
 	$glosa->delete(0,'end');
-	$tipoD->delete(0,'end');
 	$fecha->focus;
 }
 

@@ -379,14 +379,15 @@ sub datosCuentas( $ )
 	return @datos; 
 }	
 
-sub datosCcM( ) # Lista de cuentas con movimiento
+sub datosCcM( $ ) # Lista de cuentas con movimiento
 {
-	my ($esto) = @_;	
+	my ($esto,$saldo) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
+	my $cnd = $saldo ? "m.Saldo > 0" : "m.Debe + m.Haber > 0" ;
 	my $sql = $bd->prepare("SELECT c.Cuenta, m.* FROM Mayor AS m, 
-		dg.Cuentas AS c WHERE m.Debe + m.Haber > 0 AND m.Codigo = c.Codigo
+		dg.Cuentas AS c WHERE $cnd AND m.Codigo = c.Codigo
 		ORDER BY m.Codigo ;");
 	$sql->execute();
 	# crea una lista con referencias a las listas de registros

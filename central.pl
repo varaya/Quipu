@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 03.08.2009
+#  UM : 13.08.2009
 
 # use Data::Dumper; 
 
@@ -153,8 +153,8 @@ sub opRegistra {
  ['command' => "Personal", -command => sub { require prg::DatosP; 
 	DatosP->crea($vp, $bd, $ut, $mt, $CCts ); } ], "-", 
  ['cascade' => "Plan Cuentas", -tearoff => 0, -menuitems => opCuentas() ],
- ['command' => "Tipo Documento", -command => sub { require prg::TipoD;
-	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
+# ['command' => "Tipo Documento", -command => sub { require prg::TipoD;
+#	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
  ['cascade' => "Ajustes", -tearoff => 0, -menuitems => opAjustes() ] ]
 }
 
@@ -207,8 +207,10 @@ sub opCompras {
 
 sub opConsulta {
 my $tipoD = $tipo = '';
-[ ['command' => "Balance al día", -command => sub { require prg::Balance;
-	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ],
+[ ['command' => "Balance inicial", -command => sub { require prg::BalanceI;
+	BalanceI->crea($vp, $mt, $bd, $ut, $Rut);} ],
+  ['command' => "Balance al día", -command => sub { require prg::Balance;
+	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
  ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ], "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;

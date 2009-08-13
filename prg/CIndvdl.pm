@@ -366,22 +366,27 @@ sub csvH ( $ )
 	print ARCHIVO "$l\n";
 	
 	my @data = $bd->itemsCI($RUT);
+	my $aTd = '' ;
+	my ($stD, $stH, $cTd);
 	foreach $algo ( @data ) {
-		$nCmp = $algo->[0];  # Numero comprobante
-		$fecha = $ut->cFecha($algo->[9]);
-		$tC = $algo->[10];
-		$nulo = $algo->[11];
+		$cTd = $algo->[6] ;
+		$stD += $algo->[2];
+		$stH += $algo->[3];
+		$nCmp = $algo->[0]; 
+		$fecha = $ut->cFecha($algo->[10]);
+		$tC = $algo->[11];
+		$nulo = $algo->[12];
 		$mntD = $mntH = 0;
-		$mntD = $algo->[2]; 
+		$mntD = $algo->[2] ; 
 		$tDebe += $algo->[2];
 		$mntH = $algo->[3] ;
 		$tHaber += $algo->[3];
 		$ci = $dcm = $dt = '' ;
-		if ($algo->[12]) {
-			$dt = decode_utf8($algo->[12]);
+		if ($algo->[13]) {
+			$dt = decode_utf8($algo->[13]);
 		} 
 		if ($algo->[6]) {
-			$dcm = "$algo->[6] $algo->[7]";
+			$dcm = "$algo->[7]";
 		}
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
