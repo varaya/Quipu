@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 10.08.2009
+#  UM : 13.08.2009
 
 package CIndvdl;
 
@@ -25,11 +25,9 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 sub crea {
 
 	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
-
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
 	$esto->{'mensajes'} = $ut;
-
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	$FechaI = $ut->fechaHoy();
@@ -43,7 +41,7 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Cuenta Invididual");
-	$vnt->geometry("690x380+40+150"); 
+	$vnt->geometry("720x380+400+50"); 
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white');
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -202,28 +200,28 @@ sub informeH ( $ $ ) {
 	my ($esto, $marco) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
-
-	my @data = $bd->itemsCI($RUT);
+	# Ordena por Cuenta de Mayor
+	my @data = $bd->itemsCI($RUT,'CuentaM');
 	$Mnsj = " ";
 	if (not @data) { 
 		$Mnsj = "No hay datos para $Nombre"; 
 		return;
 	}
-	my ($algo,@datosE,@datosCI,$tC,$fecha,$nulo,$tDebe,$tHaber,$mntD,$mntH,$cTd);
+	my ($algo,@datosE,@datosCI,$tC,$fecha,$nulo,$tDebe,$tHaber,$mntD,$mntH,$cTd,$sst);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
 	@datosCI = $bd->datosCI($RUT);
 	my $saldoI = $datosCI[3];
 	my $tSaldo = $datosCI[4];
 	my $fechaUM = $datosCI[5];
-	my $lst = "-"x54 ;
-	my $movST = sprintf("%17s %-52s",'',$lst) ;
+	my $lst = "-"x64 ;
+	my $movST = sprintf("%17s %-62s",'',$lst) ;
 	$marco->insert('end', "$empr  $cnf[0]\n", 'negrita');
 	$marco->insert('end', "Cuenta Corriente $Nombre  Rut: $RUT\n\n", 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 	my $lin1 = "   # T Fecha      Glosa                                 ";
-	$lin1 .= "Debe       Haber  Documento";
-	my $lin2 = "-"x83;
+	$lin1 .= "          Debe       Haber  Documento";
+	my $lin2 = "-"x93;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = 0 ;
@@ -237,27 +235,38 @@ sub informeH ( $ $ ) {
 		$mntH = $pesos->format_number( $saldoI );
 		$tHaber += $saldoI;
 	}
-	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",
+	$mov = sprintf("%4s %-1s %10s %-40s %11s %11s",
 		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
-	$marco->insert('end', "$mov\n", 'detalle' ) ;
-#	$marco->insert('end',"$lin2\n",'detalle');
-	my $aTd = '' ;
-	my ($stD, $stH);
+	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
+	my ($stD, $stH, $nmbC, $aTd, $Td );
+	$nmbC = $aTd = '' ;
 	foreach $algo ( @data ) {
-		$cTd = $algo->[6] ;
+		$Td = $algo->[6] ;
+		$cTd = $algo->[1] ;
 		if (not $cTd eq $aTd) {
 			if (not $aTd eq '' ) {
 				$mntD = $mntH = $pesos->format_number(0);
 				$mntD = $pesos->format_number( $stD );
 				$mntH = $pesos->format_number( $stH );
 				$marco->insert('end', "$movST\n", 'detalle' ) ;
-				$dt = "Subtotal $tabla{$aTd}";
-				$mov = sprintf("%17s %30s %11s %11s",'',$dt,$mntD,$mntH ) ;
+#				$dt = $tabla{$aTd} ? "Subtotal $tabla{$aTd}" : "Subtotal" ;
+				$dt = "Subtotal $aTd ";
+				$mov = sprintf("%17s %40s %11s %11s",'',$dt,$mntD,$mntH ) ;
 				$marco->insert('end', "$mov\n", 'detalle' ) ;
+				$dt = "Saldo";
+				$sst = $stD - $stH ;
+				$mntD = $mntH = '';
+				$mntD = $pesos->format_number( $sst ) if $sst > 0 ;
+				$mntH = $pesos->format_number( -$sst ) if $sst < 0 ;				
+				$mov = sprintf("%17s %40s %11s %11s",'',$dt,$mntD,$mntH ) ;
+				$marco->insert('end', "$mov\n\n", 'detalle' ) ;
+
 			}
 			$aTd = $cTd ;
 			($stD, $stH) = (0,0);
-			$marco->insert('end', "$tabla{$cTd}\n", 'grupo' ) ;
+#			$marco->insert('end', "$tabla{$cTd}\n", 'grupo' ) if $tabla{$cTd} ;
+			$nmb = $bd->nmbCuenta($cTd);
+			$marco->insert('end', "$cTd $nmb\n", 'grupo' );
 		}
 		$stD += $algo->[2];
 		$stH += $algo->[3];
@@ -272,15 +281,15 @@ sub informeH ( $ $ ) {
 		$tHaber += $algo->[3];
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[13]) {
-			$dt = decode_utf8($algo->[13]);
+			$dt = substr decode_utf8($algo->[13]) ,0,40 ;
 		} 
-		if ($cTd) {
-			$dcm = substr "$algo->[7]",0,20 ;
+		if ($Td) {
+			$dcm = substr "$Td $algo->[7]",0,15 ;
 		}
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
 		}
-		$mov = sprintf("%4s %-1s %10s %-30s %11s %11s  %-20s", $nCmp, $tC, 
+		$mov = sprintf("%4s %-1s %10s %-40s %11s %11s  %-15s", $nCmp, $tC, 
 			$fecha, $dt, $mntD, $mntH, $dcm ) ;
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
@@ -288,14 +297,23 @@ sub informeH ( $ $ ) {
 	$mntD = $pesos->format_number( $stD );
 	$mntH = $pesos->format_number( $stH );
 	$marco->insert('end', "$movST\n", 'detalle' ) ;
-	$dt = "Subtotal $tabla{$aTd}";
-	$mov = sprintf("%17s %30s %11s %11s",'',$dt,$mntD,$mntH ) ;
-	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
+#	$dt = $tabla{$aTd} ? "Subtotal $tabla{$aTd}" : "Subtotal" ;
+	$dt = "Subtotal $aTd ";
+	$mov = sprintf("%17s %40s %11s %11s",'',$dt,$mntD,$mntH ) ;
+	$marco->insert('end', "$mov\n", 'detalle' ) ;
+	$dt = "Saldo";
+	$sst = $stD - $stH ;
+	$mntD = $mntH = '';
+	$mntD = $pesos->format_number( $sst ) if $sst > 0 ;
+	$mntH = $pesos->format_number( -$sst ) if $sst < 0 ;				
+	$mov = sprintf("%17s %40s %11s %11s",'',$dt,$mntD,$mntH ) ;
+	$marco->insert('end', "$mov\n\n", 'detalle' ) ;	
+	
 	$marco->insert('end', "$movST\n", 'detalle' ) ;
 	$dt = "Totales";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
-	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s %10s %-40s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
 	$dt = "Saldo al $fechaUM";
@@ -303,7 +321,7 @@ sub informeH ( $ $ ) {
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 
-	$mov = sprintf("%4s %-1s %10s %-30s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s %10s %-40s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
 
 	$bImp->configure(-state => 'active');
@@ -365,11 +383,30 @@ sub csvH ( $ )
 	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	
-	my @data = $bd->itemsCI($RUT);
-	my $aTd = '' ;
-	my ($stD, $stH, $cTd);
+	my @data = $bd->itemsCI($RUT,'CuentaM');
+	my ($stD, $stH, $nmbC, $aTd, $Td );
+	$nmbC = $aTd = '' ;
 	foreach $algo ( @data ) {
-		$cTd = $algo->[6] ;
+		$cTd = $algo->[1] ;
+		$Td = $algo->[6] ;
+		if (not $cTd eq $aTd) {
+			if (not $aTd eq '' ) {
+				$dt = "Subtotal $aTd ";
+				$l = ",,,$dt,$stD,$stH" ;
+				print ARCHIVO "$l\n";
+				$dt = "Saldo";
+				$sst = $stD - $stH ;
+				$mntD = $mntH = 0;
+				$mntD =  $sst  if $sst > 0 ;
+				$mntH =  -$sst  if $sst < 0 ;				
+				$l = ",,,$dt,$mntD,$mntH" ;
+				print ARCHIVO "$l\n\n";
+			}
+			$aTd = $cTd ;
+			($stD, $stH) = (0,0);
+			$nmb = $bd->nmbCuenta($cTd);
+			print ARCHIVO "$cTd $nmb\n";
+		}	
 		$stD += $algo->[2];
 		$stH += $algo->[3];
 		$nCmp = $algo->[0]; 
@@ -386,7 +423,7 @@ sub csvH ( $ )
 			$dt = decode_utf8($algo->[13]);
 		} 
 		if ($algo->[6]) {
-			$dcm = "$algo->[7]";
+			$dcm = "$algo->[6] $algo->[7]";
 		}
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
@@ -394,6 +431,17 @@ sub csvH ( $ )
 		$l = "$nCmp,$tC,$fecha,".'"'."$dt".'"'.",$mntD,$mntH,$dcm" ;
 		print ARCHIVO "$l\n";
 	}
+	$dt = "Subtotal $aTd ";
+	$l = ",,,$dt,$stD,$stH" ;
+	print ARCHIVO "$l\n";
+	$dt = "Saldo";
+	$sst = $stD - $stH ;
+	$mntD = $mntH = 0;
+	$mntD =  $sst  if $sst > 0 ;
+	$mntH =  -$sst  if $sst < 0 ;				
+	$l = ",,,$dt,$mntD,$mntH" ;
+	print ARCHIVO "$l\n\n";
+	
 	$l = ",,,Totales,$tDebe,$tHaber" ;
 	print ARCHIVO "$l\n";
 	$dt = '"'."Saldo al $fechaUM".'"';

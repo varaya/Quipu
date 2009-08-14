@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 12.08.2009
+#  UM: 13.08.2009
 
 package Cmprbs;
 
@@ -634,7 +634,7 @@ sub cancela ( )
 	my ($esto) = @_;	
 	my $vn = $esto->{'ventana'};
 	my $bd = $esto->{'baseDatos'};
-	
+	limpiaCampos();
 	$bd->borraTemp();
 	$vn->destroy();
 }

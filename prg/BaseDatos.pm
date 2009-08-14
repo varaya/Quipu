@@ -584,15 +584,15 @@ sub itemsM( $ ) # Movimientos de cuentas de mayor
 	return @datos; 
 }	
 
-sub itemsCI( $ ) # Movimientos de cuentas individuales
+sub itemsCI( $ $ ) # Movimientos de cuentas individuales
 {
-	my ($esto, $Rut) = @_;	
+	my ($esto, $Rut, $ord) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado, d.Glosa 
 		FROM ItemsC AS i, DatosC AS d WHERE i.RUT = ? AND i.Numero = d.Numero
-		ORDER BY i.TipoD DESC, i.Documento ASC;");
+		ORDER BY i.$ord DESC, i.Documento ASC;");
 	$sql->execute($Rut);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {

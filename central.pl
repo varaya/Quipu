@@ -212,17 +212,17 @@ my $tipoD = $tipo = '';
   ['command' => "Balance al día", -command => sub { require prg::Balance;
 	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
  ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
-	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ], "-", 
+	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ],  
+ ['cascade' => "-Impagos", -tearoff => 0,
+ 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipo , 
+	-command => sub { require prg::Impgs; Impgs->crea($vp,$mt,$bd,$ut,$tipo);} ], 
+	qw/Clientes Proveedores/,], ] , "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
 	CCmprb->crea($vp, $mt, $bd, $ut, $Rut);} ],
  ['cascade' => "Documentos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoD ,  
 	-command => sub { require prg::CDcmts; CDcmts->crea($vp,$mt,$bd,$ut,$tipoD);}], 
-	qw/Recibidos Emitidos/,],], "-", 
- ['cascade' => "-Impagos", -tearoff => 0,
- 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipo , 
-	-command => sub { require prg::Impgs; Impgs->crea($vp,$mt,$bd,$ut,$tipo);} ], 
-	qw/Clientes Proveedores/,], ] ]
+	qw/Recibidos Emitidos/,],] ]
 }
 
 sub opProcesa {
