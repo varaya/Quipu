@@ -216,7 +216,7 @@ sub asiento ( $ $ $ $ $ ) {
 		$tcH += $algo->[3] ;
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[4]) {
-			$dt = decode_utf8($algo->[4]);
+			$dt = substr decode_utf8($algo->[4]),0,35 ;
 		} 
 		if ($algo->[5]) {
 			$ci = "RUT $algo->[5]";

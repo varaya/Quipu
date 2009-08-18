@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 13.07.2009
+#  UM: 18.08.2009
 
 package Mayor;
 
@@ -122,6 +122,9 @@ sub valida ( $ )
 		$Mnsj = "Debe seleccionar un mes."; 
 		$meses->focus;
 		return;
+	}
+	if ($Cuenta eq '9999' ) {
+		resumen($esto,$mt);
 	} else {
 		muestraM($esto,$mt);
 	}
@@ -136,12 +139,51 @@ sub muestraLista ( $ $ )
 	@datos = $bd->datosCcM();
 
 	# Completa TList con nombres de los cuentas
-	my ($algo, $nm);
+	my ($algo,$nm,$TotalD,$TotalH);
 	$mt->insert('end',"Cuentas con saldo\n",'detalle');
 	foreach $algo ( @datos ) {
 		$nm = sprintf("%-5s %-30s", $algo->[1], decode_utf8($algo->[0]) ) ;
 		$mt->insert('end', "$nm\n", 'detalle' ) ;
 	}
+}
+
+sub resumen ( $ $ ) 
+{
+	my ($esto, $m) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $ut = $esto->{'mensajes'};
+
+	my ($algo,$cd,$nm,$sldI,$tSld,$siD,$siH,$lin,$mntD,$mntH,$gtD,$gtH,$msd);
+	($gtD,$gtH) = (0,0);
+	foreach $algo ( @datos ) {
+		$cd = $algo->[1] ;
+		$sldI = $algo->[4];
+		$tSld = $algo->[5];
+		$siD = $siH = $sd = 0 ;
+		$nm = substr decode_utf8($algo->[0]),0,35 ;
+		$siD += $sldI if $tSld eq 'D';
+		$siH += $sldI if $tSld eq 'A';
+		($TotalD,$TotalH) = $bd->totales($cd,$mes);
+		$TotalD += $siD ;
+		$TotalH += $siH ;
+		if ($TotalD + $TotalH > 0) {
+			$sd = $TotalD - $TotalH ;
+			$gtD += $TotalD ;
+			$gtH += $TotalH ;
+			$mntD = $mntH = $msd = $pesos->format_number(0);
+			$mntD = $pesos->format_number( $TotalD ); 
+			$mntH = $pesos->format_number( $TotalH );
+			$msd = $pesos->format_number( $TotalD - $TotalH );
+			$lin = sprintf("%-5s %-35s  %11s  %11s %11s", $cd,$nm,$mntD,$mntH,$msd);
+			$m->insert('end', "$lin\n", 'detalle' ) ;
+		}
+	}
+	$mntD = $mntH = $pesos->format_number(0);
+	$mntD = $pesos->format_number( $gtD ); 
+	$mntH = $pesos->format_number( $gtH ); 
+	$lin = sprintf("%-5s %-35s  %11s  %11s ", '', 'Totales', $mntD, $mntH);
+	$m->insert('end', "$lin\n", 'detalle' ) ;
+
 }
 
 sub muestraM ( $ $ )
@@ -178,8 +220,9 @@ sub muestraM ( $ $ )
 
 	my ($algo,$mov,$nCmp,$mntD,$mntH,$dt,$ci,$tDebe,$tHaber,$dcm,$siDebe,$siHaber);
 	my($tC, $fecha, $nulo );
-	my $lin1 = "   # T  Fecha       Detalle                          Debe       Haber";
-	my $lin2 = "-"x69;
+	my $lin1 = "   # T  Fecha       Detalle                               ";
+	$lin1 .= "     Debe       Haber";
+	my $lin2 = "-"x79;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = $siDebe = $siHaber = 0 ;
@@ -193,7 +236,7 @@ sub muestraM ( $ $ )
 		$mntH = $pesos->format_number( $saldoI );
 		$siHaber += $saldoI;
 	}
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",
+	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",
 		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
@@ -208,7 +251,7 @@ sub muestraM ( $ $ )
 		$tHaber += $algo->[3];
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[4]) {
-			$dt = decode_utf8($algo->[4]);
+			$dt = substr decode_utf8($algo->[4]),0,35 ;
 		} 
 		if ($algo->[5]) {
 			$ci = "RUT $algo->[5]";
@@ -219,7 +262,7 @@ sub muestraM ( $ $ )
 		if ( not ($ci eq '' ) ) {
 			$dt = "$ci $dcm"; 
 		}
-		$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s", $nCmp, $tC, 
+		$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s", $nCmp, $tC, 
 			$fecha, $dt, $mntD, $mntH ) ;
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
@@ -227,7 +270,7 @@ sub muestraM ( $ $ )
 	$dt = "Totales mes";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
 	$dt = "Saldo $nMes";
@@ -235,16 +278,16 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	my ($TotalD,$TotalH) = $bd->totales($Cuenta,$mes);
 	$TotalD += $siDebe ;
 	$TotalH += $siHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$dt = "Totales acumuladoss";
+	$dt = "Totales acumulados";
 	$mntD = $pesos->format_number( $TotalD ); 
 	$mntH = $pesos->format_number( $TotalH ); 
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 
 	$dt = "Saldo acumulado";
@@ -252,7 +295,7 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($TotalD - $TotalH) if $TotalD > $TotalH ;
 	$mntH = $pesos->format_number($TotalH - $TotalD) if $TotalD < $TotalH ;
 	
-	$mov = sprintf("%4s %-1s  %10s  %-25s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	
 	$bImp->configure(-state => 'active');

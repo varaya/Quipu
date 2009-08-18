@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 30.07.2009
+#  UM: 18.08.2009
 
 package BaseDatos;
 
@@ -645,7 +645,7 @@ sub diario( $ $ )
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT Numero, TipoC, Fecha, Total, Glosa, 
-		Anulado, Ref FROM DatosC WHERE Fecha >= ? AND Fecha <= ?;");
+		Anulado, Ref FROM DatosC WHERE Fecha >= ? AND Fecha <= ? AND Anulado < 2;");
 	$sql->execute($fi, $ff);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -675,7 +675,7 @@ sub numeroC( )
 	my ($esto) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
-	my $sql = $bd->prepare("SELECT count(*) FROM DatosC;");
+	my $sql = $bd->prepare("SELECT max(Numero) FROM DatosC;");
 	$sql->execute();
 
 	my $dato = $sql->fetchrow_array;

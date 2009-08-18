@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 21.07.2009
+#  UM: 18.08.2009
 
 package CCmprb;
 
@@ -121,9 +121,12 @@ sub muestraC {
 	$marco->insert('end', 
 	 "\nComprobante de $tipoC   # $nmrC  del  $fecha\n", 'negrita');
 	$marco->insert('end', "Glosa: $glosa\n\n" , 'cuenta');
+	if ($nulo == 2) {
+		$cuenta->focus ;
+		return ; 
+	}
 	$marco->insert('end', "Movimientos\n" , 'grupo');
 	my @data = $bd->itemsC($nmrC);
-
 	my ($algo, $mov, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm);
 	my ($tD, $tH) = (0, 0);
 	my $lin1 = "Cuenta                                       Debe        Haber  Detalle";
@@ -161,7 +164,7 @@ sub muestraC {
 	$mov1 = sprintf("%36s %12s %12s", "Totales" ,
 			$pesos->format_number($tD), $pesos->format_number($tH) );
 	$marco->insert('end', "$mov1\n\n", 'detalle' ) ;
-	if ( $nulo ) {
+	if ( $nulo == 1) {
 		$marco->insert('end', "Anulado por Comprobante $ref\n" , 'grupo');
 	}
 	$Cuenta = '' ;

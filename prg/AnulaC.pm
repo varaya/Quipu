@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 14.07.2009
+#  UM: 18.08.2009
 
 package AnulaC;
 
@@ -240,7 +240,7 @@ sub anula
 	}
 	# Finalmente marca como nulo el comprobante anterior
 	$bd->anulaCmp($nmrC,$Numero);
-	
+	$Numero = $bd->numeroC() + 1;
 	$bImp->configure(-state => 'disabled');
 	$Cuenta = '';
 	$cuenta->focus;
