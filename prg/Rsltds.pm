@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 28.07.2009
+#  UM: 28.08.2009
 
 package Rsltds;
 
@@ -13,7 +13,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
-my ($empr,@cnf, $rutE, $mes, @total, $tg);
+my ($empr ,@cnf, $rutE, $mes, @total, $tg);
 my @data = ();
 my @m = ('z','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic') ;
 
@@ -66,7 +66,7 @@ sub crea {
 	[ ['command' => "texto", -command => sub { txt($mtA);} ],
  	  ['command' => "planilla", -command => sub { csv($bd);} ] ] );
 	my $bCan = $mBotonesC->Button(-text => "Cancela", 
-		-command => sub { $vnt->destroy();} );
+		-command => sub { $bd->borraER(); $vnt->destroy();} );
 
 	# Barra de mensajes y botón de ayuda
 	my $mnsj = $mMensajes->Label(-textvariable => \$Mnsj, -font => $tp{tx} ,
@@ -142,9 +142,27 @@ sub csv ( $ )
 	foreach ( @i ) {
 		$l .= ",$m[$_]" ;
 	}
-	$l .= "Total";
+	$l .= ",Total";
 	print ARCHIVO "$l\n";
+	$asgr = "x";
 	foreach $algo ( @data ) {
+		$sgr = $algo->[15];
+		if (not $sgr eq $asgr) {
+			$nsgr = substr decode_utf8( $bd->nombreGrupo($sgr) ),0,21 ;
+			$l = "$nsgr";
+			@stotal = ();
+			foreach ( @i ) {
+				push @stotal, $bd->sumaRM($m[$_],$sgr) ;
+			}
+			foreach ( @i ) {
+				$num = int $stotal[$_ - 1]/1000 + 0.5 ;
+				$l .= ",$num";
+			}
+			$num = int $bd->sumaRM('Total',$sgr) / 1000 + 0.5 ;
+			$l .= ",$num";
+			print ARCHIVO "$l\n";
+		}
+		$asgr = $sgr ;
 		$cta = abrev($algo->[1]) ;
 		$l = "$algo->[0], $cta";
 		foreach ( @i ) {
@@ -170,8 +188,9 @@ sub muestra ( $ $ )
 {
 	my ($bd, $mt) = @_;
 		
-	my (@datosE,$algo,$mov,$cta,$num);
+	my (@datosE,$algo,$mov,$cta,$num,$sgr,$asgr,$nsgr,@stotal);
 	# Procesa datos
+	$bd->borraER();
 	$bd->creaER();
 	if ( not $bd->aRMensual($mes) ) {
 		$Mnsj = "No hay datos para $nMes.";
@@ -183,10 +202,9 @@ sub muestra ( $ $ )
 	my @i = (1..$mes);
 	@total = ();
 	foreach ( @i ) {
-		push @total, $bd->sumaRM($m[$_]) ;
+		push @total, $bd->sumaRM($m[$_],'') ;
 	}
-	$tg = int $bd->sumaRM('Total') / 1000 + 0.5 ;
-	$bd->borraER(); 
+	$tg = int $bd->sumaRM('Total','') / 1000 + 0.5 ;
 	# Datos generales
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
@@ -203,8 +221,26 @@ sub muestra ( $ $ )
 	$lin1 .= sprintf("%11s", "Total");
 	my $lin2 = "-"x104;
 	$mt->insert('end',"$lin1\n",'detalle');
-	$mt->insert('end',"$lin2\n",'detalle');
+	$mt->insert('end',"$lin2",'detalle');
+	$asgr = "x" ;
 	foreach $algo ( @data ) {
+		$sgr = $algo->[15];
+		if (not $sgr eq $asgr) {
+			$nsgr = decode_utf8( $bd->nombreGrupo($sgr) ) ;
+			$mov = sprintf("%-28s", $nsgr);
+			@stotal = ();
+			foreach ( @i ) {
+				push @stotal, $bd->sumaRM($m[$_],$sgr) ;
+			}
+			foreach ( @i ) {
+				$num = int $stotal[$_ - 1]/1000 + 0.5 ;
+				$mov .= sprintf("%10s ", $pesos->format_number($num) );
+			}
+			$num = int $bd->sumaRM('Total',$sgr) / 1000 + 0.5 ;
+			$mov .= sprintf("%10s ", $pesos->format_number($num) );
+			$mt->insert('end', "\n$mov\n", 'detalle' ) ;
+		}
+		$asgr = $sgr ;
 		$cta = substr abrev($algo->[1]),0,21 ;
 		$mov = sprintf("%-5s %-21s ", $algo->[0], $cta);
 		foreach ( @i ) {
@@ -225,6 +261,7 @@ sub muestra ( $ $ )
 	$mt->insert('end',"$lin1\n",'detalle');
 	$lin2 = "="x104;
 	$mt->insert('end',"$lin2\n",'detalle');
+	
 	$bImp->configure(-state => 'active');
 }
 

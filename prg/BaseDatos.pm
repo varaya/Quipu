@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 18.08.2009
+#  UM: 27.08.2009
 
 package BaseDatos;
 
@@ -1603,7 +1603,8 @@ sub creaER ( )
 	Oct int(9) ,
 	Nov int(9) ,
 	Dic int(9) ,
-	Total int(10) )" );
+	Total int(10),
+	SGrupo text(2) )" );
 }
 
 sub aRMensual ( $ )
@@ -1618,7 +1619,7 @@ sub aRMensual ( $ )
 	$sql->finish();
 	return 0 if not $dato ;
 	# Crea archivo temporal
-	$bd->do("INSERT INTO RMensual SELECT Codigo,Cuenta,0,0,0,0,0,0,0,0,0,0,0,0,0
+	$bd->do("INSERT INTO RMensual SELECT Codigo,Cuenta,0,0,0,0,0,0,0,0,0,0,0,0,0,SGrupo
 		 FROM dg.Cuentas WHERE SGrupo > 29");
 	my @m = ('z','Ene','Feb','Mar','Abr','May','Jun', 
 		'Jul','Ago','Sep','Oct','Nov','Dic' ) ;
@@ -1642,11 +1643,14 @@ sub aRMensual ( $ )
 	return 1;
 }
 
-sub sumaRM ( $ )
+sub sumaRM ( $ $ )
 {
-	my ($esto,$mes) = @_ ;
+	my ($esto,$mes,$sgr) = @_ ;
 	my $bd = $esto->{'baseDatos'};
-	my $sql = $bd->prepare("SELECT sum($mes) FROM RMensual;");
+	
+	my $st = "SELECT sum($mes) FROM RMensual " ;
+	$st .= "WHERE SGrupo = $sgr" if $sgr ;
+	my $sql = $bd->prepare($st);
 	$sql->execute();
 	my $dato = $sql->fetchrow_array;
 	$sql->finish();
@@ -1676,7 +1680,7 @@ sub borraER( )
 	my ($esto) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
-	$bd->do("DROP Table RMensual;");
+	$bd->do("DROP TABLE IF EXISTS RMensual;");
 }
 
 # Termina el paquete
