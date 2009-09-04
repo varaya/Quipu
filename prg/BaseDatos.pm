@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 27.08.2009
+#  UM: 03.09.2009
 
 package BaseDatos;
 
@@ -792,9 +792,11 @@ sub agregaCmp( $ $ $ $ $ $ )
 	# Actualiza pago de documentos 
 	if ($Tipo eq 'I') { # Facturas de Venta, si es ingreso
 		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha) ;
+		actualizaP($bd,'Haber','ND','Ventas',$Numero,$Fecha) ;
 	}
 	if ($Tipo eq 'E') { # Si es egreso Factura Compra o Boleta Honorarios
 		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha) ;
+		actualizaP($bd,'Debe','ND','Compras',$Numero,$Fecha) ;
 		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha) if $bh ;
 	}
 }
@@ -811,6 +813,7 @@ sub actualizaP ( $ $ $ $ )
 		WHERE RUT = ? AND Numero = ?;");
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
+#		print "$algo->[2], $fch, $algo->[0], $algo->[1] \n";
 		$aCta->execute($algo->[2], $fch, $algo->[0], $algo->[1]);
 	}
 	# Condición de 'Pagada' se actualiza por un disparador de SQLite
@@ -1005,7 +1008,7 @@ sub buscaFct( $ $ $ $ )
 {
 	my ($esto, $tbl, $rut, $doc, $campo) = @_;	
 	my $bd = $esto->{'baseDatos'};
-
+# print "$rut, $doc, $campo, $tbl \n";
 	my $sql = $bd->prepare("SELECT $campo FROM $tbl WHERE RUT = ? AND Numero = ?;");
 	$sql->execute($rut, $doc);
 	my $dato = $sql->fetchrow_array;

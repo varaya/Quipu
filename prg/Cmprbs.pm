@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 13.08.2009
+#  UM: 03.09.2009
 
 package Cmprbs;
 
@@ -46,7 +46,7 @@ sub crea {
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 
-	'LT' => '', 'CH' => '', '' => '' ) ;
+	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', '' => '' ) ;
 	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
 	$Numero = $bd->numeroC() + 1;
@@ -354,29 +354,13 @@ sub agrega ( )
 		return;
 	}
 	if ($CntaI eq "I" ) { # Control del documento
-		if ( not $TipoD ) {
-			$Mnsj = "Seleccione un tipo de documento";
-			$tipoD->focus;
-			return;
-		} elsif (not $tabla{$cTipoD} eq '' ) {
-			if ( not $bd->buscaFct($tabla{$cTipoD}, $RUT, $Documento, 'FechaE') ) {
-				$Mnsj = "Ese documento NO está registrado.";
-				$documento->focus;
-				return;
-			}
-			if ( $bd->buscaFct($tabla{$cTipoD}, $RUT, $Documento, 'Pagada') ) {
-				$Mnsj = "Ese documento ya está pagado.";
-				$documento->focus;
-				return;
-			}
-		}
+		return if not validaD($bd) ;
 	}
 #	$Mnsj = " ";
 	# Graba datos
 	if ($CntaI eq "B") {
 		$RUT = $cBanco ;
 	}
-	print "$cTipoD\n";
 	$bd->agregaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
 		$Cuenta, $Numero,'');
 	# Muestra lista modificada de cuentas
@@ -398,6 +382,31 @@ sub agrega ( )
 	$documento->configure(-state => 'disabled');
 
 	$codigo->focus;
+}
+
+sub validaD ( $ )
+{
+	my ($bd) = @_;
+	
+	my $tbl = $tabla{$cTipoD} ;
+	if ( not $TipoD ) {
+		$Mnsj = "Seleccione un tipo de documento";
+		$tipoD->focus;
+		return 0;
+	} elsif (not $tbl eq '' ) {
+		$tbl = 'Ventas' if $TipoCmp eq 'I' ;
+		if ( not $bd->buscaFct($tbl, $RUT, $Documento, 'FechaE') ) {
+			$Mnsj = "Ese documento NO está registrado.";
+			$documento->focus;
+			return 0;
+		}
+		if ( $bd->buscaFct($tbl, $RUT, $Documento, 'Pagada') ) {
+			$Mnsj = "Ese documento ya está pagado.";
+			$documento->focus;
+			return 0;
+		}
+	}
+	return 1;
 }
 
 sub buscaRut ()
@@ -483,7 +492,7 @@ sub modifica ( )
 	$Detalle = decode_utf8($sItem->[4]);
 	$RUT = $sItem->[5];
 	$cTipoD = $sItem->[6];
-	print "- $cTipoD\n";
+	print "$RUT - $cTipoD\n";
 	$TipoD = buscaTD( $cTipoD );
 	$Documento = $sItem->[7];
 	$Cuenta = $sItem->[10];
@@ -500,7 +509,7 @@ sub buscaTD ( $ )
 	my ($td) = @_;
 	my $e ;
 	for $e (@listaD) {
-		return $e->[1] if $e->[0] eq $td ; 
+		return decode_utf8( $e->[1] ) if $e->[0] eq $td ; 
 	}
 }
 
@@ -510,11 +519,7 @@ sub registra ( )
 	my $bd = $esto->{'baseDatos'};
 	# Verifica la existencia del documento 
 	if ($CntaI eq "I" ) {
-		if ( not $bd->buscaFct($tabla{$cTipoD}, $RUT, $Documento, 'FechaE') ) {
-			$Mnsj = "Ese documento NO está registrado.";
-			$documento->focus;
-			return;
-		}
+		return if not validaD($bd) ;
 	}
 	# Graba datos
 	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
