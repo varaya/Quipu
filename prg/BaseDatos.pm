@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 03.09.2009
+#  UM: 07.09.2009
 
 package BaseDatos;
 
@@ -1276,7 +1276,7 @@ sub borraTempRF( )
 	my ($esto) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
-	$bd->do("DROP Table RFcts;");
+	$bd->do("DROP TABLE IF EXISTS RFcts;");
 }
 
 sub datosRF( )

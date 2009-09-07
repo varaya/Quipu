@@ -8,7 +8,8 @@ run_cmd=
 
 [files]
 current_page=3
-FILE_NAME_0=6446;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
-FILE_NAME_1=18921;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
+FILE_NAME_0=289;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
+FILE_NAME_1=297;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
 FILE_NAME_2=1470;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
-FILE_NAME_3=13676;3;0;0;1;1;0;/home/varaya/cntb/prg/Cmprbs.pm;
+FILE_NAME_3=771;3;0;16;1;1;0;/home/varaya/cntb/revisaFV.pl;
+FILE_NAME_4=285;3;0;0;1;1;0;/home/varaya/cntb/prg/Ventas.pm;

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 16.07.2009 
+#  UM : 07.09.2009 
 
 package Ventas;
 
@@ -35,7 +35,6 @@ sub crea {
 	@cnf = $bd->leeCnf();
 	$nMes = '' ;
 	$rutE = $rtE ;
-	$bd->creaTempRF( 'FV' ) ;
 	
 	# Define ventanas
 	my $vnt = $vp->Toplevel();
@@ -137,6 +136,9 @@ sub informe ( $ $ ) {
 		return;
 	}
 	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE,%nd,$cmpr);
+	
+	$bd->borraTempRF();
+	$bd->creaTempRF( 'FV' ) ;
 	@datosE = $bd->datosEmpresa($rutE);
 	%nd = $ut->tipoDcmt();
 	$empr = decode_utf8($datosE[0]); 
