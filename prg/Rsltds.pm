@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 28.08.2009
+#  UM: 09.09.2009
 
 package Rsltds;
 
@@ -163,7 +163,7 @@ sub csv ( $ )
 			print ARCHIVO "$l\n";
 		}
 		$asgr = $sgr ;
-		$cta = abrev($algo->[1]) ;
+		$cta = decode_utf8( $algo->[1] ) ;
 		$l = "$algo->[0], $cta";
 		foreach ( @i ) {
 			$num = int $algo->[$_ + 1]/1000 + 0.5 ;

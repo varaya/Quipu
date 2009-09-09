@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 13.08.2009
+#  UM : 08.09.2009
 
 # use Data::Dumper; 
 
@@ -183,7 +183,7 @@ sub opContabiliza {
 	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] , "-",
 ['cascade' => "Comprobante", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
-	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt);}],
+	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts);}],
 		 qw/Ingreso Egreso Traspaso/,], ], "-",
 ['command' => "Anula", -command => sub { require prg::AnulaC; 
 	AnulaC->crea($vp, $mt, $bd, $ut);} ] ]

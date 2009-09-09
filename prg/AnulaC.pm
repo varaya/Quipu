@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 18.08.2009
+#  UM: 08.09.2009
 
 package AnulaC;
 
@@ -141,7 +141,6 @@ sub muestraC {
 	} else {
 		$marco->insert('end', "Movimientos\n" , 'grupo');
 	}
-	
 	@data = $bd->itemsC($nmrC);
 	my ($algo, $mov, $cm,$ncta, $mntD, $mntH, $dt, $ci,$td, $dcm,$pago);
 	my $lin1 = "Cuenta                                      Debe       Haber Detalle";
@@ -209,9 +208,9 @@ sub anula
 		$cm = $algo->[1];  # Código cuenta
 		$mntD =  $algo->[3] ; # Aquí se reversa la contabilización
 		$mntH =  $algo->[2] ;
-		$rut =  $algo->[5] ;
+		$rut =  $algo->[5] if $algo->[5];
 		$td =  $algo->[6] ;
-		$dcm = $algo->[7];
+		$dcm = $algo->[7] if $algo->[7];
 		$aD = 1 if $dcm and $rut ; # Marca para actualizar documento
 		if ($mntD == 0) { 
 			$DH = 'H';
@@ -232,11 +231,11 @@ sub anula
 	$bd->anulaDct($rut,$dcm,$tabla) if $aD and $tpC eq "T" ;
 	# o bien elimina el pago contabilizado
 	if ($aD and $tpC eq 'I') { # Facturas de Venta, si es ingreso
-		anulaPago('Haber','FV','Ventas',$nmrC) ;
+		$bd->anulaPago('Haber','FV','Ventas',$nmrC) ;
 	}
 	if ($aD and $tpC eq 'E') { # Si es egreso Facturas de Compra o Boleta H.
-		anulaPago('Debe','FC','Compras',$nmrC) ;
-		anulaPago('Debe','BH','BoletasH',$nmrC) if $td eq 'BH' ;
+		$bd->anulaPago('Debe','FC','Compras',$nmrC) ;
+		$bd->anulaPago('Debe','BH','BoletasH',$nmrC) if $td eq 'BH' ;
 	}
 	# Finalmente marca como nulo el comprobante anterior
 	$bd->anulaCmp($nmrC,$Numero);

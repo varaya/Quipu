@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 03.09.2009
+#  UM: 08.09.2009
 
 package Cmprbs;
 
@@ -24,6 +24,8 @@ my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj) ;
 # Campos
 my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
 my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta) ;
+# Centro de costos
+my ($CCto, $cCto, $ncCto, $NCCto) ;
 
 my ($bReg, $bEle, $bNvo, $bCnt) ; 	# Botones
 my @dCuenta = () ;	# Lista datos cuenta
@@ -37,7 +39,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipoC, $mt) = @_;
+	my ($esto, $vp, $bd, $ut, $tipoC, $mt, $ucc) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -52,18 +54,17 @@ sub crea {
 	$Numero = $bd->numeroC() + 1;
 	$Monto = $TotalD = $TotalH = $BH = 0;
 	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = $FechaV = $Cuenta = '';
-	$TipoD = $Bco = $nBanco = $cBanco = $mBco = '' ;
+	$TipoD = $Bco = $nBanco = $cBanco = $mBco = $CCto = $NCCto = '' ;
 	$TipoCmp = substr $tipoC, 0, 1 ;
 	$Bco = $bd->ctaEsp("B");
 	@bancos = $bd->datosBcs();
-
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
-		
+
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
-	my $alt = @bancos ? 565 : 535 ;
+	my $alt = @bancos ? 590 : 560 ;
 	$vnt->title("Registra Comprobante de $tipoC");
 	$vnt->geometry("400x$alt+475+4"); # Tamaño y ubicación
 	
@@ -134,6 +135,12 @@ sub crea {
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Codigo );
 	$cuenta = $mItems->Label(-textvariable => \$Cuenta, -font => $tp{mn});
+	if ($ucc) {
+	  $cCto = $mItems->LabEntry(-label => " C.Costo: ", -width => 5,
+		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
+		-textvariable => \$CCto );	
+	  $nCCto = $mItems->Label(-textvariable => \$NCCto, -font => $tp{tx});	
+	}
 	$monto= $mItems->LabEntry(-label => " Monto:  ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Monto); 
@@ -185,7 +192,12 @@ sub crea {
 	# Habilita validaciones
 	$fecha->bind("<FocusOut>", sub { &validaFecha($ut,\$Fecha,\$fecha,1) } );
 	$fechaV->bind("<FocusOut>", sub{ &validaFecha($ut,\$FechaV,\$fechaV,0)});
-	$monto->bind("<FocusIn>", sub { &buscaCta($esto) } );
+	if ( $ucc ) {
+		$cCto->bind("<FocusIn>", sub { &buscaCta($esto) } );
+		$monto->bind("<FocusIn>", sub { &buscaCC($bd) } );
+	} else {
+		$monto->bind("<FocusIn>", sub { &buscaCta($esto) } );
+	}
 	$detalle->bind("<FocusIn>", sub { &monto() } );	
 	$tipoD->bind("<FocusIn>", sub { &buscaRut($esto) } );
 	$documento->bind("<FocusIn>", sub { &verificaD() } );
@@ -200,14 +212,17 @@ sub crea {
 	
 	$codigo->grid(-row => 0, -column => 0, -sticky => 'nw');	
 	$cuenta->grid(-row => 0, -column => 1, -columnspan => 2, -sticky => 'nw');
-
-	$monto->grid(-row => 1, -column => 0, -sticky => 'nw');	
-	$debe->grid(-row => 1, -column => 1, -sticky => 'nw');	
-	$haber->grid(-row => 1, -column => 2, -sticky => 'nw');	
-	$detalle->grid(-row => 2, -column => 0, -columnspan => 3, -sticky => 'nw');
+	if ($ucc) {
+		$cCto->grid(-row => 1, -column => 0, -sticky => 'nw');
+		$nCCto->grid(-row => 1, -column => 1, -columnspan => 2, -sticky => 'nw');		
+	}
+	$monto->grid(-row => 2, -column => 0, -sticky => 'nw');	
+	$debe->grid(-row => 2, -column => 1, -sticky => 'nw');	
+	$haber->grid(-row => 2, -column => 2, -sticky => 'nw');	
+	$detalle->grid(-row => 3, -column => 0, -columnspan => 3, -sticky => 'nw');
 	if ( @bancos ) {
-		$mBco->grid(-row => 3, -column => 0, -sticky => 'ne');
-		$bcos->grid(-row => 3, -column => 1, -sticky => 'nw');
+		$mBco->grid(-row => 4, -column => 0, -sticky => 'ne');
+		$bcos->grid(-row => 4, -column => 1, -sticky => 'nw');
 	}
 	$cuentaI->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'nw');
 	$nombre->grid(-row => 0, -column => 2, -columnspan => 2, -sticky => 'nw');
@@ -241,6 +256,7 @@ sub crea {
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
 	$fechaV->configure(-state => 'disabled');
+	$cCto->configure(-state => 'disabled') if $cCto ;
 	
 	bless $esto;
 	return $esto;
@@ -284,7 +300,8 @@ sub buscaCta ( ) {
 		$Cuenta = decode_utf8($dCuenta[0]);
 		$CntaI = $dCuenta[1];
 	}
-	# Si es cuenta con detalle para Banco
+	# Activa campos:
+	# si es cuenta con detalle para Banco
 	if ($CntaI eq "B") {
 		$bcos->configure(-state => 'normal') ;
 		$cuentaI->configure(-state => 'disabled');
@@ -292,7 +309,7 @@ sub buscaCta ( ) {
 		$tipoD->configure(-state => 'normal');
 		$fechaV->configure(-state => 'normal');
 	}
-	# o si agrupa cuentas individuales
+	# si agrupa cuentas individuales
 	if ($CntaI eq "I") {
 		$cuentaI->configure(-state => 'normal');
 		$tipoD->configure(-state => 'normal');
@@ -304,6 +321,10 @@ sub buscaCta ( ) {
 		$tipoD->configure(-state => 'normal');
 		$documento->configure(-state => 'normal');
 		$fechaV->configure(-state => 'normal');
+	}
+	# o bien, es cuenta de resultado
+	if ($Codigo =~ /^[34]/) { 
+		$cCto->configure(-state => 'normal');
 	}
 }
 
@@ -362,7 +383,7 @@ sub agrega ( )
 		$RUT = $cBanco ;
 	}
 	$bd->agregaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
-		$Cuenta, $Numero,'');
+		$Cuenta, $Numero, $CCto);
 	# Muestra lista modificada de cuentas
 	@datos = muestraLista($esto);
 	# Totaliza comprobante
@@ -373,14 +394,13 @@ sub agrega ( )
 		$TotalH += $Monto;	
 		$TotalHf = $pesos->format_number($TotalH);
 	}
-	
 	limpiaCampos();
-	
 	$bcos->configure(-state => 'disabled') ;
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
-
+	$cCto->configure(-state => 'disabled') if $cCto ;
+	
 	$codigo->focus;
 }
 
@@ -495,6 +515,7 @@ sub modifica ( )
 	print "$RUT - $cTipoD\n";
 	$TipoD = buscaTD( $cTipoD );
 	$Documento = $sItem->[7];
+	$CCto = $sItem->[8];
 	$Cuenta = $sItem->[10];
 	
 	$tipoD->configure(-state => 'normal') if $TipoD ;
@@ -523,7 +544,7 @@ sub registra ( )
 	}
 	# Graba datos
 	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
-		'', $Cuenta, $Id);
+		$CCto, $Cuenta, $Id);
 	# Muestra lista actualizada de items
 	@datos = muestraLista($esto);
 	# Retotaliza comprobante
@@ -538,6 +559,7 @@ sub registra ( )
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
 	$fechaV->configure(-state => 'disabled');
+	$cCto->configure(-state => 'disabled') if $cCto ;
 
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
@@ -649,12 +671,29 @@ sub limpiaCampos ( )
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
 	$Monto = 0;
-	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = '';
+	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = '' ;
+	$NCCto = $CCto = '';
 	# Activa o no contabilizar el comprobante
 	if ($TotalH == $TotalD) {
 		$bCnt->configure(-state => 'active');
 	} else {
 		$bCnt->configure(-state => 'disabled');
+	}
+}
+
+sub buscaCC ( $ ) {
+
+	my ($bd) = @_;
+	# Permite NO indicar C.Costo
+	return if $CCto eq '' ;
+	# Busca código
+	my $nCentro = $bd->nombreCentro($CCto);
+	if ( not $nCentro ) {
+		$Mnsj = "Ese código NO está registrado";
+		$NCCto = " " ;
+		$cCto->focus;
+	} else {
+		$NCCto = substr decode_utf8($nCentro), 0, 35 ;
 	}
 }
 
