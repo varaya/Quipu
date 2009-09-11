@@ -7,14 +7,15 @@ contabilidad.
 ###Acerca del nombre
 
 *Quipu* es un sistema de registro estadístico y contable utilizado por los 
-Incas antes de la llegada de los españoles. Consiste grupos de cuerdas de
-colores cada una con diversas cantidad de nudos que están amarradas a una
-cuerda principal.
+Incas antes de la llegada de los españoles. Consiste en un grupo de cuerdas de
+colores --cada una con distinta cantidad de nudos-- que están amarradas a una
+cuerda principal. 
 
 Por cierto se trata de un sistema algo más antiguo que la *partida 
 doble* desarrollada por Luca Paccioli, en la misma época en que Cristobal
 Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa 
-*nudo* en quechua. Visitar el siguiente [sitio][ref] para más información.
+*nudo* en quechua. Visitar el siguiente [sitio][ref] para más información. 
+También se suele escribir *Kipu*.
 
 
    [ref]: http://incas.perucultural.org.pe/histec2.htm
