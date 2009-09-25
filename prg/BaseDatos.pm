@@ -5,13 +5,13 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 07.09.2009
+#  UM: 25.09.2009
 
 package BaseDatos;
 
 use strict;
 use DBI;
-
+use Data::Dumper;
 sub crea
 {
   my ($esto, $nBD) = @_;
@@ -1684,6 +1684,100 @@ sub borraER( )
 	my $bd = $esto->{'baseDatos'};
 
 	$bd->do("DROP TABLE IF EXISTS RMensual;");
+}
+
+sub creaRCC ( ) 
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("CREATE TABLE RCCMes (
+	Codigo char(5) ,
+	Debe int(9) ,
+	Haber int(9) ,
+	Saldo int(9) ,
+	CCosto char(3) )" );
+}
+
+sub borraRCC( )
+{
+	my ($esto) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DROP TABLE IF EXISTS RCCMes;");
+}
+
+sub aRCCMes ( $ )
+{
+	my ($esto,$mes) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my ($sql,$algo,$dato,$st);
+
+	$sql = $bd->prepare("SELECT count(*) FROM ItemsC WHERE Mes <= ? AND CCosto <> '' ;");
+	$sql->execute($mes);
+	$dato = $sql->fetchrow_array;
+	$sql->finish();
+	return 0 if not $dato ;
+	# Completa archivo de datos
+	$bd->do("INSERT INTO RCCMes SELECT CuentaM, sum(Debe), sum(Haber), 0, CCosto
+		 FROM ItemsC WHERE Mes <= $mes AND CCosto <> '' GROUP BY CCosto, CuentaM");
+	$bd->do("UPDATE RCCMes SET Saldo = Debe - Haber WHERE Codigo > 3999 ");
+	$bd->do("UPDATE RCCMes SET Saldo = Haber - Debe WHERE Codigo < 4000 ");
+	# Ubica los centros de costos con datos
+	my @cc = () ;
+	$sql = $bd->prepare("SELECT CCosto FROM RCCMes GROUP BY CCosto");
+	$sql->execute() ;
+	while (my @fila = $sql->fetchrow_array ) {
+		push @cc, \@fila;
+	}
+	$sql->finish();
+
+	# Ubica las cuentas de mayor
+	my @cm = () ;
+	$sql = $bd->prepare("SELECT Codigo FROM RCCMes GROUP BY Codigo");
+	$sql->execute() ;
+	while (my @fila = $sql->fetchrow_array) {
+		push @cm, \@fila;
+	}
+	$sql->finish();
+	# Crea archivo para resumen
+	$bd->do("DROP TABLE IF EXISTS ResumenCC;");
+	$st = "CREATE TABLE ResumenCC (Codigo char(4)";
+	foreach $algo ( @cc ) {
+		$st .= ", 'c$algo->[0]' int(9)" ;
+	}
+	$st .= " )";
+	$bd->do("$st") ;
+	# Completa archivo de resumen
+	foreach $algo ( @cm ) {
+		$bd->do("INSERT INTO ResumenCC (Codigo) VALUES( $algo->[0] )");
+	}
+	# Actualiza archivo
+	$sql = $bd->prepare("SELECT Codigo,Saldo,CCosto FROM RCCMes");
+	$sql->execute();
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$st = "UPDATE ResumenCC SET 'c$algo->[2]' = $algo->[1] WHERE Codigo = $algo->[0]" ;
+		$bd->do("$st");
+	}
+	$sql->finish();	
+	return 1;
+}
+
+sub datosRCC( )
+{
+	my ($esto) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+
+	my $sql = $bd->prepare("SELECT c.Cuenta, m.* FROM ResumenCC AS m, 
+		dg.Cuentas AS c WHERE m.Codigo = c.Codigo ORDER BY m.Codigo ;");
+	$sql->execute();
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	return @datos; 	
 }
 
 # Termina el paquete

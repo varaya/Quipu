@@ -1,11 +1,12 @@
 #  Cmprbs.pm - Registra y contabiliza comprobantes
 #  Forma parte del programa Quipu
-#
+# 
 #  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 08.09.2009
+#  UM: 25.09.2009
+# Corregir nc - nd : comparar con valor al pagar
 
 package Cmprbs;
 
@@ -16,10 +17,10 @@ use Tk::BrowseEntry;
 use Encode 'decode_utf8';
 use Number::Format;
 
-# Variables válidas dentro del archivo
+# Variables válidas dent$fecha->focus;ro del archivo
 # Datos a registrar
-my ($Numero,$Id,$Glosa,$Fecha,$TotalD,$TotalH,$TotalDf,$TotalHf ) ;
-my ($Codigo,$Detalle,$Monto,$DH,$CntaI,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
+my ($Numero,$Id,$Glosa,$Fecha,$TotalD,$TotalH,$TotalDf,$TotalHf,$CntaI ) ;
+my ($Codigo,$Detalle,$Monto,$DH,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
 my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj) ; 
 # Campos
 my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
@@ -29,7 +30,7 @@ my ($CCto, $cCto, $ncCto, $NCCto) ;
 
 my ($bReg, $bEle, $bNvo, $bCnt) ; 	# Botones
 my @dCuenta = () ;	# Lista datos cuenta
-my @datos = () ;	# Lista items del comprobante
+my @datos = () ;	# Li$fecha->focus;sta items del comprobante
 my @listaD = () ;	# Lista tipos de documentos
 my @bancos = () ;	# Lista nombre de bancos
 my %tabla = () ; # Lista de tablas según tipo de documento
@@ -54,7 +55,7 @@ sub crea {
 	$Numero = $bd->numeroC() + 1;
 	$Monto = $TotalD = $TotalH = $BH = 0;
 	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = $FechaV = $Cuenta = '';
-	$TipoD = $Bco = $nBanco = $cBanco = $mBco = $CCto = $NCCto = '' ;
+	$TipoD = $Bco = $nBanco = $cBanco = $mBco = $CCto = $NCCto = $CntaI = '' ;
 	$TipoCmp = substr $tipoC, 0, 1 ;
 	$Bco = $bd->ctaEsp("B");
 	@bancos = $bd->datosBcs();
@@ -257,6 +258,7 @@ sub crea {
 	$documento->configure(-state => 'disabled');
 	$fechaV->configure(-state => 'disabled');
 	$cCto->configure(-state => 'disabled') if $cCto ;
+	$fecha->focus;
 	
 	bless $esto;
 	return $esto;

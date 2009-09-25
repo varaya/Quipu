@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 08.09.2009
+#  UM : 25.09.2009
 
 # use Data::Dumper; 
 
@@ -253,10 +253,8 @@ sub opBalances {
 sub opResultados {
 [['command' => "Mensuales", -command => sub { require prg::Rsltds;
 	Rsltds->crea($vp, $mt, $bd, $ut, $Rut);} ], 
- ['command' => "por Centro Costo", -command => sub { require prg::CCCsts;
- 	CCCsts->crea($vp, $mt, $bd, $ut);} ],
- ['command' => "-Otros", -command => sub { require prg::Prsnl;
- 	Prsnl->crea($vp, $mt, $bd, $ut);} ] ]
+ ['command' => "por Centros de Costos", -command => sub { require prg::CCCsts;
+ 	CCCsts->crea($vp, $mt, $bd, $ut, $Rut);} ] ]
 }
 
 sub opListados {

@@ -2,7 +2,7 @@
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
-#  
+#   nd no deben aparecer en pendientes
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
 #  UM : 13.08.2009
