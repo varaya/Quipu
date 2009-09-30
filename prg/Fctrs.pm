@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 16.07.2009
+#  UM : 31.09.2009
 
 package Fctrs;
 
@@ -73,14 +73,16 @@ sub crea {
 		$CC = 'D';
 		$TCtaT = 'cargo';
 		$TipoF = "M";
+#		$AE = 'E' 
 	}
+	
 	my @dtc = $bd->buscaDoc($TipoD) ;
 	$CtaT =  $dtc[1];
 	$CtaIVA =  $dtc[2];
 	@dtc = $bd->dtCuenta($CtaT);
 	$NombreCt = decode_utf8("$dtc[0] ");
 	@dtc = $bd->dtCuenta($CtaIVA);
-	$NombreCi = decode_utf8("$dtc[0] ");
+	$NombreCi = decode_utf8("$dtc[0] ") if $dtc[0] ;
 	 
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
@@ -242,10 +244,10 @@ sub crea {
 	# Dibuja interfaz
 	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$dcmnt->grid(-row => 0, -column => 0, -sticky => 'nw');
-	if ( $TipoD eq 'FC' ) {
+#	if ( $TipoD eq 'FC' ) {
 		$fm->grid(-row => 0, -column => 1, -sticky => 'nw');
 		$fe->grid(-row => 0, -column => 2, -sticky => 'nw');
-	}
+#	}
 	$rut->grid(-row => 1, -column => 0, -sticky => 'nw');
 	$nombre->grid(-row => 1, -column => 1, -columnspan => 2, -sticky => 'nw');
 	$fecha->grid(-row => 2, -column => 0, -sticky => 'nw');
@@ -296,6 +298,7 @@ sub crea {
 	$bReg->configure(-state => 'disabled');
 	$bEle->configure(-state => 'disabled');
 	$bCnt->configure(-state => 'disabled');
+	desactiva() if $AE eq 'E';
 	
 	$dcmnt->focus;
 

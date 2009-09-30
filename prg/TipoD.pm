@@ -1,11 +1,11 @@
 #  TipoD.pm - Registra o modifica los tipos de documentos soportantes (legales) 
 #  Forma parte del programa Quipu
 #
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
-#  incluida en este paquete 
-#  UM: 19.06.2009
+#  Puede ser utilizado y distribuido en los términos previstos en la
+#  licencia incluida en este paquete 
+#  UM : 31.09.2009
 
 package TipoD;
 

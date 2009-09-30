@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 27.07.2009 
+#  UM : 30.09.2009 
 
 use DBI;
 use strict;
@@ -255,7 +255,7 @@ $bd->do("CREATE TABLE Personal (
 # Bancos
 $bd->do("CREATE TABLE Bancos (
 	Codigo char(3) NOT NULL PRIMARY KEY,
-	Nombre text(30)" );
+	Nombre text(30) )" );
 	
 # Centros de Costos
 $bd->do("CREATE TABLE CCostos (

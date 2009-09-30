@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 25.09.2009
+#  UM: 30.09.2009
 
 package BaseDatos;
 
@@ -57,13 +57,13 @@ sub leeCnf( )
 	return @dts; 
 }
 
-sub grabaCnf($ $ )
+sub grabaCnf($ $ $)
 {
-	my ($esto, $me, $prd) = @_;
+	my ($esto, $me, $prd, $iva) = @_;
 	my $bd = $esto->{'baseDatos'};
 
-	my $sql = $bd->prepare("INSERT OR IGNORE INTO Config VALUES(?,0,0,?);");
-	$sql->execute($prd, $me);
+	my $sql = $bd->prepare("INSERT OR IGNORE INTO Config VALUES(?,0,0,?,?);");
+	$sql->execute($prd, $me, $iva);
 	$sql->finish();	 
 }
 
@@ -677,10 +677,9 @@ sub numeroC( )
 
 	my $sql = $bd->prepare("SELECT max(Numero) FROM DatosC;");
 	$sql->execute();
-
 	my $dato = $sql->fetchrow_array;
 	$sql->finish();
-	
+	$dato = 0 if not $dato ;	
 	return $dato; 
 }
 

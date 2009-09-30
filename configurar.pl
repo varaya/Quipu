@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 06.07.2009
+#  UM: 30.09.2009
 
 use prg::BaseDatos;
 use Tk;
@@ -18,8 +18,8 @@ use Encode 'decode_utf8';
 
 use prg::Utiles;
 
-my ($nbd, $Nombre, $Rut, $Mnsj, $Prd, $Multi, $ne); # Variables
-my ($nombre, $rut, $prd, $multi ); # Campos
+my ($nbd, $Nombre, $Rut, $Mnsj, $Prd, $Multi, $ne, $IVA); # Variables
+my ($nombre, $rut, $prd, $multi, $iva ); # Campos
 my ($bCan, $bNvo) ; # Botones
 my @datos = () ;	# Lista de empresas
 $nbd = 'datosG.db3' ;
@@ -30,6 +30,7 @@ my $bd = BaseDatos->crea($nbd);
 my @cnf = $bd->leeCnf();
 $Prd = $cnf[0];
 $Multi = $cnf[3];
+$IVA = $cnf[4];
 $Nombre = $Rut = '';
 
 # Define ventana
@@ -75,6 +76,9 @@ $prd = $mParametros->LabEntry(-label => "Año inicial", -width => 5,
 	-textvariable => \$Prd );
 $multi = $mParametros->Checkbutton(-variable => \$Multi, 
 		 -text => "Multiempresa",);
+$iva = $mParametros->LabEntry(-label => "IVA", -width => 3,
+	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+	-textvariable => \$IVA );
 # Define campos para registro de datos de la empresa
 $rut = $mDatos->LabEntry(-label => "RUT:   ", -width => 12,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
@@ -86,8 +90,10 @@ $nombre = $mDatos->LabEntry(-label => "Razón Social: ", -width => 35,
 $nombre->bind("<FocusIn>", sub { &buscaRUT($esto) } );
 
 # Dibuja interfaz
+$mMensajes->pack(-expand => 1, -fill => 'both');
 $prd->pack(-side => 'left', -expand => 0, -fill => 'none');
 $multi->pack(-side => 'left', -expand => 0, -fill => 'none');
+$iva->pack(-side => 'left', -expand => 0, -fill => 'none');
 $rut->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'nw');	
 $nombre->grid(-row => 1, -column => 0, -columnspan => 2, -sticky => 'nw');
 
@@ -99,7 +105,6 @@ $listaS->pack();
 $mLista->pack(-expand => 1);
 $mDatos->pack(-expand => 1);	
 $mBtns->pack(-expand => 1);
-$mMensajes->pack(-expand => 1, -fill => 'both');
 
 @datos = &muestraLista($esto);
 $ne = @datos; # Número de empresas
@@ -181,7 +186,7 @@ sub agrega ()
 
 	# Graba datos
 	$bd->agregaE($Rut,$Nombre,$Multi,$Prd);
-	$bd->grabaCnf($Multi,$Prd) if not $ne ;
+	$bd->grabaCnf($Multi,$Prd,$IVA) if not $ne ;
 	# Crea tablas
 	system "./creaTablasRC.pl", $Rut, $Prd ;
 

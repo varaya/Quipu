@@ -2,10 +2,12 @@
 
 #  creaTablas.pl - inicializa la base de datos con SQLite 3
 #  Forma parte del Programa Quipu
-#  Propiedad intelectual (c) Víctor Araya R., 2008
+#
+#  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
-#  Puede ser utilizado y distribuido en los términos previstos en la licencia
-#  incluida en este paquete
+#  Puede ser utilizado y distribuido en los términos previstos en la 
+#  licencia incluida en este paquete 
+#  UM: 30.09.2009
 
 use DBI;
 use strict;
@@ -62,10 +64,10 @@ $bd->do("CREATE TABLE Documentos (
 $bd->do("INSERT INTO Documentos VALUES('FV','F.Venta','','') ");
 $bd->do("INSERT INTO Documentos VALUES('FC','F.Compra','','') ");
 $bd->do("INSERT INTO Documentos VALUES('BH','B.Honorario','','') ");
-$bd->do("INSERT INTO Documentos VALUES('NC','N.Crédito'),'','' ");
-$bd->do("INSERT INTO Documentos VALUES('ND','N.Débito','','' )");
-$bd->do("INSERT INTO Documentos VALUES('CH','Cheque','','' )");
-$bd->do("INSERT INTO Documentos VALUES('LT','Letra','','' )");
+$bd->do("INSERT INTO Documentos VALUES('NC','N.Crédito','','') ");
+$bd->do("INSERT INTO Documentos VALUES('ND','N.Débito','','')");
+$bd->do("INSERT INTO Documentos VALUES('CH','Cheque','','')");
+$bd->do("INSERT INTO Documentos VALUES('LT','Letra','','')");
 
 # Desconecta la base de datos
 $bd->disconnect;

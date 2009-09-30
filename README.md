@@ -50,7 +50,19 @@ empresas.
 
 ##Instalación
 
-(Pendiente)
+### Requerimientos previos
+
++ Tener instalados los programas definidos como *Requisitos*
++ Disponer del programa *git*. En el sitio [github][git] están disponibles
+guías sobre cómo instalarlo en los distintos sistemas operativos.
+
+	[git]: http://github.com/guides/home
+
+### Descargar el programa
+
+### Verificar los requisitos
+
+### Configuración inicial
 
 
 

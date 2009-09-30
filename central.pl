@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 25.09.2009
+#  UM : 31.09.2009
 
 # use Data::Dumper; 
 
@@ -153,8 +153,8 @@ sub opRegistra {
  ['command' => "Personal", -command => sub { require prg::DatosP; 
 	DatosP->crea($vp, $bd, $ut, $mt, $CCts ); } ], "-", 
  ['cascade' => "Plan Cuentas", -tearoff => 0, -menuitems => opCuentas() ],
-# ['command' => "Tipo Documento", -command => sub { require prg::TipoD;
-#	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
+ ['command' => "Documentos", -command => sub { require prg::TipoD;
+	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
  ['cascade' => "Ajustes", -tearoff => 0, -menuitems => opAjustes() ] ]
 }
 
@@ -169,7 +169,8 @@ sub opContabiliza {
  my ($tipoC, $tipoB, $tipoNC, $tipoND, $tipoA );
  $tipoC = $tipoB = $tipoNC = $tipoND = $tipoA = ' ';
 
-[['cascade' => "Ventas", -tearoff => 0, -menuitems => opVentas() ],
+[['command' => "Ventas", -command => sub { require prg::Fctrs; 
+	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ],
  ['cascade' => "Compras", -tearoff => 0, -menuitems => opCompras() ],
  ['command' => "Honorarios",	-command => sub { require prg::BltsH;
 	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },],
