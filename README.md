@@ -57,19 +57,18 @@ empresas.
 guías sobre cómo instalarlo en los distintos sistemas operativos.
 
 
-	[github]: http://github.com/guides/home
+   [github]: http://github.com/guides/home
 
 
 ### Descargar el programa
 
 Ejecutar el siguiente comando, desde un terminal o consola: 
 
-	git clone git://gihub/varaya/Quipu.git
+	git clone git://gihub.com/varaya/Quipu.git
 	
 De esta manera se baja el programa y se crea el directorio *Quipu*, dentro
-del directorio en donde se ejecutó el programa.
-
-Para seguir con el proceso, ejecutar 
+del directorio en donde se ejecutó el programa. Para seguir con el proceso, 
+ejecutar 
 
 	cd Quipu
 
@@ -82,11 +81,49 @@ Luego de haber cambiado de directorio, ejecutar el comando
 	
 Esto permitirá verificar que estén instalados todos los módulos Perl que
 necesita el programa Quipu. Se falta alguno, deberá ser instalado antes 
-de seguir con la configuración. Se puede usar el programa 'cpan' o alguna
+de seguir con la configuración. Se puede usar el programa `cpan` o alguna
 interfaz gráfica disponible en el sistema operativo.
 
 ### Configuración inicial
 
+Para usar el programa es necesario crear una empresa y definir un plan de
+cuentas. Esto se realiza en dos etapas:
+
+Primero, con el comando Linux
+
+	./configurar.pl &
+
+se accede a una interfaz gráfica para registrar datos básicos (año inicial,
+tasa del IVA) y crear la empresa, indicado RUT (en formato de números sin
+punto, guión y dígito verificador) y nombre.
+
+Segundo, con el comando 
+
+	./central.pl &
+	
+se entra la programa principal para completar la configuración inicial,
+mediante la siguientes acciones:
+
+1. Completar los datos de la empresa: opción de menú **Registra - Empresa**.
+
+2. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
+Están predefinidos los grandes grupos (Activo, Pasivo, Ingresos y Gastos) y
+un conjunto mínimo de subgrupos. El absoluto mínimo de un plan de cuentas 
+debe contener las siguientes cuentas (se indica el subgrupo):
+
++ Caja (10)
++ Clientes (11)
++ IVA Crédito Fiscal (11)
++ Proveedores (20)
++ IVA Débito Fiscal (20)
++ Capital (22)
++ Resultado del Ejercicio (22)
++ Ingresos por venta (30)
++ Costos de ventas (40)
+
+3. Registra los datos de las cuentas a las que se imputa el monto total
+y el IVA, tanto para las facturas de compra como de venta: opción de 
+menú **Documento**.
 
 
 ##Licencia
