@@ -52,15 +52,38 @@ empresas.
 
 ### Requerimientos previos
 
-+ Tener instalados los programas definidos como *Requisitos*
-+ Disponer del programa *git*. En el sitio [github][git] están disponibles
++ Tener instalados todos los programas definidos como *Requisitos*
++ Disponer del programa *git*. En el sitio [github][] están disponibles
 guías sobre cómo instalarlo en los distintos sistemas operativos.
 
-	[git]: http://github.com/guides/home
+
+	[github]: http://github.com/guides/home
+
 
 ### Descargar el programa
 
+Ejecutar el siguiente comando, desde un terminal o consola: 
+
+	git clone git://gihub/varaya/Quipu.git
+	
+De esta manera se baja el programa y se crea el directorio *Quipu*, dentro
+del directorio en donde se ejecutó el programa.
+
+Para seguir con el proceso, ejecutar 
+
+	cd Quipu
+
+
 ### Verificar los requisitos
+
+Luego de haber cambiado de directorio, ejecutar el comando
+
+	perl modulos.pl
+	
+Esto permitirá verificar que estén instalados todos los módulos Perl que
+necesita el programa Quipu. Se falta alguno, deberá ser instalado antes 
+de seguir con la configuración. Se puede usar el programa 'cpan' o alguna
+interfaz gráfica disponible en el sistema operativo.
 
 ### Configuración inicial
 
