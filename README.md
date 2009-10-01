@@ -109,17 +109,17 @@ mediante la siguientes acciones:
 2. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
 Están predefinidos los grandes grupos (Activo, Pasivo, Ingresos y Gastos) y
 un conjunto mínimo de subgrupos. Como absoluto mínimo deben existir las 
-siguientes cuentas (se indica el subgrupo):
+siguientes cuentas (se indica el subgrupo; los nombre son indicativos):
 
-> + Caja (10)
-> + Clientes (11)
-> + IVA Crédito Fiscal (11)
-> + Proveedores (20)
-> + IVA Débito Fiscal (20)
-> + Capital (22)
-> + Resultado del Ejercicio (22)
-> + Ingresos por venta (30)
-> + Costos de ventas (40)
+	> + Caja (10)
+	> + Clientes (11)
+	> + IVA Crédito Fiscal (11)
+	> + Proveedores (20)
+	> + IVA Débito Fiscal (20)
+	> + Capital (22)
+	> + Resultado del Ejercicio (22)
+	> + Ingresos por venta (30)
+	> + Costos de ventas (40)
 
 3. Registrar los datos de las cuentas a las que se imputa el monto total
 y el IVA, tanto para las facturas de compra como de venta: opción de 
@@ -139,7 +139,7 @@ Para agregar nuevas empresas, se usa el comando
 
 	./configurar.pl &
 	
-y se completa sus datos desde la opción **Registra - Empresa** en el
+y se completan sus datos desde la opción **Registra - Empresa** en el
 programa `central.pl`.
 
 ### Actualización
@@ -180,11 +180,11 @@ Está permitido:
    modificación, con la obligación de cumplir alguna de las 
    siguientes condiciones:
 
->  a. Dejar las modificaciones libremente disponibles a otros usuarios, enviándolas al autor del programa original.
+	>  a. Dejar las modificaciones libremente disponibles a otros usuarios, enviándolas al autor del programa original.
       
->  b. Utilizarlas exclusivamente en forma personal o dentro de la organización en la cual se está usando el programa.
+	>  b. Utilizarlas exclusivamente en forma personal o dentro de la organización en la cual se está usando el programa.
       
->  c. Hacer un acuerdo directo con el autor de este programa.
+	>  c. Hacer un acuerdo directo con el autor de este programa.
 
 3. Cobrar un honorario razonable por instalar, configurar y
    dar soporte en el uso de este programa, dejando constancia
