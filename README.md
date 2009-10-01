@@ -15,7 +15,10 @@ Por cierto se trata de un sistema algo más antiguo que la *partida
 doble* desarrollada por Luca Paccioli, en la misma época en que Cristobal
 Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa 
 *nudo* en quechua; también se suele escribir *kipu*, ya que en castellano
-se pronuncian igual. Visitar el siguiente [sitio][ref] para más información. 
+se pronuncian igual. 
+
+Sobre este interesante sistema de registro, visitar el siguiente [sitio][ref] 
+para más información. 
 
 
    [ref]: http://incas.perucultural.org.pe/histec2.htm
@@ -114,7 +117,7 @@ las opciones de menús correspondientes.
 2. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
 Están predefinidos los grandes grupos (Activo, Pasivo, Ingresos y Gastos) y
 un conjunto de subgrupos indispensables. Como absoluto mínimo deben existir las 
-siguientes cuentas (se indica el subgrupo; los nombre son indicativos y se pueden
+siguientes cuentas (se indica el subgrupo; los nombres son indicativos y se pueden
 modificar):
 
 	> + Caja (10)
@@ -134,7 +137,7 @@ manera se facilita la contabilización de dichos documentos.
 
 ### Uso del programa
 
-El programa se inicia, desde el directorio *Quipo*, con el comando:
+El programa se inicia, desde el directorio *Quipu*, con el comando:
 
 	./central.pl &
 
@@ -147,6 +150,14 @@ Para agregar nuevas empresas, se usa el comando
 	
 y se completan sus datos desde la opción **Registra - Empresa** en el
 programa `central.pl`.
+
+El ingreso de los diversos documentos supone que están registrados
+los datos básicos de los Clientes, Proveedores y Prestadores de Servicio, 
+según corresponda. Ello se realiza mediante la opción **Registra -Terceros**.
+
+Si se marcó la opción *Controla Centros de Costos* en los datos de la empresa, 
+será necesario ingresar los datos necesarias desde el menú **Registra - 
+Centros de Costos**. 
 
 ### Actualización
 
@@ -179,8 +190,7 @@ Está permitido:
 
 1. Hacer y entregar copias de este programa sin restricción,
    con la obligación de incluir el presente documento y 
-   traspasar a terceros los derechos previstos en esta
-   Licencia.
+   traspasar a terceros los derechos previstos en esta Licencia.
 
 2. Realizar modificaciones al programa, dejando constancia en 
    los archivos respectivos quién, cómo y cuándo realizó la

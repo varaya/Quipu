@@ -356,7 +356,7 @@ sub activaE {
 	datosBase() ;
 	# Agrega más opciones de menu, según la configuración
 	if ($CCts) { 
-		$mRegistro->AddItems("-", ['command' => "Centros Costos",
+		$mRegistro->AddItems("-", ['command' => "Centros de Costos",
 		-command => sub { use prg::RCCsts; RCCsts->crea($vp,$mt,$bd,$ut);}] );
 	}
 	if ($OtrosI) {
