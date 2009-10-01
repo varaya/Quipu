@@ -48,7 +48,7 @@ empresas.
 + Cualquier sistema operativo que soporte lo anterior.
 
 
-##Instalación
+##Instalación, configuracion y uso
 
 ### Requerimientos previos
 
@@ -108,22 +108,48 @@ mediante la siguientes acciones:
 
 2. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
 Están predefinidos los grandes grupos (Activo, Pasivo, Ingresos y Gastos) y
-un conjunto mínimo de subgrupos. El absoluto mínimo de un plan de cuentas 
-debe contener las siguientes cuentas (se indica el subgrupo):
+un conjunto mínimo de subgrupos. Como absoluto mínimo deben existir las 
+siguientes cuentas (se indica el subgrupo):
 
-+ Caja (10)
-+ Clientes (11)
-+ IVA Crédito Fiscal (11)
-+ Proveedores (20)
-+ IVA Débito Fiscal (20)
-+ Capital (22)
-+ Resultado del Ejercicio (22)
-+ Ingresos por venta (30)
-+ Costos de ventas (40)
+> + Caja (10)
+> + Clientes (11)
+> + IVA Crédito Fiscal (11)
+> + Proveedores (20)
+> + IVA Débito Fiscal (20)
+> + Capital (22)
+> + Resultado del Ejercicio (22)
+> + Ingresos por venta (30)
+> + Costos de ventas (40)
 
-3. Registra los datos de las cuentas a las que se imputa el monto total
+3. Registrar los datos de las cuentas a las que se imputa el monto total
 y el IVA, tanto para las facturas de compra como de venta: opción de 
-menú **Documento**.
+menú **Registra - Documento**. Esto facilita la contabilización de dichos 
+documentos.
+
+### Uso del programa
+
+El programa se inicia con el comando:
+
+	./central.pl &
+
+Se puede crear un icono en el escritorio, siguiendo los procedimientos 
+usuales del sistema operativo correspondiente.
+
+Para agregar nuevas empresas, se usa el comando 
+
+	./configurar.pl &
+	
+y se completa sus datos desde la opción **Registra - Empresa** en el
+programa `central.pl`.
+
+### Actualización
+
+Las actualizaciones del programa se obtienen desde Internet ejecutando 
+el comando
+
+	git pull
+	
+en el directorio *Quipu*.
 
 
 ##Licencia

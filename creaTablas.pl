@@ -53,6 +53,13 @@ $bd->do("CREATE TABLE SGrupos (
 	Codigo char(5) NOT NULL PRIMARY KEY,
 	Nombre text(35),
 	Grupo char(1) )" );
+	
+$bd->do("INSERT INTO SGrupos VALUES('10','Disponible','A') ");
+$bd->do("INSERT INTO SGrupos VALUES('11','Realizable','A') ");
+$bd->do("INSERT INTO SGrupos VALUES('20','Corto Plazo','P') ");
+$bd->do("INSERT INTO SGrupos VALUES('22','Patrimonio','P') ");
+$bd->do("INSERT INTO SGrupos VALUES('30','Ventas','I') ");
+$bd->do("INSERT INTO SGrupos VALUES('40','Gastos','G') ");
 
 # Documentos
 $bd->do("CREATE TABLE Documentos (
@@ -71,4 +78,3 @@ $bd->do("INSERT INTO Documentos VALUES('LT','Letra','','')");
 
 # Desconecta la base de datos
 $bd->disconnect;
-
