@@ -14,8 +14,8 @@ cuerda principal.
 Por cierto se trata de un sistema algo más antiguo que la *partida 
 doble* desarrollada por Luca Paccioli, en la misma época en que Cristobal
 Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa 
-*nudo* en quechua. Visitar el siguiente [sitio][ref] para más información. 
-También se suele escribir *Kipu*.
+*nudo* en quechua; también se suele escribir *kipu*, ya que en castellano
+se pronuncian igual. Visitar el siguiente [sitio][ref] para más información. 
 
 
    [ref]: http://incas.perucultural.org.pe/histec2.htm
@@ -29,8 +29,8 @@ es ir más allá y usar la contabilidad como una efectiva herramienta de
 control.
 
 Se trata de aprovechar el obligado registro de la documentación
-mercantil (facturas, boletas, notas de débito y crédito) para procesar
-información necesaria en el control de las gestión de la pequeñas
+mercantil (facturas, boletas, notas de débito y crédito) para registrar
+información adicional necesaria en el control de las gestión de la pequeñas
 empresas.
 
 
@@ -53,8 +53,10 @@ empresas.
 ### Requerimientos previos
 
 + Tener instalados todos los programas definidos como *Requisitos*
-+ Disponer del programa *git*. En el sitio [github][] están disponibles
-guías sobre cómo instalarlo en los distintos sistemas operativos.
++ Disponer del programa *git*. En el sitio [github][] se pueden consultar
+las guías sobre cómo instalarlo en los distintos sistemas operativos. En  
+el caso de Linux están disponibles las interfaces gráficas que permiten 
+instalar paquetes y programas.
 
 
    [github]: http://github.com/guides/home
@@ -62,9 +64,9 @@ guías sobre cómo instalarlo en los distintos sistemas operativos.
 
 ### Descargar el programa
 
-Ejecutar el siguiente comando, desde un terminal o consola: 
+Conectado a Intermet, ejecutar el siguiente comando, desde un terminal o consola: 
 
-	git clone git://gihub.com/varaya/Quipu.git
+	git clone git://github.com/varaya/Quipu.git
 	
 De esta manera se baja el programa y se crea el directorio *Quipu*, dentro
 del directorio en donde se ejecutó el programa. Para seguir con el proceso, 
@@ -86,8 +88,8 @@ interfaz gráfica disponible en el sistema operativo.
 
 ### Configuración inicial
 
-Para usar el programa es necesario crear una empresa y definir un plan de
-cuentas. Esto se realiza en dos etapas:
+Para usar el programa es necesario crear previamente una empresa y definir 
+un plan de cuentas. Esto se realiza en dos etapas:
 
 Primero, con el comando Linux
 
@@ -105,11 +107,15 @@ se entra la programa principal para completar la configuración inicial,
 mediante la siguientes acciones:
 
 1. Completar los datos de la empresa: opción de menú **Registra - Empresa**.
+Si se marca cualquiera de las características en la pestaña *Opciones*, una vez
+completados los datos, habrá que reiniciar el programa, para que se habiliten
+las opciones de menús correspondientes.
 
 2. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
 Están predefinidos los grandes grupos (Activo, Pasivo, Ingresos y Gastos) y
-un conjunto mínimo de subgrupos. Como absoluto mínimo deben existir las 
-siguientes cuentas (se indica el subgrupo; los nombre son indicativos):
+un conjunto de subgrupos indispensables. Como absoluto mínimo deben existir las 
+siguientes cuentas (se indica el subgrupo; los nombre son indicativos y se pueden
+modificar):
 
 	> + Caja (10)
 	> + Clientes (11)
@@ -122,18 +128,18 @@ siguientes cuentas (se indica el subgrupo; los nombre son indicativos):
 	> + Costos de ventas (40)
 
 3. Registrar los datos de las cuentas a las que se imputa el monto total
-y el IVA, tanto para las facturas de compra como de venta: opción de 
-menú **Registra - Documento**. Esto facilita la contabilización de dichos 
-documentos.
+y el IVA, de las facturas de compra (Proveedores e IVA Crédito) y de venta 
+(Clientes e IVA Débito): opción de menú **Registra - Documento**. De esta 
+manera se facilita la contabilización de dichos documentos.
 
 ### Uso del programa
 
-El programa se inicia con el comando:
+El programa se inicia, desde el directorio *Quipo*, con el comando:
 
 	./central.pl &
 
 Se puede crear un icono en el escritorio, siguiendo los procedimientos 
-usuales del sistema operativo correspondiente.
+usuales del sistema operativo en que se instala el programa.
 
 Para agregar nuevas empresas, se usa el comando 
 
@@ -149,7 +155,8 @@ el comando
 
 	git pull
 	
-en el directorio *Quipu*.
+en el directorio *Quipu*. Para estar informado de los cambios realizados 
+en el programa, enviar sus datos al correo indicado al final.
 
 
 ##Licencia
