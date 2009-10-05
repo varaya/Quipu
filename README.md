@@ -17,9 +17,8 @@ Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa
 *nudo* en quechua; también se suele escribir *kipu*, ya que en castellano
 se pronuncian igual. 
 
-Sobre este interesante sistema de registro, visitar el siguiente [sitio][ref] 
-para más información. 
-
+Sobre este interesante sistema de registro en general sobre la cultura inca, 
+visitar el siguiente [sitio][ref] para más información. 
 
    [ref]: http://incas.perucultural.org.pe/histec2.htm
 
@@ -156,10 +155,10 @@ los datos básicos de los Clientes, Proveedores y Prestadores de Servicio,
 según corresponda. Ello se realiza mediante la opción **Registra -Terceros**.
 
 Si se marcó la opción *Controla Centros de Costos* en los datos de la empresa, 
-será necesario ingresar los datos necesarias desde el menú **Registra - 
-Centros de Costos**. 
+será necesario ingresar código y nombre de los centros desde el menú 
+**Registra - Centros de Costos**. 
 
-### Actualización
+### Actualización del programa
 
 Las actualizaciones del programa se obtienen desde Internet ejecutando 
 el comando

@@ -5,8 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 25.09.2009
-# Corregir nc - nd : comparar con valor al pagar
+#  UM: 05.10.2009
 
 package Cmprbs;
 
@@ -257,7 +256,7 @@ sub crea {
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
 	$fechaV->configure(-state => 'disabled');
-	$cCto->configure(-state => 'disabled') if $cCto ;
+#	$cCto->configure(-state => 'disabled') if $cCto ;
 	$fecha->focus;
 	
 	bless $esto;
@@ -326,7 +325,8 @@ sub buscaCta ( ) {
 	}
 	# o bien, es cuenta de resultado
 	if ($Codigo =~ /^[34]/) { 
-		$cCto->configure(-state => 'normal');
+#		$cCto->configure(-state => 'normal');
+		$cCto->focus ;
 	}
 }
 
@@ -401,7 +401,7 @@ sub agrega ( )
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
-	$cCto->configure(-state => 'disabled') if $cCto ;
+#	$cCto->configure(-state => 'disabled') if $cCto ;
 	
 	$codigo->focus;
 }
@@ -424,6 +424,14 @@ sub validaD ( $ )
 		}
 		if ( $bd->buscaFct($tbl, $RUT, $Documento, 'Pagada') ) {
 			$Mnsj = "Ese documento ya está pagado.";
+			$documento->focus;
+			return 0;
+		}
+		# Compara montos, excepto de BH (por el momento): pagado no puede
+		# se mayor que el total del documento
+		my $mnt = $bd->buscaFct($tbl, $RUT, $Documento, 'Total') ;
+		if ( $Monto > $mnt and not $BH ) {
+			$Mnsj = "Monto ingresado $Monto no corresponde: $mnt.";
 			$documento->focus;
 			return 0;
 		}
@@ -561,7 +569,7 @@ sub registra ( )
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
 	$fechaV->configure(-state => 'disabled');
-	$cCto->configure(-state => 'disabled') if $cCto ;
+#	$cCto->configure(-state => 'disabled') if $cCto ;
 
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
@@ -688,6 +696,12 @@ sub buscaCC ( $ ) {
 	my ($bd) = @_;
 	# Permite NO indicar C.Costo
 	return if $CCto eq '' ;
+	# y lo elimina si cuenta es de Activo o Pasivo
+	if ($Codigo =~ /^[12]/) { 
+		$Mnsj = "Centro de Costos no se aplica a esta cuenta";
+		$CCto = '';
+		return ;
+	}
 	# Busca código
 	my $nCentro = $bd->nombreCentro($CCto);
 	if ( not $nCentro ) {
