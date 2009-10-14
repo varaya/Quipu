@@ -5,27 +5,24 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 09.07.2009
+#  UM : 14.10.2009
 
 package DatosE;
 
 use Tk::NoteBook;
 use Tk::LabEntry;
 use Encode 'decode_utf8';
-	
-# Variables que identifican los campos de tabla DatosE 
-# [válidas dentro del archivo]
+
 my ($Nombre,$Rut,$Giro,$RutRL,$NmbrRL,$OtrosI,$BltsCV,$CBco,$CCts,$CPto) = (0..9);
 my ($Mnsj) ;
 
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $mt, $ay, $rt) = @_;
+	my ($esto, $vp, $bd, $ut, $rt) = @_;
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
 	$esto->{'mensajes'} = $ut;
-	$esto->{'marcoT'} = $mt;
-	
+
 	my %tp = $ut->tipos();
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Registra Datos Empresa");
@@ -37,7 +34,7 @@ sub crea {
 		$datos[$NmbrRL] = decode_utf8($datos[$NmbrRL]);
 	}
 	my $alt = $^O eq 'MSWin32' ? 205 : 225 ;
-	$vnt->geometry("390x$alt+475+4"); # Tamaño y ubicación
+	$vnt->geometry("390x$alt+380+4"); # Tamaño y ubicación
 	$esto->{'ventana'} = $vnt;
 
 	# Defime marcos
@@ -52,7 +49,7 @@ sub crea {
 	$mnsj->pack(-side => 'right', -expand => 1, -fill => 'x');
 	my $img = $vnt->Photo(-file => "info.gif") ;
 	my $bAyd = $mMensajes->Button(-image => $img, 
-		-command => sub { $ut->ayuda($mt, 'DatosE'); } ); 
+		-command => sub { $ut->ayuda('DatosE'); } ); 
 	$bAyd->pack(-side => 'left', -expand => 0, -fill => 'none');
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";

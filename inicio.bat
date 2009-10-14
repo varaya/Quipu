@@ -1,1 +1,0 @@
-perl central.pl

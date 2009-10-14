@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 
-#  central.pl - inicio del programa Quipu [Sistema de Contabilidad]
+#  inicio.pl - inicio del programa Quipu [Sistema de Contabilidad]
+#  Reemplaza Comp. Ingreso y Egreso por Pagos Recibidos y Emitidos
+#  Incluye Cesión de Créditos, como función específica
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
 #  UM : 06.10.2009
-
-# use Data::Dumper; 
 
 use prg::BaseDatos;
 use strict;
@@ -18,7 +18,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "V. 0.90 a Julio 2009";
+my $version = "V. 0.92 a Octubre 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -145,10 +145,7 @@ MainLoop;
 
 # Subrutinas que definen el contenido de los menues
 sub opRegistra {
-
-[['command' => "Empresa", -command => sub { require prg::DatosE;
-	DatosE->crea($vp, $bd, $ut, $mt, \$Ayd, $Rut); datosBase(); } ],
- ['command' => "Terceros", -command => sub { require prg::DatosT;
+[ ['command' => "Terceros", -command => sub { require prg::DatosT;
 	DatosT->crea($vp, $bd, $ut, '', $mt); } ],
  ['command' => "Personal", -command => sub { require prg::DatosP; 
 	DatosP->crea($vp, $bd, $ut, $mt, $CCts ); } ], "-", 
@@ -172,7 +169,14 @@ sub opContabiliza {
 [['cascade' => "Ventas", -tearoff => 0, -menuitems => opVentas() ],
  ['cascade' => "Compras", -tearoff => 0, -menuitems => opCompras() ],
  ['command' => "Honorarios",	-command => sub { require prg::BltsH;
-	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },],
+	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },], "-" ,
+ ['cascade' => "Pagos", -tearoff => 0,
+ 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
+	-command => sub { require prg::Pagos; Pagos->crea($vp,$bd,$ut,$tipoC,$mt);}],
+		 qw/Emitidos Recibidos/,], ],
+ ['cascade' => "Cesión Créditos", -tearoff => 0, -menuitems => opCesion() ],
+ ['command' => "Traspasos",	-command =>sub { require prg::Cmprbs; 
+	Cmprbs->crea($vp,$bd,$ut,'Traspaso',$mt,$CCts);},], "-",
  ['cascade' => "N. Crédito", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoNC ,  
 	-command => sub { require prg::NtsC;
@@ -180,13 +184,18 @@ sub opContabiliza {
  ['cascade' => "N. Débito", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoND ,  
 	-command => sub { require prg::NtsD;
-	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] , "-",
-['cascade' => "Comprobante", -tearoff => 0,
- 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
-	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts);}],
-		 qw/Ingreso Egreso Traspaso/,], ], "-",
+	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] ,  "-",
 ['command' => "Anula", -command => sub { require prg::AnulaC; 
 	AnulaC->crea($vp, $mt, $bd, $ut);} ] ]
+}
+
+sub opCesion {
+[['command' => "Docs. Enviados", -command => sub { require prg::Fctrs; 
+	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
+ ['command' => "Aceptación", -command => sub { require prg::Fctrs;
+ 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ],
+ ['command' => "Pagos", -command => sub { require prg::Fctrs;
+ 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]
 }
 
 sub opVentas {
