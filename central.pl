@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 06.10.2009
+#  UM : 15.10.2009
 
 # use Data::Dumper; 
 
@@ -146,9 +146,7 @@ MainLoop;
 # Subrutinas que definen el contenido de los menues
 sub opRegistra {
 
-[['command' => "Empresa", -command => sub { require prg::DatosE;
-	DatosE->crea($vp, $bd, $ut, $mt, \$Ayd, $Rut); datosBase(); } ],
- ['command' => "Terceros", -command => sub { require prg::DatosT;
+[['command' => "Terceros", -command => sub { require prg::DatosT;
 	DatosT->crea($vp, $bd, $ut, '', $mt); } ],
  ['command' => "Personal", -command => sub { require prg::DatosP; 
 	DatosP->crea($vp, $bd, $ut, $mt, $CCts ); } ], "-", 
@@ -192,7 +190,7 @@ sub opContabiliza {
 sub opVentas {
 [['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
- ['command' => "F. de Terceros", -command => sub { require prg::Fctrs;
+ ['command' => "FC de Terceros", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]
 }
 

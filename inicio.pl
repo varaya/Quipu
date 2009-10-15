@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 06.10.2009
+#  UM : 15.10.2009
 
 use prg::BaseDatos;
 use strict;
@@ -201,7 +201,7 @@ sub opCesion {
 sub opVentas {
 [['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
- ['command' => "F. de Terceros", -command => sub { require prg::Fctrs;
+ ['command' => "FC de Terceros", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]
 }
 
