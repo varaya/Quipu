@@ -190,7 +190,7 @@ sub opContabiliza {
 sub opVentas {
 [['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
- ['command' => "FC de Terceros", -command => sub { require prg::Fctrs;
+ ['command' => "FC Recibidas", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]
 }
 
@@ -199,7 +199,7 @@ sub opCompras {
 	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,0); } ],
  ['command' => "F. Especiales", -command => sub { require prg::FcmpE; 
 	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
- ['command' => "F. a Terceros", -command => sub { require prg::Fctrs;
+ ['command' => "FCT Emitidas", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,1);} ] ]
 }
 

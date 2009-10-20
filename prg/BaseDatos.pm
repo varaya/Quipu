@@ -942,7 +942,7 @@ sub datosDocs( )
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $sql = $bd->prepare("SELECT *, ROWID FROM dg.Documentos ;");
+	my $sql = $bd->prepare("SELECT *, ROWID FROM dg.Documentos ORDER BY Codice;");
 	$sql->execute();
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -1238,7 +1238,7 @@ sub borraTempF( )
 
 sub creaTempRF( $ )
 {
-	my ($esto, $td) = @_;	
+	my ($esto, $td, $td2) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	
 $bd->do("CREATE TEMPORARY TABLE RFcts (
@@ -1252,6 +1252,7 @@ $bd->do("CREATE TEMPORARY TABLE RFcts (
 	Tipo char(2) )" );
 
 $bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'$td' ) " );
+$bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'$td2' ) " );
 $bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'NC' ) " );
 $bd->do("INSERT INTO RFcts VALUES(0,0,0,0,0,0,0,'ND' ) " );
 

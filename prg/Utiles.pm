@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 24.06.2009 
+#  UM : 20.10.2009 
 
 package Utiles;
 
@@ -55,18 +55,16 @@ sub tipos ( )
 
 sub tipoDcmt ( )
 {
-	my %td = ( 
-		FC => "Facturas de Compra" ,
-		FV => "Facturas de Venta" ,
-		ND => "Notas de Débito" ,
-		NC => "Notas de Crédito" ) ;
+	my %td = ( FC => "Facturas Recibidas" , FV => "Facturas Emitidas" ,
+		FR => "Facturas Recibidas" , FE => "Facturas Emitidas" ,
+		ND => "Notas de Débito" , NC => "Notas de Crédito" ) ;
 	return %td ;
 }
 
 sub tablaD ( )
 {
-	my %td = ('FC' => "Compras" , 'FV' => "Ventas" ,
-		'BH' => "BoletasH" , 'LT' => "Docs", 'CH' => "Docs") ;
+	my %td = ('FC' => "Compras" , 'FV' => "Ventas" , 'FE' => "Compras" , 
+		'FR' => "Ventas" , 'BH' => "BoletasH" , 'LT' => "Docs", 'CH' => "Docs") ;
 	return %td ;
 }
 

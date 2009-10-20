@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 07.09.2009 
+#  UM : 20.10.2009 
 
 package Ventas;
 
@@ -138,7 +138,8 @@ sub informe ( $ $ ) {
 	my ($algo,$nmb,$tp,$fch,$rt,$tt,$iva,$aft,$ext,$nulo,$ie,$ni,@datosE,%nd,$cmpr);
 	
 	$bd->borraTempRF();
-	$bd->creaTempRF( 'FV' ) ;
+	$bd->creaTempRF( 'FV', 'FR' ) ;
+	
 	@datosE = $bd->datosEmpresa($rutE);
 	%nd = $ut->tipoDcmt();
 	$empr = decode_utf8($datosE[0]); 
@@ -151,7 +152,9 @@ sub informe ( $ $ ) {
 	my $lin2 = "-"x131;
 	
 	# Muestra Facturas manuales
-	detalles($marco,$lin1,$lin2,$ut,$bd,'FV','M', 'Facturas');
+	detalles($marco,$lin1,$lin2,$ut,$bd,'FV','M', $nd{FE});
+	# Muestra Facturas de Compra recibidas
+	detalles($marco,$lin1,$lin2,$ut,$bd,'FR','M', $nd{FR});
 	# Facturas Electrónicas
 	detalles($marco,$lin1,$lin2,$ut,$bd,'FV','E', 'Facturas Electrónicas');	
 	# Notas de Crédito
@@ -282,7 +285,8 @@ sub csv ( $ )
 	$l = "Nº,Fecha,Factura,RUT,Cliente,Afecto,Exento,IVA,IReten.,Total\n";
 	print ARCHIVO $l ;
  
-	detalleCSV($ut,$bd,'FV','M','Facturas');
+	detalleCSV($ut,$bd,'FV','M',$nd{FE});
+	detalleCSV($ut,$bd,'FR','M',$nd{FR});
 	detalleCSV($ut,$bd,'FV','E','Facturas Electrónicas');
 	detalleCSV($ut,$bd,'NC','',$nd{NC});
 	detalleCSV($ut,$bd,'ND','',$nd{ND});

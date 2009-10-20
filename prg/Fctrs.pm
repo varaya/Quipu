@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 31.09.2009
+#  UM : 16.10.2009
 
 package Fctrs;
 
@@ -18,7 +18,7 @@ use Number::Format;
 # Variables válidas dentro del archivo
 # Datos a registrar
 my ($Numero, $Id, $Glosa, $Fecha, $Neto, $Iva, $IvaR, $AE, $Total) ;
-my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Dcmnt, $Cuenta) ;
+my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Dcmnt, $Cuenta, $CtaIVA2) ;
 my ($TipoCmp, $TipoD, $CtaIVA, $NombreCi, $NombreCt, $FechaV, $FechaC) ;
 my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj,$Nombre, $TipoF, $NmrI ); 
 # Campos
@@ -54,9 +54,11 @@ sub crea {
 	inicializaV();
 	$AE = 'A' ;
 	$TipoCmp = "T" ;
-	my $ad = "de";
+	my ($ad, $TpD, $TpD2 )= ("de", '','' );
 	if ($tipoF eq 'Compras') {
-		$TipoD = 'FC';
+		$TpD = 'FC';
+		$TpD2 = 'FV';
+		$TipoD = $Trcr ? 'FE': 'FC';		
 		$ad = "a" ;
 		$TablaD = 'Compras'; # Donde se registra el documento
 		# como se contabiliza el detalle de la factura
@@ -67,7 +69,9 @@ sub crea {
 		$TCtaT = 'abono'; # es parte de un mensaje
 	} else { # Facturas de Venta
 		$DH = 'H';
-		$TipoD = 'FV';
+		$TpD = 'FV';
+		$TpD2 = 'FC';
+		$TipoD = $Trcr ? 'FR': 'FV';
 		$tipoD = 'Ingreso';
 		$TablaD = 'Ventas';
 		$CC = 'D';
@@ -76,9 +80,11 @@ sub crea {
 #		$AE = 'E' 
 	}
 	
-	my @dtc = $bd->buscaDoc($TipoD) ;
+	my @dtc = $bd->buscaDoc($TpD) ;
 	$CtaT =  $dtc[1];
 	$CtaIVA =  $dtc[2];
+	@dtc = $bd->buscaDoc($TpD2) ;
+	$CtaIVA2 =  $dtc[2];
 	@dtc = $bd->dtCuenta($CtaT);
 	$NombreCt = decode_utf8("$dtc[0] ");
 	@dtc = $bd->dtCuenta($CtaIVA);
@@ -331,7 +337,6 @@ sub validaFecha ($ $ $ $ )
 	$Mnsj = " ";
 	if ( not $$v ) {	
 		if ($x == 0) { return; }
-#		print chr 7 ;
 		$Mnsj = "Debe colocar fecha de emisión";
 		$$c->focus;
 		return ;
@@ -651,6 +656,11 @@ sub contabiliza ( )
 		$ivaR->focus;
 		return;		
 	}
+	if ($TipoF eq '' ) {
+		$Mnsj = "Debe marcar Manual o Electrónica";
+		$fm->focus;
+		return;				
+	}
 	if ($AE eq 'A' and $Iva > 0 and $CtaIVA eq '') {
 		$Mnsj = "Debe registrar la cuenta del IVA.";
 		$ctaIVA->focus;
@@ -680,7 +690,8 @@ sub contabiliza ( )
 	}
 	if ($IvaR > 0) { # Registra IVA Retenido, si corresponde
 		my $dh = $DH eq 'D' ? 'H' : 'D';
-		$bd->agregaItemT($CtaIVA,$det,$IvaR,$dh,'','','', '',$Numero,'');
+		$bd->agregaItemT($CtaIVA2,$det,$IvaR,$dh,'','','', '',$Numero,'');
+		$Total -= $IvaR ;
 	}
 	my $fc = $ut->analizaFecha($FechaC); 
 	$bd->agregaItemT($CtaT,'',$Total,$CC,$RUT,$TipoD,$Dcmnt,'',$Numero,'');

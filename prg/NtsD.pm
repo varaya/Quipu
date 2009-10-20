@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 09.07.2009
+#  UM : 16.10.2009
 
 package NtsD;
 
@@ -666,7 +666,7 @@ sub contabiliza ( )
 	}
 	my $ff = $ut->analizaFecha($Fecha) ;
 	$bd->grabaFct($TablaD, $RUT, $Documento, $ff, -$Total, -$Iva, -$Afecto,
-		-$Exento, $Numero, $TipoD, '', $fc, $CtaT, $TipoF, $NmrI, 0, 0);
+		-$Exento, $Numero, $TipoD, '', $fc, $CtaT, $TipoF, $NmrI, 0, 0, 0);
 
 	limpiaCampos();
 

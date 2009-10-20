@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 30.09.2009
+#  UM: 16.10.2009
 
 use DBI;
 use strict;
@@ -70,6 +70,8 @@ $bd->do("CREATE TABLE Documentos (
 
 $bd->do("INSERT INTO Documentos VALUES('FV','F.Venta','','') ");
 $bd->do("INSERT INTO Documentos VALUES('FC','F.Compra','','') ");
+$bd->do("INSERT INTO Documentos VALUES('FE','FCT.Emitida','','') ");
+$bd->do("INSERT INTO Documentos VALUES('FR','FCT.Recibida','','') ");
 $bd->do("INSERT INTO Documentos VALUES('BH','B.Honorario','','') ");
 $bd->do("INSERT INTO Documentos VALUES('NC','N.Crédito','','') ");
 $bd->do("INSERT INTO Documentos VALUES('ND','N.Débito','','')");
