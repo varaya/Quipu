@@ -40,9 +40,9 @@ sub crea {
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
 	$vnt->title("Libro Compras");
-	$vnt->geometry("1060x450+40+100"); 
+	$vnt->geometry("1000x450+40+100"); 
 	# Define marco para mostrar resultado
-	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'se', -bg=> 'white', -height=> 420 );
+	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'ose', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
 	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
 
@@ -145,10 +145,10 @@ sub informe ( $ $ ) {
 	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
 	$marco->insert('end', "Libro Compras  $nMes $cnf[0]\n", 'negrita');
-	my $lin1 = "\nNº  Fecha        Número  RUT        Proveedor                       ";
-	my $lin1b = "      Afecto      Exento      IVA-CF     I.Espec.     IVA-DF       Total";
+	my $lin1 = "\nNº  Fecha        Número  RUT        Proveedor                ";
+	my $lin1b = "      Afecto      Exento      IVA-CF    I.Espec.     IVA-DF       Total";
 	$lin1 .= $lin1b ;
-	my $lin2 = "-"x145;
+	my $lin2 = "-"x136;
 	
 	# Muestra Facturas manuales
 	detalles($marco,$lin1,$lin2,$ut,$bd,'FC','M', $nd{FR});
@@ -164,7 +164,7 @@ sub informe ( $ $ ) {
 	$marco->insert('end', "\nResumen $nMes $cnf[0]\n\n", 'negrita');
 	
 	$lin1 = "Tipo de Documento              Cant." . $lin1b ;
-	$lin2 = "-"x108;
+	$lin2 = "-"x107;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	my @dtsR = $bd->datosRF();
@@ -180,7 +180,7 @@ sub informe ( $ $ ) {
 		$ivar = $pesos->format_number( $algo->[6] );
 		$tp = $algo->[7] ;
 		if ( not $tp eq '' ) {
-			$mov = sprintf("%-29s %5s  %11s %11s %11s %11s %11s %11s", 
+			$mov = sprintf("%-29s %5s  %11s %11s %11s %10s %11s %11s", 
 				$nd{$tp}, $ni,$aft,$ext,$iva,$ie,$ivar,$tt ) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[1] ;
@@ -193,7 +193,7 @@ sub informe ( $ $ ) {
 		}
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%-29s %5s  %11s %11s %11s %11s %11s %11s", 'Totales', 
+	$mov = sprintf("%-29s %5s  %11s %11s %11s %10s %11s %11s", 'Totales', 
 			$pesos->format_number($TDcmt),
 			$pesos->format_number($Aft),
 			$pesos->format_number($Ext),
@@ -232,8 +232,8 @@ sub detalles ( $ $ $ $)
 		$ni = $algo->[9];
 		$cmpr = $algo->[10];
 		if ( $nulo < 2 ) { # Se excluyen las Anuladas: código 2
-			$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,32 ;
-			$mov = sprintf("%3s  %10s %8s %10s %-32s %11s %11s %11s %11s %11s %11s %5s", 
+			$nmb =  $rt eq '' ? 'Nula' : substr decode_utf8( $bd->buscaT($rt) ),0,25 ;
+			$mov = sprintf("%3s %9s %8s %10s %-26s %11s %11s %11s %10s %11s %11s %5s", 
 				$ni,$fch,$nm,$rt,$nmb,$aft,$ext,$iva,$ie,$ivar,$tt,$cmpr) ;
 			$marco->insert('end', "$mov\n",'detalle' ) ;
 			$Tt += $algo->[3] ;
@@ -246,7 +246,7 @@ sub detalles ( $ $ $ $)
 		}
 	}	
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %10s %8s %10s %-32s %11s %11s %11s %11s %11s %11s",'','','',
+	$mov = sprintf("%4s %9s %8s %10s %-26s %11s %11s %11s %10s %11s %11s",'','','',
 		'', 'Totales', $pesos->format_number( $Aft ) ,
 		$pesos->format_number( $Ext ), $pesos->format_number( $Iva ),
 		$pesos->format_number( $IEsp ),$pesos->format_number( $IvaR ),

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 16.10.2009
+#  UM : 22.10.2009
 
 package NtsC;
 
@@ -424,7 +424,6 @@ sub datosF ( ) # Verifica los datos mínimos para anotar un item
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-#	$Mnsj = " ";
 	if ($RUT eq '') {
 		$Mnsj = "Indique RUT.";
 		$rut->focus;

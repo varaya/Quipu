@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 15.10.2009
+#  UM : 22.10.2009
 
 use prg::BaseDatos;
 use strict;
@@ -149,12 +149,13 @@ sub opRegistra {
 	DatosT->crea($vp, $bd, $ut, '', $mt); } ],
  ['command' => "Personal", -command => sub { require prg::DatosP; 
 	DatosP->crea($vp, $bd, $ut, $mt, $CCts ); } ], "-", 
- ['cascade' => "Plan Cuentas", -tearoff => 0, -menuitems => opCuentas() ],
- ['command' => "Documentos", -command => sub { require prg::TipoD;
-	TipoD->crea($vp, $bd, $ut, $mt); } ], "-", 
+ ['cascade' => "Plan Cuentas", -tearoff => 0, -menuitems => opCuentas() ], "-", 
  ['cascade' => "Ajustes", -tearoff => 0, -menuitems => opAjustes() ] ]
 }
 
+# ['command' => "Documentos", -command => sub { require prg::TipoD;
+#	TipoD->crea($vp, $bd, $ut, $mt); } ],
+	
 sub opAjustes {
 [ ['command' => "F - NC - ND", -command => sub { require prg::Ajustes; 
  	Ajustes->crea($vp, $bd, $ut, $mt ); } ],
@@ -222,7 +223,7 @@ my $tipoD = $tipo = '';
 	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
  ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ],  
- ['cascade' => "-Impagos", -tearoff => 0,
+ ['cascade' => "Impagos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipo , 
 	-command => sub { require prg::Impgs; Impgs->crea($vp,$mt,$bd,$ut,$tipo);} ], 
 	qw/Clientes Proveedores/,], ] , "-", 

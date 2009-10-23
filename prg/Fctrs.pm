@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 16.10.2009
+#  UM : 22.10.2009
 
 package Fctrs;
 
@@ -355,7 +355,6 @@ sub buscaCuenta ( $ $ $ $ )
 {
 	my ($bd, $a, $b, $c) = @_;
 
-	$Mnsj = " ";
 	# Comprueba largo del código de la cuenta
 	if (length $$a < 4) {
 		$Mnsj = "Código debe tener 4 dígitos";
@@ -367,6 +366,7 @@ sub buscaCuenta ( $ $ $ $ )
 	if ( not @dCuenta ) {
 		$Mnsj = "Ese código NO está registrado";
 		$$c->focus;
+		return ;
 	} else {
 		$$b = substr decode_utf8(" $dCuenta[0]"),0,35;
 		$SGrupo = $dCuenta[2] ;
@@ -452,7 +452,6 @@ sub datosF ( $ ) # Verifica los datos mínimos para anotar un item
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'}; 
 	
-	$Mnsj = " ";
 	if (not $RUT) {
 		$Mnsj = "Indique RUT.";
 		$rut->focus ;
