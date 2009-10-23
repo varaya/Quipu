@@ -77,10 +77,10 @@ sub crea {
 		 -text => "Realiza Conciliación bancaria",);
 	my $cCts = $pOpc->Checkbutton(-variable => \$datos[$CCts], 
 		 -text => "Controla Centros de Costos",);
-	my $cPto = $pOpc->Checkbutton(-variable => \$datos[$CPto], 
-		 -text => "Control Presupuestario [Pendiente]",);
+#	my $cPto = $pOpc->Checkbutton(-variable => \$datos[$CPto], 
+#		 -text => "Control Presupuestario [Pendiente]",);
 	my $otrosI = $pOpc->Checkbutton(-variable => \$datos[$OtrosI], 
-		 -text => "Registra otros impuestos [Pendiente]",);
+		 -text => "Registra otros impuestos",);
 	my $bltsCV = $pOpc->Checkbutton(-variable => \$datos[$BltsCV], 
 		 -text => "Registra Boletas de Compraventa",);
 
@@ -113,7 +113,7 @@ sub crea {
 	
 	$cBco->pack(-side => "top", -anchor => "nw");
 	$cCts->pack(-side => "top", -anchor => "nw");
-	$cPto->pack(-side => "top", -anchor => "nw");
+#	$cPto->pack(-side => "top", -anchor => "nw");
 	$otrosI->pack(-side => "top", -anchor => "nw");
 	$bltsCV->pack(-side => "top", -anchor => "nw");
 

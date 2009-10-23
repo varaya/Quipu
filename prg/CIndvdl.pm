@@ -5,7 +5,7 @@
 #   nd no deben aparecer en pendientes
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 13.08.2009
+#  UM : 23.10.2009
 
 package CIndvdl;
 
@@ -116,6 +116,7 @@ sub valida ( $ )
 		$rut->focus;
 		return;
 	}
+	$RUT = uc($RUT);
 	if ( not $ut->vRut($RUT) ) {
 		$Mnsj = "El RUT no es válido";
 		$rut->focus;

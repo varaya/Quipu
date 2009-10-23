@@ -8,5 +8,6 @@ run_cmd=
 
 [files]
 current_page=1
-FILE_NAME_0=5153;3;0;0;1;1;0;/home/varaya/cntb/prg/Compras.pm;
-FILE_NAME_1=9298;3;0;0;1;1;0;/home/varaya/cntb/inicio.pl;
+FILE_NAME_0=404;3;0;0;1;1;0;/home/varaya/cntb/inicio.pl;
+FILE_NAME_1=318;3;0;0;1;1;0;/home/varaya/cntb/prg/CIndvdl.pm;
+FILE_NAME_2=14821;3;0;0;1;1;0;/home/varaya/cntb/prg/Fctrs.pm;
