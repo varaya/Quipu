@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 16.10.2009
+#  UM : 25.10.2009
 
 package NtsD;
 
@@ -308,7 +308,7 @@ sub validaFecha ( $ $ $ $ )
 	$Mnsj = " ";
 	if ($$v eq '' ) {
 		$Mnsj = "Debe colocar fecha de emisión";
-		if ($x == 0) { return }
+		if ($x == 0) { return ; }
 	}
 	# Comprueba si la fecha está escrita correctamente
 	if ( not $$v =~ m|\d+/\d+/\d+| ) {
@@ -325,7 +325,6 @@ sub buscaCuenta ( $ $ $ $ )
 {
 	my ($bd, $a, $b, $c) = @_;
 
-	$Mnsj = " ";
 	# Comprueba largo del código de la cuenta
 	if (length $$a < 4) {
 		$Mnsj = "Código debe tener 4 dígitos";
@@ -340,6 +339,7 @@ sub buscaCuenta ( $ $ $ $ )
 	} else {
 		$$b = substr decode_utf8(" $dCuenta[0]"),0,35;
 		$SGrupo = $dCuenta[2] ;
+		$Mnsj = " ";
 	}
 }
 

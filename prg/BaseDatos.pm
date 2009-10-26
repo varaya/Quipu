@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 30.09.2009
+#  UM: 25.10.2009
 
 package BaseDatos;
 
@@ -1007,13 +1007,26 @@ sub buscaFct( $ $ $ $ )
 {
 	my ($esto, $tbl, $rut, $doc, $campo) = @_;	
 	my $bd = $esto->{'baseDatos'};
-# print "$rut, $doc, $campo, $tbl \n";
+
 	my $sql = $bd->prepare("SELECT $campo FROM $tbl WHERE RUT = ? AND Numero = ?;");
 	$sql->execute($rut, $doc);
 	my $dato = $sql->fetchrow_array;
 	$sql->finish();
 
 	return $dato; 
+}
+
+sub montoBH( $ $ )
+{
+	my ($esto, $rut, $doc) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("SELECT Total,Retenido FROM BoletasH WHERE RUT = ? AND Numero = ?;");
+	$sql->execute($rut, $doc);
+	my @dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return ( $dato[0] - $dato[1] ); 
 }
 
 sub buscaNI ()
@@ -1302,7 +1315,8 @@ sub datosFacts( $ $ )
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 	my $imp = ($tbl eq 'BoletasH') ? 'Retenido' : 'IVA';
-	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,$imp FROM $tbl WHERE RUT = ?" ;
+	my $tp = ($tbl eq 'BoletasH') ? 'Cuenta' : 'Tipo';
+	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,$imp,$tp FROM $tbl WHERE RUT = ?" ;
 	$cns .= " AND Pagada = 0 ORDER BY FechaE " if $impg ;
 	my $sql = $bd->prepare($cns);
 	$sql->execute($Rut);

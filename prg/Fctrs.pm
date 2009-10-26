@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 22.10.2009
+#  UM : 25.10.2009
 
 package Fctrs;
 
@@ -336,7 +336,7 @@ sub validaFecha ($ $ $ $ )
 	
 	$Mnsj = " ";
 	if ( not $$v ) {	
-		if ($x == 0) { return; }
+		if ($x == 0) { return ; }
 		$Mnsj = "Debe colocar fecha de emisión";
 		$$c->focus;
 		return ;
@@ -359,17 +359,17 @@ sub buscaCuenta ( $ $ $ $ )
 	if (length $$a < 4) {
 		$Mnsj = "Código debe tener 4 dígitos";
 		$$c->focus;
-		return;
+		return ;
 	}
 	# Busca código
 	@dCuenta = $bd->dtCuenta($$a);
 	if ( not @dCuenta ) {
 		$Mnsj = "Ese código NO está registrado";
 		$$c->focus;
-		return ;
 	} else {
 		$$b = substr decode_utf8(" $dCuenta[0]"),0,35;
 		$SGrupo = $dCuenta[2] ;
+		$Mnsj = " ";
 	}
 }
 
@@ -387,7 +387,7 @@ sub buscaCC ( $ ) {
 	if (length $CCto < 3) {
 		$Mnsj = "Código debe tener 3 dígitos";
 		$cCto->focus;
-		return;
+		return ;
 	}
 	# Busca código
 	my $nCentro = $bd->nombreCentro($CCto);
@@ -409,7 +409,7 @@ sub buscaDoc ( $ )
 	if ($Dcmnt eq '') {
 		$Mnsj = "Registre número de Factura";
 		$dcmnt->focus;
-		return;
+		return ;
 	}
 	# Valida que sea número entero
 	if (not $Dcmnt =~ /^(\d+)$/) {
@@ -421,19 +421,19 @@ sub buscaDoc ( $ )
 	if (not $RUT) {
 		$Mnsj = "Debe registrar un RUT.";
 		$rut->focus;
-		return;
+		return ;
 	}
 	$RUT = uc($RUT);
 	if ( not $ut->vRut($RUT) ) {
 		$Mnsj = "El RUT no es válido";
 		$rut->focus;
-		return;
+		return ;
 	} else {
 		my $nmb = $bd->buscaT($RUT);
 		if (not $nmb) {
 			$Mnsj = "Ese RUT no aparece registrado.";
 			$rut->focus;
-			return;
+			return ;
 		} 
 		$Nombre = decode_utf8(" $nmb");
 	}
@@ -442,7 +442,7 @@ sub buscaDoc ( $ )
 	if ($fct) {
 		$Mnsj = "Esa Factura ya está registrada.";
 		$dcmnt->focus;
-		return;
+		return ;
 	}
 }
 

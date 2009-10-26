@@ -2,10 +2,10 @@
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
-#   nd no deben aparecer en pendientes
+#  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 23.10.2009
+#  UM : 25.10.2009
 
 package CIndvdl;
 
@@ -17,6 +17,7 @@ use Number::Format;
 my ($Mnsj, $rut, $RUT, @cnf, $empr, $Tipo, $Nombre, $rutE) ;	# Variables
 my @lMeses = () ;
 my @datos = () ;
+my @data = () ;
 my %tabla = () ; # Lista de nombres según tipo de documento
 my ($bCan, $bImp, $bBrr) ; # Botones
 # Formato de números
@@ -154,23 +155,41 @@ sub informeP ( $ $ $ ) {
 		return ;
 	}
 	my @info = $bd->infoT($RUT) ;
-	my ($nmb,$cl,$pr,$sc,$hn,$tbl) = (decode_utf8($info[0]),$info[1],$info[2],$info[3],$info[4],'');
-	$tbl = "Ventas" if $cl ;
-	$tbl = "Compras" if $pr ;
-	$tbl = "BoletasH" if $hn ;
-	my @data = $bd->datosFacts($RUT,$tbl,1);
-	
-	if (not @data) {
-		$Mnsj = "NO hay datos para $nmb";
-		return ;
-	}
+	my $nmb = decode_utf8( $info[0] );
+	my ($tbl, $c,$v,$h ) =  ("Ventas", 0,0,0 );
 	$marco->insert('end', "Documentos Pendientes $nmb  Rut: $RUT\n\n", 'grupo');
+	@data = $bd->datosFacts($RUT,$tbl,1);
+	if (@data) {
+		detalle($marco, $ut, $tbl, $h) ;
+		$v = 1 ;
+	} 
+	$tbl = "Compras" ;
+	@data = $bd->datosFacts($RUT,$tbl,1);
+	if (@data) {
+		detalle($marco, $ut, $tbl, $h) ;
+		$c = 1 ;
+	} 
+	$tbl = "BoletasH"  ;
+	@data = $bd->datosFacts($RUT,$tbl,1);
+	if (@data) {
+		$h = 1 ;
+		detalle($marco, $ut, $tbl, $h) ;
+	}
+	if ( $c + $v + $h == 0 ) {
+		$marco->insert('end', "NO hay documentos pendientes\n\n", 'grupo');
+	}
+	$bImp->configure(-state => 'active');	
+}
+
+sub detalle ( $ $ $ $ )
+{
+	my ($marco, $ut, $tbl, $hn ) = @_;
 	$marco->insert('end', "$tbl\n", 'grupo');
-	my $lin1 = sprintf("%10s  %10s %12s %12s  %10s  %5s",'#','Fecha','Monto','Abonos','Vence','Cmpr') ;
+	my $lin1 = sprintf("%12s  %10s %12s %12s  %10s  %5s",'#','Fecha','Monto','Abonos','Vence','Cmpr') ;
 	my $lin2 = "-"x67;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
-	my ($algo,$fe,$fv,$nmr,$tt,$ab,$nulo,$cmp,$mov,$stt,$sab,$mnt);
+	my ($algo,$fe,$fv,$nmr,$tt,$ab,$nulo,$cmp,$mov,$stt,$sab,$mnt,$tp);
 	$stt = $sab = 0;
 	foreach $algo ( @data ) {
 		$fe =  $ut->cFecha($algo->[1]);
@@ -183,17 +202,16 @@ sub informeP ( $ $ $ ) {
 		$sab += $algo->[3] ;
 		$nulo = $algo->[6];
 		$cmp = $algo->[5];
-		$mov = sprintf("%10s  %10s %12s %12s  %10s  %5s",$nmr,$fe,$tt,$ab,$fv,$cmp) ;
+		$tp = $hn ? "  " : $algo->[8];
+		$mov = sprintf("%10s %2s %10s %12s %12s  %10s  %5s",$nmr,$tp,$fe,$tt,$ab,$fv,$cmp) ;
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tt = $pesos->format_number($stt);
 	$ab = $pesos->format_number($sba) if $sab ;
-	$mov = sprintf("%10s  %10s %12s %12s",'','',$tt,$ab) ;
+	$mov = sprintf("%12s  %10s %12s %12s",'','',$tt,$ab) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	$marco->insert('end',"$lin2\n\n",'detalle') ;
-
-	$bImp->configure(-state => 'active');	
 }
 
 sub informeH ( $ $ ) {
@@ -202,7 +220,7 @@ sub informeH ( $ $ ) {
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 	# Ordena por Cuenta de Mayor
-	my @data = $bd->itemsCI($RUT,'CuentaM');
+	@data = $bd->itemsCI($RUT,'CuentaM');
 	$Mnsj = " ";
 	if (not @data) { 
 		$Mnsj = "No hay datos para $Nombre"; 

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 05.10.2009
+#  UM: 25.10.2009
 
 package Cmprbs;
 
@@ -293,13 +293,14 @@ sub buscaCta ( ) {
 	}
 	# Busca código
 	@dCuenta = $bd->dtCuenta($Codigo);
-	my $nc = @dCuenta;
-	if ( $nc == 0 ) {
+	if ( not @dCuenta ) {
 		$Mnsj = "Ese código NO está registrado";
 		$codigo->focus;
+		return ;
 	} else {
 		$Cuenta = decode_utf8($dCuenta[0]);
 		$CntaI = $dCuenta[1];
+		$Mnsj = " " ;
 	}
 	# Activa campos:
 	# si es cuenta con detalle para Banco
@@ -427,11 +428,16 @@ sub validaD ( $ )
 			$documento->focus;
 			return 0;
 		}
-		# Compara montos, excepto de BH (por el momento): pagado no puede
-		# se mayor que el total del documento
-		my $mnt = $bd->buscaFct($tbl, $RUT, $Documento, 'Total') ;
-		if ( $Monto > $mnt and not $BH ) {
-			$Mnsj = "Monto ingresado $Monto no corresponde: $mnt.";
+		# Compara montos: pagado no puede ser mayor que el total del documento
+		my $mnt = 0 ;
+		if ( $BH ) {
+			$mnt = $bd->montoBH($RUT, $Documento) ;
+		} else {
+			$mnt = $bd->buscaFct($tbl, $RUT, $Documento, 'Total') ;
+		}
+		if ( $Monto > $mnt ) {
+			my $mt = $pesos->format_number( $mnt );
+			$Mnsj = "Monto documento es: \$ $mt";
 			$documento->focus;
 			return 0;
 		}

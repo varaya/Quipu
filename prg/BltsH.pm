@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 23.06.2009
+#  UM: 25.10.2009
 
 package BltsH;
 
@@ -198,7 +198,7 @@ sub vFecha ( )
 	if ( $Fecha eq '' ) {
 		$Mnsj = "Debe colocar fecha de emisión"; 
 		$fecha->focus;
-		return 
+		return ;
 	}
 	# Comprueba si la fecha está escrita correctamente
 	if (not $Fecha =~ m|\d+/\d+/\d+|) {
@@ -215,9 +215,7 @@ sub vFechaV ( )
 	my ($esto) = @_;	
 	my $ut = $esto->{'mensajes'};
 
-	if ($FechaV eq '' ) {
-		return 
-	}
+	if ($FechaV eq '' ) { return ; }
 	# Comprueba si la fecha está escrita correctamente
 	if (not $FechaV =~ m|\d+/\d+/\d+|) {
 		$Mnsj = "Problema con formato fecha";
@@ -253,8 +251,7 @@ sub buscaCC ( $ ) {
 sub buscaCuenta ( $ $ $ $ ) 
 {
 	my ($bd, $a, $b, $c) = @_;
-
-	$Mnsj = " ";
+	
 	if (not $$a ) {
 		$Mnsj = "Registre un código";
 		$$c->focus;
@@ -268,12 +265,12 @@ sub buscaCuenta ( $ $ $ $ )
 	}
 	# Busca código
 	@dCuenta = $bd->dtCuenta($$a);
-	my $nc = @dCuenta;
-	if ( $nc == 0 ) {
+	if ( not @dCuenta ) {
 		$Mnsj = "Ese código NO está registrado";
 		$$c->focus;
 	} else {
 		$$b = decode_utf8("$dCuenta[0] ");
+		$Mnsj = " ";
 	}
 }
 
@@ -283,7 +280,6 @@ sub buscaRUT ( $ )
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
 
-#	$Mnsj = " ";
 	if ($RUT eq '') {
 		$Mnsj = "Debe registrar un RUT.";
 		$rut->focus;
@@ -302,6 +298,7 @@ sub buscaRUT ( $ )
 			return;
 		} 
 		$Nombre = decode_utf8(" $nmb");
+		$Mnsj = " ";
 	}
 }
 
