@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 25.10.2009
+#  UM: 28.10.2009
 
 package Cmprbs;
 
@@ -504,7 +504,7 @@ sub modifica ( )
 	my $listaS = $esto->{'vLista'};
 	my $bd = $esto->{'baseDatos'};
 		
-	$Mnsj = " ";
+	$Mnsj = $TipoD = " ";
 	if (not @datos) {
 		$Mnsj = "NO hay movimientos para modificar";
 		return;
@@ -528,11 +528,13 @@ sub modifica ( )
 	$Detalle = decode_utf8($sItem->[4]);
 	$RUT = $sItem->[5];
 	$cTipoD = $sItem->[6];
-	print "$RUT - $cTipoD\n";
+#	print "$RUT - $cTipoD\n";
 	$TipoD = buscaTD( $cTipoD );
 	$Documento = $sItem->[7];
 	$CCto = $sItem->[8];
 	$Cuenta = $sItem->[10];
+	@dCuenta = $bd->dtCuenta($Codigo);	
+	$CntaI = $dCuenta[1];
 	
 	$tipoD->configure(-state => 'normal') if $TipoD ;
 	$documento->configure(-state => 'normal') if $Documento ;

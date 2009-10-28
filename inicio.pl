@@ -22,7 +22,7 @@ my $version = "V. 0.92 a Octubre 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
-my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt);
+my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,$tipoNC,$tipoND,);
 my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$Titulo,$CCts,$CPto,$TipoL);
 $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 
@@ -164,8 +164,8 @@ sub opAjustes {
 }
  
 sub opContabiliza {
- my ($tipoC, $tipoB, $tipoNC, $tipoND, $tipoA );
- $tipoC = $tipoB = $tipoNC = $tipoND = $tipoA = ' ';
+ my ($tipoC, $tipoB, $tipoA );
+ $tipoC = $tipoB = $tipoA = ' ';
 
 [['cascade' => "Ventas", -tearoff => 0, -menuitems => opVentas() ],
  ['cascade' => "Compras", -tearoff => 0, -menuitems => opCompras() ],
@@ -175,19 +175,9 @@ sub opContabiliza {
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
 	-command => sub { require prg::Pagos; Pagos->crea($vp,$bd,$ut,$tipoC,$mt);}],
 		 qw/Emitidos Recibidos/,], ],
- ['cascade' => "Cesión Créditos", -tearoff => 0, -menuitems => opCesion() ],
  ['command' => "Traspasos",	-command =>sub { require prg::Cmprbs; 
-	Cmprbs->crea($vp,$bd,$ut,'Traspaso',$mt,$CCts);},], "-",
- ['cascade' => "N. Crédito", -tearoff => 0,
- 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoNC ,  
-	-command => sub { require prg::NtsC;
-	NtsC->crea($vp,$bd,$ut,$tipoNC,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] ,
- ['cascade' => "N. Débito", -tearoff => 0,
- 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoND ,  
-	-command => sub { require prg::NtsD;
-	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] ,  "-",
-['command' => "Anula", -command => sub { require prg::AnulaC; 
-	AnulaC->crea($vp, $mt, $bd, $ut);} ] ]
+	Cmprbs->crea($vp,$bd,$ut,'Traspaso',$mt,$CCts);},] 
+]
 }
 
 sub opCesion {
@@ -368,10 +358,22 @@ sub activaE {
 		$mRegistro->AddItems("-", ['command' => "Centros de Costos",
 		-command => sub { use prg::RCCsts; RCCsts->crea($vp,$mt,$bd,$ut);}] );
 	}
-	if ($OtrosI) {
-		
+	if ($CPto) {
+	 	$mContabiliza->AddItems(['cascade' => "Cesión Créditos", -tearoff => 0, 
+		 -menuitems => opCesion() ] );	
 	}
 	# Esto es para que siempre quede al final
+	$tipoNC = $tipoND = ' ' ;
+	$mContabiliza->AddItems( "-", ['cascade' => "N. Crédito", -tearoff => 0,
+ 		-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoNC ,  
+		-command => sub { require prg::NtsC;
+		NtsC->crea($vp,$bd,$ut,$tipoNC,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],]  ) ;
+	$mContabiliza->AddItems(['cascade' => "N. Débito", -tearoff => 0,
+ 		-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoND ,  
+		-command => sub { require prg::NtsD;
+		NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] ) ;
+	$mContabiliza->AddItems( "-",['command' => "Anula", -command => sub { require prg::AnulaC; 
+		AnulaC->crea($vp, $mt, $bd, $ut);} ] );
 	$mMuestra->AddItems("-", ['cascade' => "Cierre", -tearoff => 0, 
 		-menuitems => opCierre() ] );
 	if ($BltsCV) {
@@ -414,7 +416,7 @@ sub datosBase {
 		$BltsCV = $datosE[6]; # utiliza boletas de compraventa 
 		$CBco = $datosE[7]; # registra conciliación bancaria
 		$CCts = $datosE[8]; # usa centros de costos
-		$CPto = $datosE[9];
+		$CPto = $datosE[9]; # controla cesión de créditos
 	}
 }
 

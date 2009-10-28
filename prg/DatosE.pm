@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 14.10.2009
+#  UM : 26.10.2009
 
 package DatosE;
 
@@ -77,8 +77,8 @@ sub crea {
 		 -text => "Realiza Conciliación bancaria",);
 	my $cCts = $pOpc->Checkbutton(-variable => \$datos[$CCts], 
 		 -text => "Controla Centros de Costos",);
-#	my $cPto = $pOpc->Checkbutton(-variable => \$datos[$CPto], 
-#		 -text => "Control Presupuestario [Pendiente]",);
+	my $cPto = $pOpc->Checkbutton(-variable => \$datos[$CPto], 
+		 -text => "Controla Cesión de Créditos",);
 	my $otrosI = $pOpc->Checkbutton(-variable => \$datos[$OtrosI], 
 		 -text => "Registra otros impuestos",);
 	my $bltsCV = $pOpc->Checkbutton(-variable => \$datos[$BltsCV], 
@@ -113,7 +113,7 @@ sub crea {
 	
 	$cBco->pack(-side => "top", -anchor => "nw");
 	$cCts->pack(-side => "top", -anchor => "nw");
-#	$cPto->pack(-side => "top", -anchor => "nw");
+	$cPto->pack(-side => "top", -anchor => "nw");
 	$otrosI->pack(-side => "top", -anchor => "nw");
 	$bltsCV->pack(-side => "top", -anchor => "nw");
 
