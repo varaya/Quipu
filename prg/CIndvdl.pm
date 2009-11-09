@@ -262,7 +262,8 @@ sub informeH ( $ $ ) {
 	foreach $algo ( @data ) {
 		$Td = $algo->[6] ;
 		$cTd = $algo->[1] ;
-		if (not $cTd eq $aTd) {
+		if ( $cTd < 3000 ) { 
+		  if (not $cTd eq $aTd) {
 			if (not $aTd eq '' ) {
 				$mntD = $mntH = $pesos->format_number(0);
 				$mntD = $pesos->format_number( $stD );
@@ -284,9 +285,9 @@ sub informeH ( $ $ ) {
 			$aTd = $cTd ;
 			($stD, $stH) = (0,0);
 #			$marco->insert('end', "$tabla{$cTd}\n", 'grupo' ) if $tabla{$cTd} ;
-			$nmb = $bd->nmbCuenta($cTd);
+			$nmb = decode_utf8( $bd->nmbCuenta($cTd) );
 			$marco->insert('end', "$cTd $nmb\n", 'grupo' );
-		}
+		  }
 		$stD += $algo->[2];
 		$stH += $algo->[3];
 		$nCmp = $algo->[0];  # Numero comprobante
@@ -311,6 +312,7 @@ sub informeH ( $ $ ) {
 		$mov = sprintf("%4s %-1s %10s %-40s %11s %11s  %-15s", $nCmp, $tC, 
 			$fecha, $dt, $mntD, $mntH, $dcm ) ;
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
+		}
 	}
 	$mntD = $mntH = $pesos->format_number(0);
 	$mntD = $pesos->format_number( $stD );

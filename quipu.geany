@@ -7,7 +7,9 @@ description=Sistema de Control de Gestión basado en la contabilidad
 run_cmd=
 
 [files]
-current_page=2
-FILE_NAME_0=14440;3;0;0;1;1;0;/home/varaya/cntb/inicio.pl;
-FILE_NAME_1=31172;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
-FILE_NAME_2=161;3;0;0;1;1;0;/home/varaya/cntb/prg/CIndvdl.pm;
+current_page=0
+FILE_NAME_0=5599;3;0;0;1;1;0;/home/varaya/cntb/inicio.pl;
+FILE_NAME_1=31501;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
+FILE_NAME_2=4811;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
+FILE_NAME_3=23240;3;0;0;1;1;0;/home/varaya/cntb/prg/Pagos.pm;
+FILE_NAME_4=450;3;0;0;1;1;0;/home/varaya/cntb/prg/Cmprbs.pm;

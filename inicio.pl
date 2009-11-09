@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 
 #  inicio.pl - inicio del programa Quipu [Sistema de Contabilidad]
-#  Reemplaza Comp. Ingreso y Egreso por Pagos Recibidos y Emitidos
+#  Agrega Pagos Recibidos y Emitidos y modifica Comprobantes
 #  Incluye Cesión de Créditos, como función específica
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 22.10.2009
+#  UM : 06.11.2009
 
 use prg::BaseDatos;
 use strict;
@@ -18,12 +18,12 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "V. 0.92 a Octubre 2009";
+my $version = "V. 0.925 a Noviembre del 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
-my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,$tipoNC,$tipoND,);
-my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$Titulo,$CCts,$CPto,$TipoL);
+my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$tipoNC,$tipoND);
+my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$Titulo,$CCts,$CPto,$TipoL,$lp,$lt);
 $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 
 # Datos de configuración
@@ -175,15 +175,15 @@ sub opContabiliza {
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
 	-command => sub { require prg::Pagos; Pagos->crea($vp,$bd,$ut,$tipoC,$mt);}],
 		 qw/Emitidos Recibidos/,], ],
- ['command' => "Traspasos",	-command =>sub { require prg::Cmprbs; 
-	Cmprbs->crea($vp,$bd,$ut,'Traspaso',$mt,$CCts);},] 
+ ['command' => "Comprobante",	-command =>sub { require prg::Cmprb; 
+	Cmprb->crea($vp,$bd,$ut,$mt,$CCts);},] 
 ]
 }
 
 sub opCesion {
-[['command' => "Docs. Enviados", -command => sub { require prg::Fctrs; 
+[['command' => "Envío", -command => sub { require prg::Fctrs; 
 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
- ['command' => "Aceptación", -command => sub { require prg::Fctrs;
+ ['command' => "Liquidación", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ],
  ['command' => "Pagos", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]

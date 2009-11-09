@@ -1,4 +1,4 @@
-#  Cmprbs.pm - Registra y contabiliza comprobantes
+#  Cmprb.pm - Registra y contabiliza comprobantes
 #  Forma parte del programa Quipu
 # 
 #  Derechos de autor: Víctor Araya R., 2009 [varaya@programmer.net]
@@ -7,7 +7,7 @@
 #  licencia incluida en este paquete 
 #  UM: 06.11.2009
 
-package Cmprbs;
+package Cmprb;
 
 use Tk::TList;
 use Tk::LabEntry;
@@ -20,7 +20,7 @@ use Number::Format;
 # Datos a registrar
 my ($Numero,$Id,$Glosa,$Fecha,$TotalD,$TotalH,$TotalDf,$TotalHf,$CntaI ) ;
 my ($Codigo,$Detalle,$Monto,$DH,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
-my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj) ; 
+my ($TipoCmp,$TipoD,$cTipoD,$BH,$cBanco,$Mnsj) ; 
 # Campos
 my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
 my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta) ;
@@ -29,7 +29,7 @@ my ($CCto, $cCto, $NCCto) ;
 
 my ($bReg, $bEle, $bNvo, $bCnt) ; 	# Botones
 my @dCuenta = () ;	# Lista datos cuenta
-my @datos = () ;	# Li$fecha->focus;sta items del comprobante
+my @datos = () ;	# Lista items del comprobante
 my @listaD = () ;	# Lista tipos de documentos
 my @bancos = () ;	# Lista nombre de bancos
 my %tabla = () ; # Lista de tablas según tipo de documento
@@ -39,7 +39,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipoC, $mt, $ucc) = @_;
+	my ($esto, $vp, $bd, $ut, $mt, $ucc) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -54,9 +54,7 @@ sub crea {
 	$Numero = $bd->numeroC() + 1;
 	$Monto = $TotalD = $TotalH = $BH = 0;
 	$Codigo = $cTipoD = $TipoD = $DH = $RUT = $Glosa = $cBanco = $FechaV = $Cuenta = '';
-	$TipoD = $Bco = $nBanco = $cBanco = $mBco = $CCto = $NCCto = $CntaI = '' ;
-	$TipoCmp = substr $tipoC, 0, 1 ;
-	$Bco = $bd->ctaEsp("B");
+	$TipoD = $cBanco = $CCto = $NCCto = $CntaI = $TipoCmp = '' ;
 	@bancos = $bd->datosBcs();
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
@@ -64,13 +62,13 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
-	my $alt = @bancos ? 590 : 560 ;
-	$vnt->title("Registra Comprobante de $tipoC");
+	my $alt = @bancos ? 570 : 540 ;
+	$vnt->title("Registra Comprobante Contable ");
 	$vnt->geometry("400x$alt+475+4"); # Tamaño y ubicación
 	
 	# Defime marcos
 	my $mDatosC = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
-		-label => "Comprobante $tipoC");
+		-label => "Comprobante Contable");
 	my $mLista = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
 		-label => 'Movimientos');
 	my $mItems = $vnt->LabFrame(-borderwidth => 1, -labelside => 'acrosstop',
@@ -111,11 +109,21 @@ sub crea {
 		-command => sub { &cancela($esto) } );
 
 	# Define campos para datos generales del comprobante
+	
 	$numero = $mDatosC->LabEntry(-label => "Numero: ", -width => 6,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Numero, -state => 'disabled',
 		-disabledbackground => '#FFFFFC', -disabledforeground => '#000000');
 	$fecha = $mDatosC->LabEntry(-label => "Fecha: ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$Fecha );
+	$ct = $mDatosC->Radiobutton( -text => "T", -value => 'T', 
+		-variable => \$TipoCmp );
+	$ce = $mDatosC->Radiobutton(-text => "E", -value => 'E', 
+		-variable => \$TipoCmp );
+	$cy = $mDatosC->Radiobutton(-text => "I", -value => 'I', 
+		-variable => \$TipoCmp );
+	$ci = $mDatosC->LabEntry(-label => "Fecha: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Fecha );
 	$glosa = $mDatosC->LabEntry(-label => "Glosa: ", -width => 35,
@@ -134,7 +142,11 @@ sub crea {
 	$codigo = $mItems->LabEntry(-label => " Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Codigo );
-	$cuenta = $mItems->Label(-textvariable => \$Cuenta, -font => $tp{mn});
+	if ( @bancos ) {
+		$bcos = $mItems->LabEntry(-label => "Bco", -width => 3,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$cBanco );
+	}
 	if ($ucc) {
 	  $cCto = $mItems->LabEntry(-label => " C.Costo: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "e"], -bg => '#FFFFCC',
@@ -160,16 +172,6 @@ sub crea {
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -width => 12, -listwidth => 30,
 		-browse2cmd => \&seleccionaD );
-	if ( @bancos ) {
-		$mBco = $mItems->Label(-text => "Banco:  " );
-		$bcos = $mItems->BrowseEntry( -variable => \$nBanco, -state => 'readonly',
-			-disabledbackground => '#FFFFFC', -autolimitheight => 1,
-			-disabledforeground => '#000000', -width => 12, -listwidth => 30,
-			-browse2cmd => \&seleccionaB );
-		foreach $algo ( @bancos ) {
-			$bcos->insert('end', decode_utf8($algo->[1]) ) ;
-	  	}
-	}
 	# Crea opciones para elegir tipo de documento
 	@listaD = $bd->datosDocs();
 	push @listaD, ['SD','N.Documento','','',0];
@@ -206,24 +208,26 @@ sub crea {
 	$mMensajes->pack(-expand => 1, -fill => 'both');
 	$fecha->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$numero->grid(-row => 0, -column => 1, -sticky => 'ne');
-	$glosa->grid(-row => 1, -column => 0, -columnspan => 2, -sticky => 'nw');
-	$totalD->grid(-row => 2, -column => 0);
-	$totalH->grid(-row => 2, -column => 1); 
+	$ct->grid(-row => 0, -column => 2, -sticky => 'ne');
+	$ce->grid(-row => 0, -column => 3, -sticky => 'ne');
+	$cy->grid(-row => 0, -column => 4, -sticky => 'ne');
+	$glosa->grid(-row => 1, -column => 0, -columnspan => 4, -sticky => 'nw');
+	$totalD->grid(-row => 2, -columnspan => 2, -column => 0);
+	$totalH->grid(-row => 2, -columnspan => 3, -column => 2); 
 	
 	$codigo->grid(-row => 0, -column => 0, -sticky => 'nw');	
-	$cuenta->grid(-row => 0, -column => 1, -columnspan => 2, -sticky => 'nw');
+	if ( @bancos ) {
+		$bcos->grid(-row => 0, -column => 1, -sticky => 'nw');
+	}
 	if ($ucc) {
 		$cCto->grid(-row => 1, -column => 0, -sticky => 'nw');
-		$nCCto->grid(-row => 1, -column => 1, -columnspan => 2, -sticky => 'nw');		
+		$nCCto->grid(-row => 1, -column => 1, -columnspan => 3, -sticky => 'nw');		
 	}
-	$monto->grid(-row => 2, -column => 0, -sticky => 'nw');	
-	$debe->grid(-row => 2, -column => 1, -sticky => 'nw');	
-	$haber->grid(-row => 2, -column => 2, -sticky => 'nw');	
-	$detalle->grid(-row => 3, -column => 0, -columnspan => 3, -sticky => 'nw');
-	if ( @bancos ) {
-		$mBco->grid(-row => 4, -column => 0, -sticky => 'ne');
-		$bcos->grid(-row => 4, -column => 1, -sticky => 'nw');
-	}
+	$monto->grid(-row => 2, -column => 0, -columnspan => 2, -sticky => 'nw');	
+	$debe->grid(-row => 2, -column => 2, -sticky => 'nw');	
+	$haber->grid(-row => 2, -column => 3, -columnspan => 2, -sticky => 'nw');	
+	$detalle->grid(-row => 3, -column => 0, -columnspan => 4, -sticky => 'nw');
+	
 	$cuentaI->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'nw');
 	$nombre->grid(-row => 0, -column => 2, -columnspan => 2, -sticky => 'nw');
 	$doc->grid(-row => 1, -column => 0, -sticky => 'nw');
@@ -251,7 +255,6 @@ sub crea {
 	$bEle->configure(-state => 'disabled');
 	$bCnt->configure(-state => 'disabled');
 	# y campos
-	$bcos->configure(-state => 'disabled');
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
@@ -274,9 +277,12 @@ sub seleccionaD {
 	}
 }
 
-sub seleccionaB {
-	my ($jc, $Index) = @_;
-	$cBanco = $bancos[$Index]->[0];
+sub buscaBco {
+	my $e ;
+	$cBanco = "0" . $cBanco if length $cBanco == 1 ;
+	for $e (@bancos) {
+		return decode_utf8( $e->[1] ) if $e->[0] eq $cBanco ; 
+	}
 }
 
 sub buscaCta ( ) {
@@ -299,16 +305,29 @@ sub buscaCta ( ) {
 	} else {
 		$Cuenta = decode_utf8($dCuenta[0]);
 		$CntaI = $dCuenta[1];
-		$Mnsj = " " ;
+		$Mnsj = $Cuenta ;
 	}
-	# Activa campos:
 	# si es cuenta con detalle para Banco
 	if ($CntaI eq "B") {
-		$bcos->configure(-state => 'normal') ;
+		if ( $cBanco eq '' ) {			
+			$Mnsj = "Debe registrar código Banco";
+			$bcos->focus;
+			return ;
+		} else {
+			my $b = buscaBco() ;
+			if (not $b) {
+				$Mnsj = "Código Banco no existe";
+				$bcos->focus;
+				return ;
+			}
+			$Mnsj = "Banco $b" ;
+		}
 		$cuentaI->configure(-state => 'disabled');
 		$documento->configure(-state => 'normal');
 		$tipoD->configure(-state => 'normal');
 		$fechaV->configure(-state => 'normal');
+	} else {
+		$cBanco = '' ;
 	}
 	# si agrupa cuentas individuales
 	if ($CntaI eq "I") {
@@ -396,11 +415,11 @@ sub agrega ( )
 		$TotalHf = $pesos->format_number($TotalH);
 	}
 	limpiaCampos();
-	$bcos->configure(-state => 'disabled') ;
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
-
+#	$cCto->configure(-state => 'disabled') if $cCto ;
+	
 	$codigo->focus;
 }
 
@@ -568,12 +587,11 @@ sub registra ( )
 	$TotalHf = $pesos->format_number($TotalH);
 
 	limpiaCampos();
-
-	$bcos->configure(-state => 'disabled');
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
 	$fechaV->configure(-state => 'disabled');
+#	$cCto->configure(-state => 'disabled') if $cCto ;
 
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
@@ -622,6 +640,11 @@ sub contabiliza ( )
 	if ($Fecha eq '' ) {
 		$Mnsj = "Anote la fecha del comprobante";
 		$fecha->focus;
+		return;
+	}
+	if ($TipoCmp eq '') {		
+		$Mnsj = "Marque tipo de comprobante";
+		$ct->focus;
 		return;
 	}
 	# Graba datos
@@ -684,7 +707,7 @@ sub limpiaCampos ( )
 {
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
-	$Monto = $BH = 0;
+	$Monto = 0;
 	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = '' ;
 	$NCCto = $CCto = '';
 	# Activa o no contabilizar el comprobante

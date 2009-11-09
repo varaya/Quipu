@@ -739,6 +739,14 @@ sub borraItemT( $ )
 	$bd->do("DELETE FROM ItemsT WHERE ROWID = $Id ;");
 }
 
+sub borraItemDT( $ $ $)
+{
+	my ($esto, $nd, $nc) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("DELETE FROM ItemsT WHERE Documento = $nd AND Numero = $nc ;");
+}
+
 sub sumas( $ )
 {
 	my ($esto, $Nmr) = @_;	
@@ -1316,7 +1324,7 @@ sub datosFacts( $ $ )
 	my @datos = ();
 	my $imp = ($tbl eq 'BoletasH') ? 'Retenido' : 'IVA';
 	my $tp = ($tbl eq 'BoletasH') ? 'Cuenta' : 'Tipo';
-	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,$imp,$tp FROM $tbl WHERE RUT = ?" ;
+	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,$imp,$tp,Cuenta FROM $tbl WHERE RUT = ?" ;
 	$cns .= " AND Pagada = 0 ORDER BY FechaE " if $impg ;
 	my $sql = $bd->prepare($cns);
 	$sql->execute($Rut);
