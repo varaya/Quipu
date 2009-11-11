@@ -1,4 +1,4 @@
-#  Mayor.pm - Procesa cuenta de mayor por mes
+#  MayorF.pm - Procesa cuenta de mayor entre fechas
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
@@ -7,7 +7,7 @@
 #  licencia incluida en este paquete
 #  UM: 11.11.2009
 
-package Mayor;
+package MayorF;
 
 use Tk::TList;
 use Tk::LabFrame;
@@ -15,7 +15,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 	
 # Variables válidas dentro del archivo
-my ($bImp,$bCan,$mes,$nMes,$Mnsj,$Cuenta,@cnf,$empr,$rutE) ; 	
+my ($bImp,$bCan,$fechaF,$fechaI,$Mnsj,$Cuenta,@cnf,$empr,$rutE,$FechaI,$FechaF,$cuenta) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -33,9 +33,13 @@ sub crea {
 	@cnf = $bd->leeCnf();
 	$Cuenta = '';
 	$rutE = $rtE ;
+#	$FechaI = $FechaF = "";
+	$FechaI = "1/1/$cnf[0]";
+	$FechaF = $ut->fechaHoy();
+
 	# Define ventana
 	my $vnt = $vp->Toplevel();
-	$vnt->title("Procesa Libro Mayor");
+	$vnt->title("Procesa Libro Mayor entre Fechas");
 	$vnt->geometry("600x430+475+4"); # Tamaño y ubicación
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
@@ -58,23 +62,16 @@ sub crea {
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
-	my $cuenta = $mBotones->LabEntry(-label => "Cuenta: ", -width => 5,
+	$cuenta = $mBotones->LabEntry(-label => "Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Cuenta );
-	# Define campo para seleccionar mes
-	my $tMes = $mBotones->Label(-text => "Mes ") ;
-	my $meses = $mBotones->BrowseEntry(-variable => \$nMes, -state => 'readonly',
-		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
-		-disabledforeground => '#000000', -autolistwidth => 1,
-		-browse2cmd => \&selecciona );
-	# Crea listado de meses
-	@lMeses = $ut->meses();
-	my $algo;
-	foreach $algo ( @lMeses ) {
-		$meses->insert('end', $algo->[1] ) ;
-	}
-	$meses->delete(12,12); # Elimina el 'Todos' al final
-
+	# Define opciones de seleccion
+	$fechaI = $mBotones->LabEntry(-label => "Inicial ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$FechaI );
+	$fechaF = $mBotones->LabEntry(-label => "Final ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$FechaF );
 	# Define botones
 	my $bLmp = $mBotones->Button(-text => "Muestra", 
 		-command => sub { valida($esto,$mtA); } );
@@ -87,8 +84,8 @@ sub crea {
 
 	# Dibuja interfaz
 	$cuenta->pack(-side => 'left', -expand => 0, -fill => 'none');
-	$tMes->pack(-side => "left", -anchor => "w");
-	$meses->pack(-side => "left", -anchor => "w");
+	$fechaI->pack(-side => "left", -anchor => "w");
+	$fechaF->pack(-side => "left", -anchor => "w");
 	$bLmp->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
@@ -107,32 +104,55 @@ sub crea {
 	return $esto;
 }
 
-# Funciones internas
-sub selecciona {
-	my ($jc, $Index) = @_;
-	$mes = $lMeses[$Index]->[0];
-}
-
 sub valida ( $ ) 
 {
 	my ($esto,$mt) = @_;
-	
-	$Mnsj = " ";
+	my $ut = $esto->{'mensajes'};
+	my ($fi, $ff);
+	# Verifica cuenta
 	if ($Cuenta eq '' ) {		
 		$Mnsj = "Indique una cuenta."; 
 		$cuenta->focus;
 		return;
+	}	
+	# Fecha inicial
+	if ( $FechaI eq '' ) {
+		$Mnsj = "Debe colocar fecha de inicio"; 
+		$fechaI->focus;
+		return 
 	}
-	if (not $mes) {
-		$Mnsj = "Debe seleccionar un mes."; 
-		$meses->focus;
+	# Comprueba si la fecha está escrita correctamente
+	if (not $FechaI =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Formato fecha es dd/mm/aaaa";
+		$fechaI->focus;
+	} elsif ( not $ut->analizaFecha($FechaI) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaI->focus ;
+	}
+	# Fecha final
+	if ( $FechaF eq '' ) {
+		$Mnsj = "Debe colocar fecha final"; 
+		$fechaI->focus;
+		return 
+	}
+	# Comprueba si la fecha está escrita correctamente
+	if (not $FechaF =~ m|\d+/\d+/\d+|) {
+		$Mnsj = "Formato fecha es dd/mm/aaaa";
+		$fechaF->focus;
+	} elsif ( not $ut->analizaFecha($FechaF) ) {
+		$Mnsj = "Fecha incorrecta" ;
+		$fechaF->focus ;
+	}
+	# Compara fechas
+	$fi = $ut->analizaFecha($FechaI);
+	$ff = $ut->analizaFecha($FechaF);
+	if ($fi > $ff) {
+		$Mnsj = "Fecha final es anterior a la inicial.";
+		$fechaI->focus;
 		return;
 	}
-	if ($Cuenta eq '9999' ) {
-		resumen($esto,$mt);
-	} else {
-		muestraM($esto,$mt);
-	}
+	# Si todo está bien, muestra informe
+	muestraM($esto,$mt,$fi,$ff);
 }
 
 sub muestraLista ( $ $ ) 
@@ -191,9 +211,9 @@ sub resumen ( $ $ )
 
 }
 
-sub muestraM ( $ $ )
+sub muestraM ( $ $ $ $)
 {
-	my ($esto, $marco) = @_;
+	my ($esto, $marco, $fi, $ff) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
@@ -217,11 +237,11 @@ sub muestraM ( $ $ )
 	$empr = decode_utf8($datosE[0]); 
 	$marco->delete('0.0','end');
 	$marco->insert('end', "$empr\n", 'negrita');
-	$marco->insert('end', "Libro Mayor  $cnf[0]  -  $nMes\n", 'negrita');
+	$marco->insert('end', "Libro Mayor  $cnf[0] del $FechaI al $FechaF\n", 'negrita');
 	$marco->insert('end', "Cuenta: $Cuenta - $nmC\n\n" , 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 
-	my @data = $bd->itemsM($Cuenta,$mes);
+	my @data = $bd->itemsMF($Cuenta,$fi,$ff);
 
 	my ($algo,$mov,$nCmp,$mntD,$mntH,$dt,$ci,$tDebe,$tHaber,$dcm,$siDebe,$siHaber);
 	my($tC, $fecha, $nulo );
@@ -272,13 +292,13 @@ sub muestraM ( $ $ )
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
-	$dt = "Totales mes";
+	$dt = "Totales";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
 	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
-	$dt = "Saldo $nMes";
+	$dt = "Saldo al $FechaF";
 	$mntD = $mntH = '';
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
@@ -321,12 +341,14 @@ sub txt ( $ )
 	$Mnsj = "Ver archivo '$d'";
 }
 
-sub csv (  )
+sub csv ( )
 {
 	my ($esto) = @_;
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
-
+	
+	my $fi = $ut->analizaFecha($FechaI);
+	my $ff = $ut->analizaFecha($FechaF);
 	# Datos cuenta
 	foreach $algo ( @datos ) {
 		if ( $Cuenta == $algo->[1]) {
@@ -337,7 +359,8 @@ sub csv (  )
 			last if $Cuenta == $algo->[1] ;		
 		} 
 	}
-	my @data = $bd->itemsM($Cuenta,$mes);
+	print "$fi - $ff \n";
+	my @data = $bd->itemsMF($Cuenta,$fi,$ff);
 	
 	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d,$siDebe,$siHaber);
 	$d = "$rutE/csv/myr$Cuenta.csv";

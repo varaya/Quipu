@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 25.10.2009
+#  UM : 12.11.2009
 
 package CIndvdl;
 
@@ -410,7 +410,8 @@ sub csvH ( $ )
 	foreach $algo ( @data ) {
 		$cTd = $algo->[1] ;
 		$Td = $algo->[6] ;
-		if (not $cTd eq $aTd) {
+		if ( $cTd < 3000 ) {
+		  if (not $cTd eq $aTd) {
 			if (not $aTd eq '' ) {
 				$dt = "Subtotal $aTd ";
 				$l = ",,,$dt,$stD,$stH" ;
@@ -427,7 +428,7 @@ sub csvH ( $ )
 			($stD, $stH) = (0,0);
 			$nmb = $bd->nmbCuenta($cTd);
 			print ARCHIVO "$cTd $nmb\n";
-		}	
+		  }	
 		$stD += $algo->[2];
 		$stH += $algo->[3];
 		$nCmp = $algo->[0]; 
@@ -451,6 +452,7 @@ sub csvH ( $ )
 		}
 		$l = "$nCmp,$tC,$fecha,".'"'."$dt".'"'.",$mntD,$mntH,$dcm" ;
 		print ARCHIVO "$l\n";
+	  }
 	}
 	$dt = "Subtotal $aTd ";
 	$l = ",,,$dt,$stD,$stH" ;

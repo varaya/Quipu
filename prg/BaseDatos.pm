@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 25.10.2009
+#  UM: 11.11.2009
 
 package BaseDatos;
 
@@ -565,7 +565,7 @@ sub itemsC( $ )
 	return @datos; 
 }	
 
-sub itemsM( $ ) # Movimientos de cuentas de mayor
+sub itemsM( $ ) # Movimientos de cuentas de mayor por mes
 {
 	my ($esto, $NmrC,$mes) = @_;	
 	my $bd = $esto->{'baseDatos'};
@@ -575,6 +575,25 @@ sub itemsM( $ ) # Movimientos de cuentas de mayor
 		FROM ItemsC AS i, DatosC AS d WHERE i.CuentaM = ? AND i.Numero = d.Numero
 		AND Mes = ?;");
 	$sql->execute($NmrC,$mes);
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	
+	return @datos; 
+}	
+
+sub itemsMF( $ $ $ ) # Movimientos de cuentas de mayor por fecha
+{
+	my ($esto, $NmrC, $fi, $ff) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+
+	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado 
+		FROM ItemsC AS i, DatosC AS d WHERE i.CuentaM = ? AND i.Numero = d.Numero
+		AND d.Fecha >= ? AND d.Fecha <= ? ORDER BY d.Fecha;");
+	$sql->execute($NmrC,$fi,$ff);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
 		push @datos, \@fila;

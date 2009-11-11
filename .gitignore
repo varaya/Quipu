@@ -3,7 +3,7 @@
 *.gz
 *.zip
 # Las bases de datos
-*.db3
+*.db?
 # Los informes generados
 *.pdf
 *.csv

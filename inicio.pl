@@ -230,8 +230,7 @@ sub opProcesa {
  ['cascade' => "Resultados",-tearoff => 0, -menuitems => opResultados() ],"-",
  ['command' => "Libro Diario", -command => sub { require prg::Diario;
 	Diario->crea($vp, $mt, $bd, $ut, $Rut);} ], 
- ['command' => "Libro Mayor", -command => sub { require prg::Mayor;
-	Mayor->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
+ ['cascade' => "Libro Mayor", -tearoff => 0, -menuitems => opLMayor()  ], "-",
  ['command' => "Libro Ventas", -command => sub { require prg::Ventas;
 	Ventas->crea($vp, $mt, $bd, $ut, $Rut);} ],
  ['command' => "Libro Compras",	-command => sub { require prg::Compras;
@@ -241,6 +240,13 @@ sub opProcesa {
  ['cascade' => "Listados", -tearoff => 0, -menuitems => opListados() ] ]
 }
 
+sub opLMayor {
+[['command' => "por mes", -command => sub { require prg::Mayor;
+	Mayor->crea($vp, $mt, $bd, $ut, $Rut);} ],
+['command' => "entre fechas", -command => sub { require prg::MayorF;
+	MayorF->crea($vp, $mt, $bd, $ut, $Rut);} ] ]
+}
+	
 sub opBalances {
 [['command' => "Mensuales", -command => sub { require prg::CierreM;
 	CierreM->crea($vp, $mt, $bd, $ut, $Rut);} ], 
