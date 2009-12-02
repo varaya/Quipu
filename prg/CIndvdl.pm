@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 12.11.2009
+#  UM : 26.11.2009
 
 package CIndvdl;
 
@@ -189,7 +189,7 @@ sub detalle ( $ $ $ $ )
 	my $lin2 = "-"x67;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
-	my ($algo,$fe,$fv,$nmr,$tt,$ab,$nulo,$cmp,$mov,$stt,$sab,$mnt,$tp);
+	my ($algo,$fe,$fv,$nmr,$tt,$ab,$nulo,$cmp,$mov,$stt,$sab,$mnt,$tp,$mab);
 	$stt = $sab = 0;
 	foreach $algo ( @data ) {
 		$fe =  $ut->cFecha($algo->[1]);
@@ -198,8 +198,9 @@ sub detalle ( $ $ $ $ )
 		$mnt = $hn ? $algo->[2] - $algo->[7] : $algo->[2] ;
 		$tt = $pesos->format_number($mnt);
 		$stt += $mnt ;
-		$ab = $pesos->format_number($algo->[3]);
-		$sab += $algo->[3] ;
+		$mab = $algo->[3] ;
+		$ab = $pesos->format_number( $mab );
+		$sab += $mab ;
 		$nulo = $algo->[6];
 		$cmp = $algo->[5];
 		$tp = $hn ? "  " : $algo->[8];
@@ -208,7 +209,7 @@ sub detalle ( $ $ $ $ )
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tt = $pesos->format_number($stt);
-	$ab = $pesos->format_number($sba) if $sab ;
+	$ab = $pesos->format_number($sab);
 	$mov = sprintf("%12s  %10s %12s %12s",'','',$tt,$ab) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	$marco->insert('end',"$lin2\n\n",'detalle') ;

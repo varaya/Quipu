@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 06.11.2009
+#  UM : 28.11.2009
 
 use prg::BaseDatos;
 use strict;
@@ -173,7 +173,7 @@ sub opContabiliza {
 	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },], "-" ,
  ['cascade' => "Pagos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
-	-command => sub { require prg::Pagos; Pagos->crea($vp,$bd,$ut,$tipoC,$mt);}],
+	-command => sub { require prg::Pagos; Pagos->crea($vp,$bd,$ut,$tipoC,$mt,$Empr);}],
 		 qw/Emitidos Recibidos/,], ],
  ['command' => "Comprobante",	-command =>sub { require prg::Cmprb; 
 	Cmprb->crea($vp,$bd,$ut,$mt,$CCts);},] 

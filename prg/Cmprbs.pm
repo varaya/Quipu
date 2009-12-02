@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 06.11.2009
+#  UM: 29.11.2009
 
 package Cmprbs;
 
@@ -20,32 +20,33 @@ use Number::Format;
 # Datos a registrar
 my ($Numero,$Id,$Glosa,$Fecha,$TotalD,$TotalH,$TotalDf,$TotalHf,$CntaI ) ;
 my ($Codigo,$Detalle,$Monto,$DH,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
-my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj) ; 
+my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj,$Empresa) ; 
 # Campos
 my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
 my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta) ;
 # Centro de costos
 my ($CCto, $cCto, $NCCto) ;
 
-my ($bReg, $bEle, $bNvo, $bCnt) ; 	# Botones
+my ($bReg, $bEle, $bNvo, $bCnt, $bImp, $bOtr) ; 	# Botones
 my @dCuenta = () ;	# Lista datos cuenta
 my @datos = () ;	# Li$fecha->focus;sta items del comprobante
 my @listaD = () ;	# Lista tipos de documentos
 my @bancos = () ;	# Lista nombre de bancos
-my %tabla = () ; # Lista de tablas según tipo de documento
+my %tabla = () ; 	# Lista de tablas según tipo de documento
 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipoC, $mt, $ucc) = @_;
+	my ($esto, $vp, $bd, $ut, $tipoC, $mt, $ucc, $emp) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
 	$esto->{'mensajes'} = $ut;
 
 	# Inicializa variables
+	$Empresa = $emp ;
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 
 	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', 'SD' => '', '' => '' ) ;
@@ -107,6 +108,12 @@ sub crea {
 		-command => sub { &agrega($esto) } ); 
 	$bCnt = $mBotonesC->Button(-text => "Contabiliza", 
 		-command => sub { &contabiliza($esto) } ); 
+	if ( $TipoCmp eq 'E') {
+		$bImp = $mBotonesC->Button(-text => "Imprime", 
+			-command => sub { &imprime($esto) } ); 
+		$bOtr = $mBotonesC->Button(-text => "Nuevo", 
+			-command => sub { &nuevo($esto) } ); 
+	}
 	my $bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { &cancela($esto) } );
 
@@ -235,6 +242,10 @@ sub crea {
 	$bEle->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCnt->pack(-side => 'left', -expand => 0, -fill => 'none');
+	if ( $TipoCmp eq 'E') {
+		$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
+		$bOtr->pack(-side => 'left', -expand => 0, -fill => 'none');
+	}
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 	$listaS->pack();
@@ -250,6 +261,10 @@ sub crea {
 	$bReg->configure(-state => 'disabled');
 	$bEle->configure(-state => 'disabled');
 	$bCnt->configure(-state => 'disabled');
+	if ( $TipoCmp eq 'E') {
+		$bImp->configure(-state => 'disabled');
+		$bOtr->configure(-state => 'disabled');
+	}
 	# y campos
 	$bcos->configure(-state => 'disabled');
 	$cuentaI->configure(-state => 'disabled');
@@ -568,7 +583,6 @@ sub registra ( )
 	$TotalHf = $pesos->format_number($TotalH);
 
 	limpiaCampos();
-
 	$bcos->configure(-state => 'disabled');
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
@@ -599,7 +613,6 @@ sub elimina ( )
 	}
 	
 	limpiaCampos();
-
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
 	$bReg->configure(-state => 'disabled');
@@ -609,7 +622,6 @@ sub contabiliza ( )
 {
 	my ($esto) = @_;
 	my $bd = $esto->{'baseDatos'};
-	my $listaS = $esto->{'vLista'};
 	my $ut = $esto->{'mensajes'} ;
 	
 	$Mnsj = " ";
@@ -634,17 +646,111 @@ sub contabiliza ( )
 	my $tabla = ( $TipoCmp eq "I" ) ? 'DocsR' : 'DocsE' ;
 	$bd->agregaDP($Numero, $ff, $tabla, $fv) if not $TipoCmp eq "T";
 	
-	limpiaCampos();
 	$bCnt->configure(-state => 'disabled');
+	if ( $TipoCmp eq 'E') {
+		$bImp->configure(-state => 'active');
+		$bOtr->configure(-state => 'active');
+	} else {
+		nuevo($esto) ;
+	}
+}
+
+sub nuevo ( )
+{
+	my ($esto) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $listaS = $esto->{'vLista'};
+
+	if ( $TipoCmp eq 'E') {
+		$bImp->configure(-state => 'disabled');
+		$bOtr->configure(-state => 'disabled');
+	}
+	limpiaCampos();
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 
 			-text => "No hay movimientos registrados" ) ;
-	# Inicializa variables
 	$TotalD = $TotalH = 0;
 	$TotalDf = $TotalHf = '';
 	$Numero = $bd->numeroC() + 1;
 	$glosa->delete(0,'end');
 	$fecha->focus;
+}
+
+sub imprime ( )
+{
+	my ($esto) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $ut = $esto->{'mensajes'} ;
+	
+	my $tc = {};
+	$tc->{'I'} = 'Ingreso';
+	$tc->{'E'} = 'Egreso';
+	$tc->{'T'} = 'Traspaso';
+	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo);
+	@datos = $bd->datosCmprb($Numero) ;
+	if (not @datos) {
+		$Mnsj = "NO existe ese comprobante";
+		$bImp->configure(-state => 'disable');
+		return ;
+	}
+	$nmrC = $datos[0];
+	$tipoC = $tc->{$datos[3]};
+	$fecha = $ut->cFecha($datos[2]);
+	$glosa = decode_utf8($datos[1]);
+	$total = $pesos->format_number( $datos[4] );
+	$nulo = $datos[5];
+	$ref = $datos[6];
+	
+	my $d = "var/cmprb.txt" ;
+	open ARCHIVO, "> $d" or die $! ;
+
+	my $lin = "\n$Empresa\n\nComprobante de $tipoC  # $nmrC              Fecha: $fecha\n" ;
+	print ARCHIVO $lin ;
+	print ARCHIVO "Glosa: $glosa\n\n";
+	my @data = $bd->itemsC($nmrC);
+	my ($algo, $ch, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm, $rtF, $nmb);
+	my ($tD, $tH, $tch) = (0, 0, 0);
+	$rtF = $nmb = '' ;
+	my $lin1 = "Cuenta                                       Debe        Haber"  . "\n";
+	print ARCHIVO $lin1 ;
+	my $lin2 = "-"x63;
+	print ARCHIVO $lin2 . "\n" ;
+	foreach $algo ( @data ) {
+		$cm = $algo->[1];  
+		$ncta = decode_utf8( substr $bd->nmbCuenta($cm),0,30 );
+		$mntD = $mntH = $pesos->format_number(0);
+		$mntD = $pesos->format_number( $algo->[2] ); 
+		$tD += $algo->[2] ;
+		$mntH = $pesos->format_number( $algo->[3] );
+		$tH += $algo->[3] ;
+		$ci = substr $algo->[6], 0, 1 ;
+		$dcm = "$algo->[6] $algo->[7]" ;
+		$rtF = $algo->[5] if $ci eq 'F' ;
+		if ($algo->[6] eq 'CH') {
+			$ch = $algo->[7] ;
+			$tch += 1 ;
+		}
+		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;
+		print ARCHIVO $lin ;
+	}
+	print ARCHIVO $lin2 . "\n";
+	$lin = sprintf("%36s %12s %12s", "Totales" ,
+			$pesos->format_number($tD), $pesos->format_number($tH) ) . "\n";
+	print ARCHIVO $lin ;
+	print ARCHIVO $lin2 . "\n\n";
+	
+	$nmb = $bd->buscaT($rtF) ;
+	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n";
+	if ( $tch == 1 ) {
+		print ARCHIVO "Cheque #: $ch   Banco: $nBanco \n" ;
+	} else {
+		print ARCHIVO "Cheques del Banco $nBanco\n" if $tch > 0 ;
+	}
+	
+	print ARCHIVO "\n\n__________________     _______________    __________________   ___________" ;
+	print ARCHIVO "\n    Emitido                 Vº Bº          Recibí Conforme         RUT" ;
+	
+	close ARCHIVO ;
 }
 
 sub validaFecha ($ $ $ $ ) 
@@ -675,6 +781,7 @@ sub cancela ( )
 	my ($esto) = @_;	
 	my $vn = $esto->{'ventana'};
 	my $bd = $esto->{'baseDatos'};
+	
 	limpiaCampos();
 	$bd->borraTemp();
 	$vn->destroy();
@@ -685,7 +792,7 @@ sub limpiaCampos ( )
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
 	$Monto = $BH = 0;
-	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = '' ;
+	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = $cTipoD = '' ;
 	$NCCto = $CCto = '';
 	# Activa o no contabilizar el comprobante
 	if ($TotalH == $TotalD) {

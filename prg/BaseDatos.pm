@@ -913,7 +913,7 @@ sub datosBcs( )
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $sql = $bd->prepare("SELECT Codigo, Nombre, ROWID FROM Bancos ;");
+	my $sql = $bd->prepare("SELECT Codigo, Nombre, RUT, ROWID FROM Bancos ;");
 	$sql->execute();
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -924,27 +924,27 @@ sub datosBcs( )
 	return @datos; 
 }	
 
-sub agregaB($ $  )
+sub agregaB($ $ $)
 {
-	my ($esto, $Cod, $Nmbr) = @_;	
+	my ($esto, $Cod, $Nmbr, $Rut) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	 
-	my $sql = $bd->prepare("INSERT INTO Bancos VALUES(?,?);");
-	$sql->execute($Cod, $Nmbr);
+	my $sql = $bd->prepare("INSERT INTO Bancos VALUES(?,?,?);");
+	$sql->execute($Cod, $Nmbr, $Rut);
 	
 	$sql = $bd->prepare("INSERT OR IGNORE INTO CuentasI VALUES(?,?,?,?,?,?);");
-	$sql->execute($Cod, 0, 0, 0, ' ', ' ');
+	$sql->execute($Rut, 0, 0, 0, ' ', ' ');
 	$sql->finish();
 } 
 
-sub grabaDatosB($ $  )
+sub grabaDatosB($ $ $ )
 {
-	my ($esto, $Cod, $Nmbr) = @_;	
+	my ($esto, $Cod, $Nmbr, $Rut) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	 
-	my $sql = $bd->prepare("UPDATE Bancos SET Nombre = ?
+	my $sql = $bd->prepare("UPDATE Bancos SET Nombre = ?, RUT = ?
 		WHERE Codigo = ?;");
-	$sql->execute($Nmbr, $Cod);
+	$sql->execute($Nmbr, $Rut, $Cod);
 	$sql->finish();
 } 
 

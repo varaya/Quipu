@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 25.10.2009
+#  UM : 26.11.2009
 
 package Fctrs;
 
@@ -26,7 +26,7 @@ my ($codigo, $detalle, $glosa, $fecha, $neto, $iva, $ivaR, $ctaIVA) ;
 my ($monto, $rut, $tipoD, $dcmnt, $numero, $cuenta, $nombre) ;
 my ($nCtaIVA, $total, $ctaT, $nCtaT, $fechaV, $fechaC, $fe, $fm);
 # Otros campos y datos opcionales
-my ($CCto, $cCto, $ncCto, $NCCto, $SGrupo, $pIVA ) ;
+my ($CCto, $cCto, $ncCto, $NCCto, $SGrupo, $pIVA, $Trcr ) ;
 # Botones
 my ($bReg, $bEle, $bNvo, $bCnt, $bNula) ; 
 # Listas de datos	
@@ -37,7 +37,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipoF, $mt, $ucc, $pIVA, $Trcr) = @_;
+	my ($esto, $vp, $bd, $ut, $tipoF, $mt, $ucc, $pIVA, $trcr) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -47,6 +47,7 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
+	$Trcr = $trcr ;
 	$Numero = $bd->numeroC() + 1;
 	$NmrI = $Dcmnt = '';
 	$FechaC = $ut->fechaHoy();
@@ -180,7 +181,11 @@ sub crea {
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CtaIVA );
 	$nCtaIVA = $mDatosC->Label(	-textvariable => \$NombreCi, -font => $tp{tx});
-
+	if ($Trcr) {
+		$ivaR = $mDatosC->LabEntry(-label => "IVA Ret.: ", -width => 12,
+			-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+			-justify => 'right', -textvariable => \$IvaR );
+	}
 	$total = $mDatosC->LabEntry(-label => "Total:     ", -width => 12,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'right', -textvariable => \$Total );
@@ -265,9 +270,7 @@ sub crea {
 	$iva->grid(-row => 5, -column => 0, -sticky => 'nw');
 	$ctaIVA->grid(-row => 5, -column => 1, -columnspan => 2, -sticky => 'nw');
 	if ($Trcr) {
-		$ivaR = $mDatosC->LabEntry(-label => "IVA Ret.: ", -width => 12,
-			-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-			-justify => 'right', -textvariable => \$IvaR );
+		$ivaR->bind("<FocusOut>", sub { $Total = $Neto + $Iva - $IvaR ;  } );
 		$ivaR->grid(-row => 6, -column => 0,-sticky => 'nw');
 	}
 	$nCtaIVA->grid(-row => 6, -column => 1, -columnspan => 2, -sticky => 'nw'); 
@@ -315,7 +318,10 @@ sub crea {
 # Funciones internas
 sub totaliza ( ) 
 {
-	$Total = $Neto + $Iva;
+	$Total = $Neto + $Iva ;
+	if ( $Trcr ) {
+		$IvaR = $Iva ;
+	}
 }
 
 sub desactiva ( ) 
@@ -690,7 +696,7 @@ sub contabiliza ( )
 	if ($IvaR > 0) { # Registra IVA Retenido, si corresponde
 		my $dh = $DH eq 'D' ? 'H' : 'D';
 		$bd->agregaItemT($CtaIVA2,$det,$IvaR,$dh,'','','', '',$Numero,'');
-		$Total -= $IvaR ;
+#		$Total -= $IvaR ;
 	}
 	my $fc = $ut->analizaFecha($FechaC); 
 	$bd->agregaItemT($CtaT,'',$Total,$CC,$RUT,$TipoD,$Dcmnt,'',$Numero,'');
@@ -754,7 +760,7 @@ sub fNula ( )
 	my $fc = $ut->analizaFecha($FechaC); 
 	# Graba Factura
 	$bd->grabaFct($TablaD, $RUT, $Dcmnt, $fc, 0, 0, 0, 0,'', $TipoD, '', 
-		$fc, '', "M", $NmrI, 1, 0);
+		$fc, '', "M", $NmrI, 1, 0, 0);
 
 	limpiaCampos();
 	$bCnt->configure(-state => 'disabled');
@@ -792,7 +798,7 @@ sub limpiaCampos ( )
 sub inicializaV ( )
 {
 	$Monto = $TotalI = $Total = $Neto = $Iva = $IvaR = 0;
-	$Codigo = $RUT = $Glosa = $Detalle = $NCCto = $CCto = $Trcr = '';
+	$Codigo = $RUT = $Glosa = $Detalle = $NCCto = $CCto = '';
 	$NombreCi = $NombreCt = $Nombre = $Fecha = $FechaV = $SGrupo = '';
 }
 

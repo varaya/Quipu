@@ -260,8 +260,8 @@ sub tbl ( $ )
 	my ($td) = @_;
 	
 	$tabla = 'BoletasH' if $td eq 'BH';
-	$tabla = 'Compras' if $td eq 'FC';
-	$tabla = 'Ventas' if $td eq 'FV';
+	$tabla = 'Compras' if $td eq 'FC' or $td eq 'FR';
+	$tabla = 'Ventas' if $td eq 'FV' or $td eq 'FE';
 	return $tabla;
 }
 # Fin del paquete

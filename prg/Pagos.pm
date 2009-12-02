@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 06.11.2009 3480554-7
+#  UM: 28.11.2009 3480554-7
 
 package Pagos;
 
@@ -40,7 +40,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipo, $marcoT) = @_;
+	my ($esto, $vp, $bd, $ut, $tipo, $marcoT, $emp) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -768,7 +768,8 @@ sub limpiaCampos ( )
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
 	$Monto = $BH = 0;
-	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = $IdT = '' ;
+	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = '' ;
+	$cTipoD = $Nombre = $IdT = '' ;
 	$NCCto = $CCto = '';
 	# Activa o no contabilizar el comprobante
 	if ($TotalH == $TotalD) {

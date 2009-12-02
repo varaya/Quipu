@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 11.11.2009
+#  UM : 26.11.2009
 
 # use Data::Dumper; 
 
@@ -18,7 +18,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "V. 0.92 a Noviembre 2009";
+my $version = "V. 0.93 al 01/12/2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -129,6 +129,7 @@ $aydPC->pack(-side => "right", -anchor => "e");
 if ( not $multiE ) {
 	@unaE = $bd->datosE();
 	$Rut = $unaE[1];
+	$Empr = decode_utf8($unaE[0]) ;
 	$Titulo = decode_utf8($unaE[0]) . " - $cnf[0]" ;
 	activaE();
 } else {
@@ -181,7 +182,7 @@ sub opContabiliza {
 	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] , "-",
 ['cascade' => "Comprobante", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
-	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts);}],
+	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts,$Empr);}],
 		 qw/Ingreso Egreso Traspaso/,], ], "-",
 ['command' => "Anula", -command => sub { require prg::AnulaC; 
 	AnulaC->crea($vp, $mt, $bd, $ut);} ] ]
@@ -287,7 +288,6 @@ sub opCuentas {
 }
 
 sub opAnula {
-#	['cascade' => "Nulos", -tearoff => 0,	-menuitems => opAnula() ]
 my $tipoA = '' ;
 [['command' => "Comprobante", -command => sub { require prg::AnulaC; 
 	AnulaC->crea($vp, $mt, $bd, $ut);} ],

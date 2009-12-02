@@ -15,8 +15,8 @@ use Tk::LabFrame;
 use Encode 'decode_utf8';
 	
 # Variables válidas dentro del archivo
-my ($Codigo, $Nombre, $Id, $Mnsj);	# Datos
-my ($codigo, $nombre) ;	# Campos
+my ($Codigo, $Nombre, $RUT, $Id, $Mnsj);	# Datos
+my ($codigo, $nombre, $rut) ;	# Campos
 my ($bReg, $bNvo) ; 	# Botones
 my @datos = () ;		# Lista de grupos
 			
@@ -35,7 +35,7 @@ sub crea {
 	$vnt->geometry("260x330+475+4"); # Tamaño y ubicación
 	
 	# Inicializa variables
-	$Codigo = $Nombre = "";
+	$Codigo = $RUT = $Nombre = "";
 	my %tp = $ut->tipos();
 	
 	# Defime marcos
@@ -58,7 +58,7 @@ sub crea {
 	$Mnsj = "Para Ayuda presione botón 'i'.";
 	
 	# Define lista de datos
-	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe',
+	my $listaS = $mLista->Scrolled('TList', -scrollbars => 'oe', -height => 8,
 		-selectmode => 'single', -orient => 'horizontal', -width => 30,
 		-command => sub { &modifica($esto) } );
 	$esto->{'vLista'} = $listaS;
@@ -76,11 +76,14 @@ sub crea {
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Codigo );
 	$codigo->bind("<FocusOut>", sub { $Codigo = uc($Codigo); } );
-
+	$rut = $mDatos->LabEntry(-label => " RUT: ", -width => 12,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$RUT);
 	$nombre = $mDatos->LabEntry(-label => " Nombre: ", -width => 20,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Nombre);
-	
+	$nombre->bind("<FocusIn>", sub { &buscaRUT($esto) } );
+
 	@datos = muestraLista($esto);
 	if (not @datos) {
 		$Mnsj = "No hay Bancos registrados" ;
@@ -88,6 +91,7 @@ sub crea {
 		
 	# Dibuja interfaz
 	$codigo->pack(-side => "top", -anchor => "nw");	
+	$rut->pack(-side => "top", -anchor => "nw");
 	$nombre->pack(-side => "top", -anchor => "nw");
 
 	$bReg->pack(-side => 'left', -expand => 0, -fill => 'none');
@@ -128,6 +132,33 @@ sub muestraLista ( $ )
 	return @data;
 }
 
+sub buscaRUT ($ ) {
+
+	my ($esto) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $ut = $esto->{'mensajes'};
+	
+	$Mnsj = " ";
+	if (not $RUT) {
+		$Mnsj = "Debe registrar un RUT.";
+		$rut->focus;
+		return;
+	}
+	$RUT = uc($RUT);
+	$RUT =~ s/^0// ; # Elimina 0 al inicio
+	if ( not $ut->vRut($RUT) ) {
+		$Mnsj = "RUT no es válido.";
+		$rut->focus;
+	} else {
+		my $nmb = $bd->buscaT($RUT);
+		if ( $nmb) {
+			$Mnsj = "Ese RUT ya está registrado.";
+			$rut->focus;
+		}
+	}
+	return;
+}
+
 sub modifica ( )
 {
 	my ($esto) = @_;
@@ -150,7 +181,8 @@ sub modifica ( )
 	# Rellena campos
 	$Codigo = $sGrupo->[0];
 	$Nombre =  decode_utf8( $sGrupo->[1] );
-	$Id = $sGrupo->[2];
+	$RUT = $sGrupo->[2];
+	$Id = $sGrupo->[3];
 }
 
 sub registra ( )
@@ -173,7 +205,7 @@ sub registra ( )
 	}
 
 	# Graba datos
-	$bd->grabaDatosB($Codigo, $Nombre, $Id);
+	$bd->grabaDatosB($Codigo, $Nombre, $RUT);
 
 	# Muestra lista actualizada de grupos
 	@datos = muestraLista($esto);
@@ -209,7 +241,7 @@ sub agrega ( )
 		return;
 	}
 	# Graba datos
-	$bd->agregaB($Codigo, $Nombre);
+	$bd->agregaB($Codigo, $Nombre, $RUT);
 
 	# Muestra lista modificada de grupos
 	@datos = muestraLista($esto);
@@ -219,9 +251,10 @@ sub agrega ( )
 
 sub limpiaCampos ( )
 {
-	$Codigo = $Nombre = "";
+	$Codigo = $Nombre = $RUT = "";
 	$codigo->delete(0,'end');
 	$nombre->delete(0,'end');
+	$rut->delete(0,'end');
 	$codigo->focus ;
 }
 

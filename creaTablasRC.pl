@@ -254,8 +254,9 @@ $bd->do("CREATE TABLE Personal (
 
 # Bancos
 $bd->do("CREATE TABLE Bancos (
-	Codigo char(3) NOT NULL PRIMARY KEY,
-	Nombre text(30) )" );
+	Codigo int(2) NOT NULL PRIMARY KEY,
+	Nombre text(30),
+	RUT char(10) )" );
 	
 # Centros de Costos
 $bd->do("CREATE TABLE CCostos (
