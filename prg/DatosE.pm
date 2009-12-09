@@ -74,7 +74,7 @@ sub crea {
 	my $algo = $pEmpresa->Label(-text => ' ');
 	
 	my $cBco = $pOpc->Checkbutton(-variable => \$datos[$CBco], 
-		 -text => "Realiza Conciliación bancaria",);
+		 -text => "Bancos como subcuentas",);
 	my $cCts = $pOpc->Checkbutton(-variable => \$datos[$CCts], 
 		 -text => "Controla Centros de Costos",);
 	my $cPto = $pOpc->Checkbutton(-variable => \$datos[$CPto], 

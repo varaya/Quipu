@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 28.11.2009 3480554-7
+#  UM: 08.12.2009 3480554-7
 
 package Pagos;
 
@@ -250,7 +250,10 @@ sub crea {
 			$mt =~ s/\.//g ;
 			$ab =~ s/\.//g ;
 			$mt -= $ab ;
-			agregaDT($esto,$td,$nd,$mt,$ct) ;
+			if ( not agregaDT($esto,$td,$nd,$mt,$ct) ) {
+				$var->{$rc} = '  ';
+				$w->tagCell('sel',$rc);
+			}
 		}
 	});
 	# Crea opciones para elegir tipo de documento
@@ -520,11 +523,11 @@ sub validaD ( $ )
 		if ( $BH ) {
 			$mnt = $bd->montoBH($RUT, $Documento) ;
 		} else {
-			$mnt = $bd->buscaFct($tbl, $RUT, $Documento, 'Total') ;
+			$mnt = $bd->netoFct($tbl, $RUT, $Documento) ;
 		}
 		if ( $Monto > $mnt ) {
 			my $mt = $pesos->format_number( $mnt );
-			$Mnsj = "Monto documento es: \$ $mt";
+			$Mnsj = "Monto adeudado es: \$ $mt";
 			$documento->focus;
 			return 0;
 		}
@@ -810,7 +813,7 @@ sub llenaT ( $ ) # Muestra en la tabla datos de los documentos impagos
 			$id->focus;
 			return;		
 	}
-	$rows = @data ;
+	$rows = @data + 1;
 	$fila = 0;
 	my $algo ;
 	foreach $algo ( @data ) {
@@ -833,11 +836,15 @@ sub agregaDT ( $ $ $ $)
 {
 	my ($esto,$td,$nd,$mt,$ct) = @_;
 	my $bd = $esto->{'baseDatos'};
-	
+
+	if ( $td eq 'NC') {
+		$Mnsj = "Operación no permitida" ;
+		return 0;
+	}	
 	$DH = ($TipoCmp eq 'E') ? 'D' : 'H' ;
 	@dCuenta = $bd->dtCuenta($ct);
 	$Cuenta = decode_utf8($dCuenta[0]);
-	my $dt = "$td #$nd $Idt";
+	my $dt = "$td #$nd $IdT";
 	$bd->agregaItemT($ct, $dt, $mt, $DH, $IdT, $td, $nd, $Cuenta, $Numero, '');
 	# Muestra lista modificada de items
 	@datos = muestraLista($esto);
@@ -849,6 +856,7 @@ sub agregaDT ( $ $ $ $)
 		$TotalH += $mt;	
 		$TotalHf = $pesos->format_number($TotalH);
 	}
+	return 1 ;
 }
 
 sub borraDT ( $ $ )

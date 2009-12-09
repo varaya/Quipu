@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 14.07.2009
+#  UM: 09.12.2009
 
 package CDcmts;
 
@@ -165,7 +165,7 @@ sub muestraD {
 
 	my @dts = $bd->datosFct($tabla,$rt,$nmr);
 	if ( $tabla eq 'BoletasH' ) { 
-		$aft = $pesos->format_number($sItem->[3] - $dts[4]);
+		$aft = $pesos->format_number($sItem->[3] - $dts[3] ); #
 		$iva = $pesos->format_number($dts[4]); # Corresponde a Impto. Retenido
 		$nmc = $dts[5];
 		$fv = $ut->cFecha($dts[6]);
@@ -217,9 +217,12 @@ sub muestraL ( $ )
 	$tabla = 'Ventas';
 	$tabla = 'Compras' if $Tipo eq 'Recibidos' ;
 	$tabla = 'BoletasH' if $td eq 'BH' ;
+	my $td2 = '';
 	my ($Rut, $Numero, $Fecha, $Total, $Nombre) = (0 .. 4);
 	# Obtiene lista con datos de comprobantes registrados
-	my @data = $bd->listaD($tabla,$td,$ord,$mes);
+	$td2 = 'FR' if $td eq 'FC';
+	$td2 = 'FE' if $td eq 'FV';
+	my @data = $bd->listaD($tabla,$td,$ord,$mes,$td2);
 	$listaS->delete(0,'end');
 	if (not @data) {
 		$listaS->insert('end', -itemtype => 'text', 

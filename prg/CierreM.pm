@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 28.07.2009
+#  UM: 07.12.2009
 
 package CierreM;
 
@@ -209,6 +209,7 @@ sub muestra ( $ $ )
 	$bd->creaBM();
 	if ( not $bd->aBMensual($mes) ) {
 		$Mnsj = "No hay datos para $nMes.";
+		$bd->borraBM(); 
 		return ;
 	} else {
 		$Mnsj = "Procesando $nMes.";

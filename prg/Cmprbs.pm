@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 29.11.2009
+#  UM: 09.12.2009
 
 package Cmprbs;
 
@@ -48,7 +48,7 @@ sub crea {
 	# Inicializa variables
 	$Empresa = $emp ;
 	my %tp = $ut->tipos();
-	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 
+	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
 	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', 'SD' => '', '' => '' ) ;
 	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
@@ -65,7 +65,7 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
-	my $alt = @bancos ? 590 : 560 ;
+	my $alt = @bancos ? 590 : 570 ;
 	$vnt->title("Registra Comprobante de $tipoC");
 	$vnt->geometry("400x$alt+475+4"); # Tamaño y ubicación
 	
@@ -108,12 +108,12 @@ sub crea {
 		-command => sub { &agrega($esto) } ); 
 	$bCnt = $mBotonesC->Button(-text => "Contabiliza", 
 		-command => sub { &contabiliza($esto) } ); 
-	if ( $TipoCmp eq 'E') {
+#	if ( $TipoCmp eq 'E') {
 		$bImp = $mBotonesC->Button(-text => "Imprime", 
 			-command => sub { &imprime($esto) } ); 
 		$bOtr = $mBotonesC->Button(-text => "Nuevo", 
 			-command => sub { &nuevo($esto) } ); 
-	}
+#	}
 	my $bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { &cancela($esto) } );
 
@@ -242,10 +242,10 @@ sub crea {
 	$bEle->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCnt->pack(-side => 'left', -expand => 0, -fill => 'none');
-	if ( $TipoCmp eq 'E') {
+#	if ( $TipoCmp eq 'E') {
 		$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
 		$bOtr->pack(-side => 'left', -expand => 0, -fill => 'none');
-	}
+#	}
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 	$listaS->pack();
@@ -261,12 +261,12 @@ sub crea {
 	$bReg->configure(-state => 'disabled');
 	$bEle->configure(-state => 'disabled');
 	$bCnt->configure(-state => 'disabled');
-	if ( $TipoCmp eq 'E') {
+#	if ( $TipoCmp eq 'E') {
 		$bImp->configure(-state => 'disabled');
 		$bOtr->configure(-state => 'disabled');
-	}
+#	}
 	# y campos
-	$bcos->configure(-state => 'disabled');
+	$bcos->configure(-state => 'disabled') if @bancos ;
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
@@ -318,8 +318,8 @@ sub buscaCta ( ) {
 	}
 	# Activa campos:
 	# si es cuenta con detalle para Banco
-	if ($CntaI eq "B") {
-		$bcos->configure(-state => 'normal') ;
+	if ( $CntaI eq "B" ) {
+		$bcos->configure(-state => 'normal') if @bancos ;
 		$cuentaI->configure(-state => 'disabled');
 		$documento->configure(-state => 'normal');
 		$tipoD->configure(-state => 'normal');
@@ -360,8 +360,7 @@ sub muestraLista ( $ )
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
 		$ncta = substr decode_utf8($algo->[10]),0, 24 ;
-		$mov = sprintf("%-5s %-24s %11s %11s", 
-			$cm, $ncta, $mntD, $mntH ) ;
+		$mov = sprintf("%-5s %-24s %11s %11s",	$cm, $ncta, $mntD, $mntH ) ;
 		$listaS->insert('end', -itemtype => 'text', -text => "$mov" ) ;
 	}
 	# Devuelve una lista de listas con datos de las cuentas
@@ -396,7 +395,7 @@ sub agrega ( )
 #	$Mnsj = " ";
 	# Graba datos
 	if ($CntaI eq "B") {
-		$RUT = $cBanco ;
+		$RUT = @bancos ? $cBanco : $Codigo ;
 	}
 	$bd->agregaItemT($Codigo, $Detalle, $Monto, $DH, $RUT, $cTipoD, $Documento, 
 		$Cuenta, $Numero, $CCto);
@@ -411,7 +410,8 @@ sub agrega ( )
 		$TotalHf = $pesos->format_number($TotalH);
 	}
 	limpiaCampos();
-	$bcos->configure(-state => 'disabled') ;
+
+	$bcos->configure(-state => 'disabled') if @bancos ;
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
@@ -445,7 +445,7 @@ sub validaD ( $ )
 		if ( $BH ) {
 			$mnt = $bd->montoBH($RUT, $Documento) ;
 		} else {
-			$mnt = $bd->buscaFct($tbl, $RUT, $Documento, 'Total') ;
+			$mnt = $bd->netoFct($tbl, $RUT, $Documento) ;
 		}
 		if ( $Monto > $mnt ) {
 			my $mt = $pesos->format_number( $mnt );
@@ -583,7 +583,7 @@ sub registra ( )
 	$TotalHf = $pesos->format_number($TotalH);
 
 	limpiaCampos();
-	$bcos->configure(-state => 'disabled');
+	$bcos->configure(-state => 'disabled') if @bancos;
 	$cuentaI->configure(-state => 'disabled');
 	$tipoD->configure(-state => 'disabled');
 	$documento->configure(-state => 'disabled');
@@ -647,12 +647,8 @@ sub contabiliza ( )
 	$bd->agregaDP($Numero, $ff, $tabla, $fv) if not $TipoCmp eq "T";
 	
 	$bCnt->configure(-state => 'disabled');
-	if ( $TipoCmp eq 'E') {
-		$bImp->configure(-state => 'active');
-		$bOtr->configure(-state => 'active');
-	} else {
-		nuevo($esto) ;
-	}
+	$bImp->configure(-state => 'active');
+	$bOtr->configure(-state => 'active');
 }
 
 sub nuevo ( )
@@ -661,10 +657,8 @@ sub nuevo ( )
 	my $bd = $esto->{'baseDatos'};
 	my $listaS = $esto->{'vLista'};
 
-	if ( $TipoCmp eq 'E') {
-		$bImp->configure(-state => 'disabled');
-		$bOtr->configure(-state => 'disabled');
-	}
+	$bImp->configure(-state => 'disabled');
+	$bOtr->configure(-state => 'disabled');
 	limpiaCampos();
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 
@@ -723,9 +717,9 @@ sub imprime ( )
 		$tD += $algo->[2] ;
 		$mntH = $pesos->format_number( $algo->[3] );
 		$tH += $algo->[3] ;
-		$ci = substr $algo->[6], 0, 1 ;
-		$dcm = "$algo->[6] $algo->[7]" ;
-		$rtF = $algo->[5] if $ci eq 'F' ;
+		$ci = $algo->[6] ? substr $algo->[6], 0, 1 : '' ;
+		$dcm = $ci eq '' ? '' : "$algo->[6] $algo->[7]" ;
+		$rtF = $ci eq 'F' ? $algo->[5] : '' ;
 		if ($algo->[6] eq 'CH') {
 			$ch = $algo->[7] ;
 			$tch += 1 ;
@@ -740,7 +734,7 @@ sub imprime ( )
 	print ARCHIVO $lin2 . "\n\n";
 	
 	$nmb = $bd->buscaT($rtF) ;
-	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n";
+	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n" if $nmb;
 	if ( $tch == 1 ) {
 		print ARCHIVO "Cheque #: $ch   Banco: $nBanco \n" ;
 	} else {
@@ -751,6 +745,7 @@ sub imprime ( )
 	print ARCHIVO "\n    Emitido                 Vº Bº          Recibí Conforme         RUT" ;
 	
 	close ARCHIVO ;
+	system "lp $d";
 }
 
 sub validaFecha ($ $ $ $ ) 

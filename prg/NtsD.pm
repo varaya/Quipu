@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 25.10.2009
+#  UM : 08.12.2009
 
 package NtsD;
 
@@ -537,7 +537,7 @@ sub agrega ( )
 		$bCnt->configure(-state => 'disabled');
 	}
 	limpiaCampos();
-#	$codigo->focus;
+	$codigo->focus;
 }
 
 sub modifica ( )
@@ -563,10 +563,9 @@ sub modifica ( )
 	$Codigo = $sItem->[1];
 	$Monto = $sItem->[2] ? $sItem->[2] : $sItem->[3] ;
 	$Detalle = decode_utf8($sItem->[4]);
-	$Cuenta = $sItem->[8];	
-
+	$CCto = $sItem->[8];	
 	# Obtiene Id del registro
-	$Id = $sItem->[9];
+	$Id = $sItem->[11];
 }
 
 sub registra ( )
@@ -588,10 +587,11 @@ sub registra ( )
 		$bCnt->configure(-state => 'active');
 	}
 	limpiaCampos();
-	
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
 	$bReg->configure(-state => 'disabled');	
+	
+	$codigo->focus;
 }
 
 sub elimina ( )
@@ -665,8 +665,8 @@ sub contabiliza ( )
 		$Afecto = 0;
 	}
 	my $ff = $ut->analizaFecha($Fecha) ;
-	$bd->grabaFct($TablaD, $RUT, $Documento, $ff, -$Total, -$Iva, -$Afecto,
-		-$Exento, $Numero, $TipoD, '', $fc, $CtaT, $TipoF, $NmrI, 0, 0, 0);
+	$bd->grabaFct($TablaD, $RUT, $Documento, $ff, $Total, $Iva, $Afecto,
+		$Exento, $Numero, $TipoD, '', $fc, $CtaT, $TipoF, $NmrI, 0, 0, 0);
 
 	limpiaCampos();
 

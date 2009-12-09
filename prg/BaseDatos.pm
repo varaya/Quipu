@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 11.11.2009
+#  UM: 07.12.2009
 
 package BaseDatos;
 
@@ -827,7 +827,7 @@ sub agregaCmp( $ $ $ $ $ $ )
 	}
 }
 
-sub actualizaP ( $ $ $ $ )
+sub actualizaP ( $ $ $ $ $ $)
 {
 	my ($bd, $cm, $td, $tbl, $nmr, $fch) = @_;	
 	my ($aCta, $algo, $sql, $i);
@@ -847,6 +847,23 @@ sub actualizaP ( $ $ $ $ )
 	$aCta->finish();
 }
 
+sub pagaF ( $ $ $ $ $ )
+{
+	my ($esto, $fch, $rut, $tbl, $num, $mnt, $nc) = @_;
+	my $bd = $esto->{'baseDatos'};
+	
+	# Registra abonos por notas de crédito
+	my $aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos + ?, FechaP = ? 
+		WHERE RUT = ? AND Numero = ?;") ;
+	$aCta->execute($mnt, $fch, $rut, $num );
+	$aCta->finish();
+	# Actualiza aplicación de la NC, registrando abono
+	$aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos - ?, FechaP = ? 
+		WHERE RUT = ? AND Numero = ?;");
+	$aCta->execute($mnt, $fch, $rut, $nc );
+	$aCta->finish();
+}
+
 sub agregaDP ( $ $ $ $ )
 {
 	my ($esto, $nmr, $ff, $tabla, $fv ) = @_;	
@@ -854,9 +871,9 @@ sub agregaDP ( $ $ $ $ )
 	my ($cm, $x, $sql, $rDoc);
 
 	$cm = ($tabla eq 'DocsR') ? 'Debe' : 'Haber' ;
-	# Busca cheques y agrega docs
 	$sql = $bd->prepare("SELECT Documento, CuentaM, RUT, $cm FROM ItemsC
 		WHERE Numero = ? AND TipoD = ?;");
+	# Busca cheques y agrega docs
 	$sql->execute($nmr,'CH');
 	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?,?);");
 	while (my @fila = $sql->fetchrow_array) {
@@ -1043,6 +1060,19 @@ sub buscaFct( $ $ $ $ )
 	return $dato; 
 }
 
+sub netoFct( $ $ $ )
+{
+	my ($esto, $tbl, $rut, $doc) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("SELECT Total - Abonos FROM $tbl WHERE RUT = ? AND Numero = ?;");
+	$sql->execute($rut, $doc);
+	my $dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return $dato; 
+}
+
 sub montoBH( $ $ )
 {
 	my ($esto, $rut, $doc) = @_;	
@@ -1098,8 +1128,12 @@ sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 	
 	# Actualiza cuenta individual
 	$mnD = $mnH = 0;
-	$mnD = $t if $td eq 'FV' or $td eq 'ND';
-	$mnH = $t if $td eq 'FC' or $td eq 'NC';
+	$mnD = $t if $td eq 'FV' ; 
+	$mnH = $t if $td eq 'FC' ;
+	$mnD = -$t if $td eq 'NC' and $tb eq 'Compras'; # NC recibida
+	$mnH = -$t if $td eq 'NC' and $tb eq 'Ventas'; # NC emitida
+	$mnH = $t if $td eq 'ND' and $tb eq 'Compras'; # ND recibida
+	$mnH = $t if $td eq 'ND' and $tb eq 'Ventas'; # ND emitida
 	$sql = $bd->prepare("UPDATE CuentasI SET Debe = Debe + ?, Haber = Haber + ?, 
 		Fecha_UM = ? WHERE RUT = ?;");
 	$sql->execute($mnD, $mnH, $fch, $rut);
@@ -1137,16 +1171,16 @@ sub anulaPago( $ $ $ $ )
 	$aCta->finish();
 }
 
-sub listaD( $ $ )
+sub listaD( $ $ $ $)
 {
-	my ($esto, $tabla, $td, $ord, $mes) = @_;	
+	my ($esto, $tabla, $td, $ord, $mes, $td2) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
 	my $sel = "SELECT d.RUT, d.Numero, d.FechaE, d.Total, t.Nombre 
 		FROM $tabla AS d, Terceros AS t WHERE d.RUT = t.RUT ";
 	$sel .= " AND Mes = '$mes' " if $mes ;
-	$sel .= " AND Tipo = '$td' " if not $td eq 'BH' ;
+	$sel .= " AND Tipo = '$td' OR Tipo ='$td2' " if $td ne 'BH' ;
 	$sel .= "ORDER BY d.$ord " if $ord ;
 	my $sql = $bd->prepare($sel); 
 	$sql->execute();

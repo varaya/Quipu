@@ -77,6 +77,7 @@ $bd->do("INSERT INTO Documentos VALUES('NC','N.Crédito','','') ");
 $bd->do("INSERT INTO Documentos VALUES('ND','N.Débito','','')");
 $bd->do("INSERT INTO Documentos VALUES('CH','Cheque','','')");
 $bd->do("INSERT INTO Documentos VALUES('LT','Letra','','')");
+$bd->do("INSERT INTO Documentos VALUES('DB','Depósito','','')");
 
 # Desconecta la base de datos
 $bd->disconnect;

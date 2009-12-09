@@ -4,10 +4,8 @@
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
-#  licencia incluida en este paquete
-#  UM : 26.11.2009
-
-# use Data::Dumper; 
+#  licencia incluida en este paquete  # use Data::Dumper ;
+#  UM : 09.12.2009  
 
 use prg::BaseDatos;
 use strict;
@@ -18,7 +16,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "V. 0.93 al 01/12/2009";
+my $version = "central.pl 0.93 al 08/12/2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -279,12 +277,10 @@ sub opCierre {
 }
 
 sub opCuentas {
-[['command' => "SubGrupos", -command => sub { require prg::SGrupos; 
-	SGrupos->crea($vp, $bd, $ut, $mt);} ], 
- ['command' => "Cuentas", -command => sub { require prg::CuentasM;
-	CuentasM->crea($vp, $mt, $bd, $ut);} ] , "-",
- ['command' => "Bancos", -command => sub { require prg::Bancos;
-	Bancos->crea($vp, $mt, $bd, $ut);} ] ]
+	[['command' => "SubGrupos", -command => sub { require prg::SGrupos; 
+		SGrupos->crea($vp, $bd, $ut, $mt);} ], 
+	 ['command' => "Cuentas", -command => sub { require prg::CuentasM;
+		CuentasM->crea($vp, $mt, $bd, $ut);} ]  ]
 }
 
 sub opAnula {
@@ -375,6 +371,8 @@ sub activaE {
 		-command => sub { use prg::CBltsCV; CBltsCV->crea($vp,$mt,$bd,$ut);}] );
 	}
 	if ($CBco) { 
+		$mRegistro->command( -label => "Bancos", -command => sub { require prg::Bancos;
+		Bancos->crea($vp, $mt, $bd, $ut);} ) ;
 		$mRegistro->command( -label => "Conciliación Banco",
 		-command => sub { use prg::RBanco; RBanco->crea($vp,$mt,$bd,$ut);} );
 	}
@@ -406,7 +404,7 @@ sub datosBase {
 	if (@datosE) {
 		$OtrosI = $datosE[5]; # registra otros impuestos: ILAs, Especial
 		$BltsCV = $datosE[6]; # utiliza boletas de compraventa 
-		$CBco = $datosE[7]; # registra conciliación bancaria
+		$CBco = $datosE[7]; # Bancos como subcuentas
 		$CCts = $datosE[8]; # usa centros de costos
 		$CPto = $datosE[9];
 	}

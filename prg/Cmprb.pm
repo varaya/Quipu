@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 06.11.2009
+#  UM: 08.12.2009
 
 package Cmprb;
 
@@ -449,7 +449,7 @@ sub validaD ( $ )
 		if ( $BH ) {
 			$mnt = $bd->montoBH($RUT, $Documento) ;
 		} else {
-			$mnt = $bd->buscaFct($tbl, $RUT, $Documento, 'Total') ;
+			$mnt = $bd->netoFct($tbl, $RUT, $Documento, 'Total') ;
 		}
 		if ( $Monto > $mnt ) {
 			my $mt = $pesos->format_number( $mnt );

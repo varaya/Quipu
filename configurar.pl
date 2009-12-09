@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 14.10.2009
+#  UM: 07.12.2009
 
 use prg::BaseDatos;
 use Tk;
@@ -74,14 +74,14 @@ $bCfg = $mBtns->Button(-text => "Configura",
 	-command => sub { &datos() });
 
 # Parametros
-$prd = $mParametros->LabEntry(-label => "Año inicial", -width => 5,
+$prd = $mParametros->LabEntry(-label => " Año inicial", -width => 5,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 	-textvariable => \$Prd );
-$multi = $mParametros->Checkbutton(-variable => \$Multi, 
-		 -text => "Multiempresa",);
-$iva = $mParametros->LabEntry(-label => "IVA", -width => 3,
+$iva = $mParametros->LabEntry(-label => "  IVA", -width => 3,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 	-textvariable => \$IVA );
+$multi = $mParametros->Checkbutton(-variable => \$Multi, 
+		 -text => "Multiempresa",);
 # Define campos para registro de datos de la empresa
 $rut = $mDatos->LabEntry(-label => "RUT:   ", -width => 12,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
@@ -95,8 +95,8 @@ $nombre->bind("<FocusIn>", sub { &buscaRUT($esto) } );
 # Dibuja interfaz
 $mMensajes->pack(-expand => 1, -fill => 'both');
 $prd->pack(-side => 'left', -expand => 0, -fill => 'none');
-$multi->pack(-side => 'left', -expand => 0, -fill => 'none');
 $iva->pack(-side => 'left', -expand => 0, -fill => 'none');
+$multi->pack(-side => 'left', -expand => 0, -fill => 'none');
 $rut->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'nw');	
 $nombre->grid(-row => 1, -column => 0, -columnspan => 2, -sticky => 'nw');
 

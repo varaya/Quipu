@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 25.10.2009
+#  UM : 08.12.2009
 
 package NtsC;
 
@@ -19,11 +19,11 @@ use Number::Format;
 # Datos a registrar
 my ($Numero, $Id, $Glosa, $Fecha, $Neto, $Iva, $AE, $Total,$Nombre) ;
 my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Documento, $Cuenta) ;
-my ($TipoCmp, $TipoD, $CtaIVA, $NombreCi, $NombreCt) ;
+my ($TipoCmp, $TipoD, $CtaIVA, $NombreCi, $NombreCt, $NFact) ;
 my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj, $FechaC, $TipoF, $NmrI, $tpD );
 # Campos
 my ($codigo, $detalle, $glosa, $fecha, $neto, $iva, $especial, $ctaIVA) ;
-my ($monto, $rut, $tipoD, $documento, $numero, $cuenta, $nombre) ;
+my ($monto, $rut, $tipoD, $documento, $numero, $cuenta, $nFact) ;
 my ($nCtaIVA, $total, $ctaT, $nCtaT, $fechaC);
 # Campos y datos opcionales para Centro de Costos
 my ($CCto, $cCto, $ncCto, $NCCto, $pIVA, $SGrupo) ;
@@ -141,11 +141,10 @@ sub crea {
 	$rut = $mDatosC->LabEntry(-label => "RUT:  ", -width => 15,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-justify => 'left', -textvariable => \$RUT);
-	$nombre = $mDatosC->Label(	-textvariable => \$Nombre, -font => $tp{tx} );
-	$fecha = $mDatosC->LabEntry(-label => "Fecha Emisión: ", -width => 10,
+	$fecha = $mDatosC->LabEntry(-label => "F. Emisión: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Fecha );
-	$glosa = $mDatosC->LabEntry(-label => "Glosa: ", -width => 35,
+	$glosa = $mDatosC->LabEntry(-label => "Glosa: ", -width => 40,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Glosa );
 	$neto = $mDatosC->LabEntry(-label => "Neto: ", -width => 12,
@@ -170,6 +169,9 @@ sub crea {
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$CtaT );
 	$nCtaT = $mDatosC->Label( -textvariable => \$NombreCt, -font => $tp{tx} );
+	$nFact = $mDatosC->LabEntry(-label => "Factura: ", -width => 10,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$NFact );
 	$fechaC = $mDatosC->LabEntry(-label => "Contabilizada: ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaC );
@@ -211,6 +213,8 @@ sub crea {
 		&buscaCuenta($bd, \$CtaIVA, \$NombreCi, \$ctaIVA) } );
 	$ctaT->bind("<FocusOut>", sub { 
 		&buscaCuenta($bd, \$CtaT, \$NombreCt, \$ctaT) } );
+	$fechaC->bind("<FocusIn>", sub { &buscaF($esto) } );
+	
 	$codigo->bind("<FocusIn>", sub { &datosF($esto) } );
 	if ( $ucc ) {
 		$cCto->bind("<FocusIn>", sub { 
@@ -235,18 +239,18 @@ sub crea {
 		$fe->grid(-row => 0, -column => 2, -sticky => 'nw');
 	}
 	$rut->grid(-row => 1, -column => 0, -sticky => 'nw');
-	$nombre->grid(-row => 1, -column => 1, -columnspan => 2, -sticky => 'nw');
-	$fecha->grid(-row => 2, -column => 0, -columnspan => 3, -sticky => 'nw');
-	$glosa->grid(-row => 3, -column => 0, -columnspan => 3, -sticky => 'nw');
-	$neto->grid(-row => 4, -column => 0, -sticky => 'nw');
-	$afecto->grid(-row => 4, -column => 1, -sticky => 'nw');	
-	$exento->grid(-row => 4, -column => 2, -sticky => 'nw');	
-	$iva->grid(-row => 5, -column => 0, -sticky => 'nw');
-	$ctaIVA->grid(-row => 5, -column => 1, -columnspan => 2, -sticky => 'nw');
-	$nCtaIVA->grid(-row => 6, -column => 1, -columnspan => 2, -sticky => 'nw'); 
-	$total->grid(-row => 7, -column => 0, -sticky => 'nw'); 
-	$ctaT->grid(-row => 7, -column => 1, -columnspan => 2, -sticky => 'nw'); 
-	$nCtaT->grid(-row => 8, -column => 1, -columnspan => 2, -sticky => 'nw'); 
+	$fecha->grid(-row => 1, -column => 1, -columnspan => 2, -sticky => 'nw');
+	$glosa->grid(-row => 2, -column => 0, -columnspan => 3, -sticky => 'nw');
+	$neto->grid(-row => 3, -column => 0, -sticky => 'nw');
+	$afecto->grid(-row => 3, -column => 1, -sticky => 'nw');	
+	$exento->grid(-row => 3, -column => 2, -sticky => 'nw');	
+	$iva->grid(-row => 4, -column => 0, -sticky => 'nw');
+	$ctaIVA->grid(-row => 4, -column => 1, -columnspan => 2, -sticky => 'nw');
+	$nCtaIVA->grid(-row => 5, -column => 1, -columnspan => 2, -sticky => 'nw'); 
+	$total->grid(-row => 6, -column => 0, -sticky => 'nw'); 
+	$ctaT->grid(-row => 6, -column => 1, -columnspan => 2, -sticky => 'nw'); 
+	$nCtaT->grid(-row => 7, -column => 1, -columnspan => 2, -sticky => 'nw'); 
+	$nFact->grid(-row => 8, -column => 0, -columnspan => 3, -sticky => 'nw');	
 	$fechaC->grid(-row => 9, -column => 0, -sticky => 'nw');
 	$nmrO->grid(-row => 9, -column => 1, -sticky => 'ne');
 	$numero->grid(-row => 9, -column => 2, -sticky => 'ne');
@@ -302,18 +306,43 @@ sub activa ( )
 	$ctaIVA->configure(-state => 'normal');	
 }
 
+sub buscaF ( )
+{
+	my ($esto) = @_;
+	my $bd = $esto->{'baseDatos'};
+
+	if ( $NFact eq '' ) {
+		$Mnsj = "Debe indicar una factura.";
+		$nFac->focus;
+		return ;
+	}
+	my $fct = $bd->buscaFct($TablaD, $RUT, $NFact, 'FechaE');
+	if (not $fct) {
+		$Mnsj = "Esa Factura NO está registrada.";
+		$nFact->focus;
+	} else { 
+		if ( $bd->buscaFct($TablaD, $RUT, $NFact, 'Pagada') ) {
+			$Mnsj = "Ese documento ya está pagado.";
+			$nFac->focus;
+			return ;
+		}	
+		my $mnt = $bd->netoFct($TablaD, $RUT, $NFact) ;
+		$Mnsj = "Monto adeudado: $mnt " ; 
+	}
+}
+
 sub validaFecha ( $ $ $ $ ) 
 {
 	my ($ut, $v, $c, $x) = @_;
 	
 	$Mnsj = " ";
 	if ($$v eq '' ) {
-		$Mnsj = "Debe colocar fecha de emisión";
+		$Mnsj = "Debe colocar fecha de emisión.";
 		if ($x == 0) { return ;}
 	}
 	# Comprueba si la fecha está escrita correctamente
 	if ( not $$v =~ m|\d+/\d+/\d+| ) {
-		$Mnsj = "Problema con formato. Debe ser dd/mm/aaa";
+		$Mnsj = "Problema con formato. Debe ser dd/mm/aaa.";
 		$$c->focus;
 	} elsif ( not $ut->analizaFecha($$v) ) {
 		print chr 7 ;
@@ -328,14 +357,14 @@ sub buscaCuenta ( $ $ $ $ )
 
 	# Comprueba largo del código de la cuenta
 	if (length $$a < 4) {
-		$Mnsj = "Código debe tener 4 dígitos";
+		$Mnsj = "Código debe tener 4 dígitos.";
 		$$c->focus;
 		return;
 	}
 	# Busca código
 	@dCuenta = $bd->dtCuenta($$a);
 	if ( not @dCuenta ) {
-		$Mnsj = "Ese código NO está registrado";
+		$Mnsj = "Ese código NO está registrado.";
 		$$c->focus;
 	} else {
 		$$b = substr decode_utf8(" $dCuenta[0]"),0,35;
@@ -355,14 +384,14 @@ sub buscaCC ( $ ) {
 	}
 	# Comprueba largo del código del Centro de Costo
 	if (length $CCto < 3) {
-		$Mnsj = "Código debe tener 3 dígitos";
+		$Mnsj = "Código debe tener 3 dígitos.";
 		$cCto->focus;
 		return;
 	}
 	# Busca código
 	my $nCentro = $bd->nombreCentro($CCto);
 	if ( not $nCentro ) {
-		$Mnsj = "Ese código NO está registrado";
+		$Mnsj = "Ese código NO está registrado.";
 		$NCCto = " " ;
 		$cCto->focus;
 	} else {
@@ -370,20 +399,20 @@ sub buscaCC ( $ ) {
 	}
 }
 
-sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma ND
+sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma NC
 { 
 	my ($esto) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
 	if ($Documento eq '') {
-		$Mnsj = "Registre número de la ND";
+		$Mnsj = "Registre número de la NC.";
 		$documento->focus;
 		return;
 	}
 	# Valida formato número entero
 	if (not $Documento =~ /^(\d+)$/) {
-		$Mnsj = "NO es número";
+		$Mnsj = "NO es número.";
 		$documento->focus;
 		return ;
 	}
@@ -406,6 +435,7 @@ sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma ND
 			return;
 		} 
 		$Nombre = decode_utf8("  $nmb");
+		$Mnsj = $Nombre ;
 	}
 	# Ahora busca ND
 	my $fct = $bd->buscaFct($TablaD, $RUT, $Documento, 'FechaE');
@@ -430,7 +460,7 @@ sub datosF ( ) # Verifica los datos mínimos para anotar un item
 		return;
 	}
 	if ($Documento eq '') {
-		$Mnsj = "Primero registre número de la NC";
+		$Mnsj = "Primero registre número de la NC.";
 		$documento->focus;
 		return;
 	}
@@ -449,11 +479,11 @@ sub validaFechaC ( $ $)
 	}
 	# Valida fecha contabilización
 	if (not $FechaC =~ m|\d+/\d+/\d+|) {
-		$Mnsj = "Problema con formato fecha";
+		$Mnsj = "Problema con formato fecha.";
 		$fechaC->focus;
 		return 0;
 	} elsif ( not $ut->analizaFecha($FechaC) ) {
-		$Mnsj = "Fecha incorrecta" ;
+		$Mnsj = "Fecha incorrecta." ;
 		$fechaC->focus ;
 		return 0;
 	}
@@ -465,15 +495,15 @@ sub validaNI ( $ )
 {
 	my ($bd) = @_;
 	
-	if ($NmrI == 0) {
-		$Mnsj = "Debe indicar un número";
+	if ($NmrI eq '' ) {
+		$Mnsj = "Debe indicar un número.";
 		$nmrO->focus;
 		return ;		
 	}
 	my $mes = substr $FechaC,3,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
 	if ( $bd->numeroI($TablaD, $mes, $TipoD, $NmrI) ) {
-		$Mnsj = "Número existe";
+		$Mnsj = "Número existe.";
 		$nmrO->focus;
 		return ;
 	}
@@ -535,7 +565,7 @@ sub agrega ( )
 		$bCnt->configure(-state => 'disabled');
 	}
 	limpiaCampos();
-#	$codigo->focus;
+	$codigo->focus;
 }
 
 sub modifica ( )
@@ -547,7 +577,7 @@ sub modifica ( )
 		
 	$Mnsj = " ";
 	if (not @datos) {
-		$Mnsj = "NO hay movimientos para modificar";
+		$Mnsj = "NO hay movimientos para modificar.";
 		return;
 	}
 	
@@ -563,10 +593,9 @@ sub modifica ( )
 	$Codigo = $sItem->[1];
 	$Monto = $sItem->[2] ? $sItem->[2] : $sItem->[3] ;
 	$Detalle = decode_utf8($sItem->[4]);
-	$Cuenta = $sItem->[8];	
-
+	$CCto = $sItem->[8];
 	# Obtiene Id del registro
-	$Id = $sItem->[9];
+	$Id = $sItem->[11];
 }
 
 sub registra ( )
@@ -574,11 +603,10 @@ sub registra ( )
 	my ($esto) = @_;
 	my $ut = $esto->{'mensajes'};
 	my $bd = $esto->{'baseDatos'};
-	
+
 	# Graba datos
 	$bd->grabaItemT($Codigo, $Detalle, $Monto, $DH, '', $TipoD, $Documento, 
 		$CCto, $Cuenta, $Id);
-
 	# Muestra lista actualizada de items
 	@datos = muestraLista($esto);
 	
@@ -593,6 +621,7 @@ sub registra ( )
 	$bNvo->configure(-state => 'active');
 	$bEle->configure(-state => 'disabled');
 	$bReg->configure(-state => 'disabled');
+	$codigo->focus;
 	
 }
 
@@ -651,7 +680,8 @@ sub contabiliza ( )
 	if ($Iva > 0) {
 		$bd->agregaItemT($CtaIVA, $det, $Iva, $DH, '', '','', '', $Numero,'');
 	}
-	$bd->agregaItemT($CtaT, '', $Total, $CC, $RUT, $TipoD, $Documento, 
+	$det = $NFact eq '' ? " " : "Abona F# $NFact $RUT" ;
+	$bd->agregaItemT($CtaT, $det, $Total, $CC, $RUT, $TipoD, $Documento, 
 		'', $Numero,'');
 	my $fc = $ut->analizaFecha($FechaC) ; 
 	$bd->agregaCmp($Numero, $fc, $Glosa, $Total, $TipoCmp);
@@ -668,6 +698,9 @@ sub contabiliza ( )
 	$bd->grabaFct($TablaD, $RUT, $Documento, $ff, -$Total, -$Iva, -$Afecto,
 		-$Exento, $Numero, $TipoD, '', $fc, $CtaT, $TipoF, $NmrI, 0, 0, 0);
 
+	# Cancela la factura y marca como pagada la NC, si corresponde
+	$bd->pagaF( $fc, $RUT, $TablaD, $NFact, $Total, $Documento ) if $NFact ne '' ;
+	
 	limpiaCampos();
 
 	$bCnt->configure(-state => 'disabled');
@@ -690,7 +723,7 @@ sub fNula ( )
 	
 	$Mnsj = " ";
 	if ($Documento eq '') {
-		$Mnsj = "Registre número de Factura";
+		$Mnsj = "Registre número de Factura.";
 		$documento->focus;
 		return;
 	}
@@ -746,7 +779,7 @@ sub inicializaV ( )
 {
 	$Monto = $TotalI = $Total = $Neto = $Iva = 0;
 	$Codigo = $RUT = $Glosa = $Detalle = $CtaIVA = $CtaT = '';
-	$NombreCi = $NombreCt = $Nombre = $Fecha = $NmrI = '';
+	$NombreCi = $NombreCt = $Nombre = $Fecha = $NmrI = $NFact = '';
 }
 
 # Fin del paquete

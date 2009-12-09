@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 28.11.2009
+#  UM : 08.12.2009
 
 use prg::BaseDatos;
 use strict;
@@ -18,7 +18,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "V. 0.925 a Noviembre del 2009";
+my $version = "inicio.pl 0.93 al 8 de Diciembre del 2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
