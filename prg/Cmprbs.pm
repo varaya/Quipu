@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 09.12.2009
+#  UM: 10.12.2009
 
 package Cmprbs;
 
@@ -440,7 +440,7 @@ sub validaD ( $ )
 			$documento->focus;
 			return 0;
 		}
-		# Compara montos: pagado no puede ser mayor que el total del documento
+		# Compara montos: pagado no puede ser mayor que el monto pendiente
 		my $mnt = 0 ;
 		if ( $BH ) {
 			$mnt = $bd->montoBH($RUT, $Documento) ;
@@ -719,9 +719,10 @@ sub imprime ( )
 		$tH += $algo->[3] ;
 		$ci = $algo->[6] ? substr $algo->[6], 0, 1 : '' ;
 		$dcm = $ci eq '' ? '' : "$algo->[6] $algo->[7]" ;
-		$rtF = $ci eq 'F' ? $algo->[5] : '' ;
+		$rtF = $algo->[5] if $ci eq 'F';
 		if ($algo->[6] eq 'CH') {
 			$ch = $algo->[7] ;
+			$nBanco = $ncta;
 			$tch += 1 ;
 		}
 		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;

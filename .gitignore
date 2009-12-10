@@ -1,6 +1,6 @@
 # Archivos que debe ignorarse
 # Paquetes o respaldos comprimidos
-*.gz
+*gz
 *.zip
 # Las bases de datos
 *.db?
