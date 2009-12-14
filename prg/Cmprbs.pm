@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 10.12.2009
+#  UM: 13.12.2009
 
 package Cmprbs;
 
@@ -13,7 +13,7 @@ use Tk::TList;
 use Tk::LabEntry;
 use Tk::LabFrame;
 use Tk::BrowseEntry;
-use Encode 'decode_utf8';
+use Encode ;
 use Number::Format;
 
 # Variables válidas dentro del archivo
@@ -46,7 +46,7 @@ sub crea {
 	$esto->{'mensajes'} = $ut;
 
 	# Inicializa variables
-	$Empresa = $emp ;
+	$Empresa = encode_utf8( $emp );
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
 	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', 'SD' => '', '' => '' ) ;
@@ -690,7 +690,7 @@ sub imprime ( )
 	$nmrC = $datos[0];
 	$tipoC = $tc->{$datos[3]};
 	$fecha = $ut->cFecha($datos[2]);
-	$glosa = decode_utf8($datos[1]);
+	$glosa = $datos[1];
 	$total = $pesos->format_number( $datos[4] );
 	$nulo = $datos[5];
 	$ref = $datos[6];
@@ -711,7 +711,7 @@ sub imprime ( )
 	print ARCHIVO $lin2 . "\n" ;
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  
-		$ncta = decode_utf8( substr $bd->nmbCuenta($cm),0,30 );
+		$ncta = substr $bd->nmbCuenta($cm),0,30 ;
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$tD += $algo->[2] ;
@@ -743,7 +743,7 @@ sub imprime ( )
 	}
 	
 	print ARCHIVO "\n\n__________________     _______________    __________________   ___________" ;
-	print ARCHIVO "\n    Emitido                 Vº Bº          Recibí Conforme         RUT" ;
+	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme         RUT" ;
 	
 	close ARCHIVO ;
 	system "lp $d";

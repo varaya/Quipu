@@ -311,9 +311,7 @@ sub buscaF ( )
 	my ($esto) = @_;
 	my $bd = $esto->{'baseDatos'};
 
-	if ( $NFact eq '' ) {
-		$Mnsj = "Debe indicar una factura.";
-		$nFac->focus;
+	if ( $NFact eq '' ) { # Puede quedar NC sin asignar
 		return ;
 	}
 	my $fct = $bd->buscaFct($TablaD, $RUT, $NFact, 'FechaE');
@@ -437,7 +435,7 @@ sub buscaDoc ( $ ) # Valida Rut y evita que se registre dos veces una misma NC
 		$Nombre = decode_utf8("  $nmb");
 		$Mnsj = $Nombre ;
 	}
-	# Ahora busca ND
+	# Ahora busca NC
 	my $fct = $bd->buscaFct($TablaD, $RUT, $Documento, 'FechaE');
 	if ($fct) {
 		$Mnsj = "Esa NC ya está registrada.";
