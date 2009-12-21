@@ -200,7 +200,7 @@ sub opCompras {
 	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,0); } ],
  ['command' => "F. Especiales", -command => sub { require prg::FcmpE; 
 	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
- ['command' => "FCT Emitidas", -command => sub { require prg::Fctrs;
+ ['command' => "FT Emitidas", -command => sub { require prg::Fctrs;
  	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,1);} ] ]
 }
 

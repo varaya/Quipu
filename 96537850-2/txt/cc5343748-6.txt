@@ -1,0 +1,56 @@
+Litografía Sánchez S.A.  2009
+Cuenta Corriente   Luis Valencia Diaz   Rut: 5343748-6
+
+Comprobante
+   # T Fecha      Glosa                                           Debe       Haber  Documento
+---------------------------------------------------------------------------------------------
+       01/01/2009 Saldo inicial                                      0           0
+
+2008 Honorarios por Pagar
+1299 T 09/01/2009 Diseño                                             0      86.000  BH 2135        
+2230 E 13/03/2009 PAGOS CON CHEQUES SANTANDER                   86.000           0  BH 2135        
+1303 T 26/01/2009 Honorarios                                         0      14.000  BH 2136        
+2106 E 29/01/2009 CANCELA CON CHEQUE ITAU                       14.000           0  BH 2136        
+1356 T 12/03/2009 honorarios                                         0     175.000  BH 2140        
+2233 E 18/03/2009 PAGOS CON CHEQUE SANTANDER                   175.000           0  BH 2140        
+1357 T 12/03/2009 honorarios                                         0     260.000  BH 2141        
+2233 E 18/03/2009 PAGOS CON CHEQUE SANTANDER                   260.000           0  BH 2141        
+1360 T 16/03/2009 honorarios                                         0      13.500  BH 2142        
+2252 E 06/04/2009 PAGOS CON CHEQUES BANCO DE CHILE              13.500           0  BH 2142        
+1385 T 07/04/2009 honorarios                                         0     400.000  BH 2144        
+2439 E 15/05/2009 PAGOS CON CHEQUE SANTANDER                   400.000           0  BH 2144        
+1386 T 07/04/2009 honorarios                                         0      25.000  BH 2145        
+2439 E 15/05/2009 PAGOS CON CHEQUE SANTANDER                    25.000           0  BH 2145        
+1716 T 01/06/2009 Luis Valencia                                      0     108.000  BH 2149        
+2260 E 28/05/2009 PAGOS CON CHEQUE BANCO CHILE                 108.000           0  BH 2149        
+3112 E 09/09/2009 PAGOS CON CHEQUE SANTANDER                    25.000           0  BH 2150        
+3115 E 11/09/2009 PAGOS CON CHEQUES SANTANDER                   30.000           0  BH 2152        
+3041 E 30/09/2009 PAGOS CON CHEQUES BANCO DE CHILE             155.000           0  BH 2153        
+                  ----------------------------------------------------------------
+                                            Subtotal 2008    1.291.500   1.081.500
+                                                     Saldo     210.000            
+
+2002 Varios Acreedores 
+2086 E 02/01/2009 PAGOS CON CH/ RABOBANK                       125.000           0  LT 2134        
+                  ----------------------------------------------------------------
+                                            Subtotal 2002      125.000           0
+                                                     Saldo     125.000            
+
+                  ----------------------------------------------------------------
+                  Totales                                    1.416.500   1.081.500
+                  Saldo al 2009-11-11                          335.000            
+
+Documentos Pendientes Luis Valencia Diaz   Rut: 5343748-6
+
+BoletasH
+           #       Fecha        Monto       Abonos       Vence   Cmpr
+-------------------------------------------------------------------
+      2150    27/08/2009       25.000            0  31/08/2009   2859
+      2151    27/08/2009       80.000            0  31/08/2009   2860
+      2152    27/08/2009       30.000            0  31/08/2009   2861
+      2155    30/09/2009       40.000            0  30/09/2009   2888
+-------------------------------------------------------------------
+                              175.000            0
+-------------------------------------------------------------------
+
+

@@ -1,11 +1,11 @@
-#  CIndvdl.pm - Consulta e imprime Cuenta Invididual
+#  CIndvdl.pm - Consulta e imprime Cuenta Individual
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 26.11.2009
+#  UM : 21.12.2009
 
 package CIndvdl;
 
@@ -227,6 +227,7 @@ sub informeH ( $ $ ) {
 		$Mnsj = "No hay datos para $Nombre"; 
 		return;
 	}
+#	print Dumper @data ;
 	my ($algo,@datosE,@datosCI,$tC,$fecha,$nulo,$tDebe,$tHaber,$mntD,$mntH,$cTd,$sst);
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 

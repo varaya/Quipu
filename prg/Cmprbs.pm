@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 13.12.2009
+#  UM: 21.12.2009
 
 package Cmprbs;
 
@@ -660,6 +660,7 @@ sub nuevo ( )
 	$bImp->configure(-state => 'disabled');
 	$bOtr->configure(-state => 'disabled');
 	limpiaCampos();
+	$BH = 0 ;
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 
 			-text => "No hay movimientos registrados" ) ;
@@ -787,7 +788,7 @@ sub limpiaCampos ( )
 {
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
-	$Monto = $BH = 0;
+	$Monto = 0;
 	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = $cTipoD = '' ;
 	$NCCto = $CCto = '';
 	# Activa o no contabilizar el comprobante

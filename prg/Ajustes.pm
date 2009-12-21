@@ -6,7 +6,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la licencia
 #  incluida en este paquete 
-#  UM: 30.07.2009
+#  UM: 18.12.2009
 
 package Ajustes;
 
@@ -26,7 +26,7 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Ajustes");
-	$vnt->geometry("300x310+475+2"); # Tamaño y ubicación
+	$vnt->geometry("310x310+475+2"); # Tamaño y ubicación
 
 	my %tp = $ut->tipos();
 	inicializa();
@@ -71,9 +71,11 @@ sub crea {
 		-variable => \$Tabla );
 	$fc = $mDatosC->Radiobutton( -text => "Factura", -value => 'F', 
 		-variable => \$TipoD );
-	$nc = $mDatosC->Radiobutton( -text => "N.Crédito", -value => 'NC', 
+	$ft = $mDatosC->Radiobutton( -text => "F.Tercero", -value => 'T', 
 		-variable => \$TipoD );
-	$nd = $mDatosC->Radiobutton( -text => "N.Débito", -value => 'ND', 
+	$nc = $mDatosC->Radiobutton( -text => "N.C.", -value => 'NC', 
+		-variable => \$TipoD );
+	$nd = $mDatosC->Radiobutton( -text => "N.D.", -value => 'ND', 
 		-variable => \$TipoD );
 	$ni = $mDatosC->LabEntry(-label => "Nº I: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
@@ -111,12 +113,16 @@ sub crea {
 	$cn->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$cf->grid(-row => 0, -column => 1, -sticky => 'nw');
 	$tp->grid(-row => 0, -column => 2, -sticky => 'nw');
+	
 	$mes->grid(-row => 0, -column => 0, -sticky => 'nw');
 	$de->grid(-row => 0, -column => 1, -sticky => 'nw');
 	$dr->grid(-row => 0, -column => 2, -sticky => 'nw');
+	
 	$fc->grid(-row => 1, -column => 0, -sticky => 'nw');
-	$nc->grid(-row => 1, -column => 1, -sticky => 'nw');
-	$nd->grid(-row => 1, -column => 2, -sticky => 'nw');
+	$ft->grid(-row => 1, -column => 1, -sticky => 'nw');
+	$nc->grid(-row => 1, -column => 2, -sticky => 'nw');
+	$nd->grid(-row => 1, -column => 3, -sticky => 'nw');
+	
 	$ni->grid(-row => 2, -column => 2, -sticky => 'nw');
 
 	$rut->grid(-row => 0, -column => 0, -sticky => 'nw');
@@ -228,7 +234,8 @@ sub buscaDoc ( $ )
 		return ;
 	}
 	$TD = $TipoD eq 'F' ? $TipoD . substr $Tabla,0,1 : $TipoD ;
-	print "$Tabla, $Mes, $Ni, $TD";
+	$TD = $Tabla eq 'Compras' ? 'FR' : 'FE' if $TipoD eq 'T';
+#	print "$Tabla, $Mes, $Ni, $TD";
 	my @datos = $bd->buscaNI($Tabla,$Mes,$Ni,$TD);
 	if (not @datos) {
 		$Mnsj = "NO existe documento con esos datos";

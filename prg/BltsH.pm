@@ -350,9 +350,9 @@ sub contabiliza ( $ )
 	# Registra impuesto
 	$bd->agregaItemT($CtaIm, $det, $Impt, 'H', '', '', '', '', $Numero,'');
 	# Registra neto
-	$bd->agregaItemT($CtaNt, $det, $Neto, 'H', '', '', '', '', $Numero,'');
+	$bd->agregaItemT($CtaNt, $det, $Neto, 'H',$RUT,$TipoD,$Dcmnt, '', $Numero,'');
 	# Registra total
-	$bd->agregaItemT($CtaTl,'',$Total,'D',$RUT,$TipoD,$Dcmnt,'',$Numero,$CCto);
+	$bd->agregaItemT($CtaTl,'',$Total,'D','',$TipoD,$Dcmnt,'',$Numero,$CCto);
 	my $ff = $ut->analizaFecha($Fecha) ;
 	$bd->agregaCmp($Numero, $ff, $Glosa, $Total, 'T');
 	# Graba Boleta

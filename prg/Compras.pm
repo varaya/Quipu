@@ -241,7 +241,7 @@ sub detalles ( $ $ $ $)
 			$Aft += $algo->[5] ;
 			$Ext += $algo->[6] ;
 			$IEsp += $algo->[8];
-			$IvaR += $algo->[11];
+			$IvaR += $algo->[11] ;
 			$TDcmt += 1 if $algo->[3];
 		}
 	}	
