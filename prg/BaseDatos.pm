@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 07.12.2009
+#  UM: 28.12.2009
 
 package BaseDatos;
 
@@ -1390,6 +1390,25 @@ sub datosFacts( $ $ )
 	return @datos; 
 }	
 
+sub datosImps( $ $ )
+{
+	my ($esto, $tbl, $ord) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+	my $imp = ($tbl eq 'BoletasH') ? 'Retenido' : 'IVA';
+	my $tp = ($tbl eq 'BoletasH') ? 'Cuenta' : 'Tipo';
+	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,$imp,$tp,Cuenta,RUT FROM $tbl " ;
+	$cns .= " WHERE Pagada = 0 AND Nulo = 0 ORDER BY $ord " ;
+	my $sql = $bd->prepare($cns);
+	$sql->execute();
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	
+	return @datos; 
+}	
 
 # BOLETAS de CompraVenta
 sub buscaBCV( $ )

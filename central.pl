@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 13.12.2009  
+#  UM : 28.12.2009  
 
 use prg::BaseDatos;
 use strict;
@@ -212,16 +212,22 @@ my $tipoD = $tipo = '';
 	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
  ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ],  
- ['cascade' => "-Impagos", -tearoff => 0,
- 	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipo , 
-	-command => sub { require prg::Impgs; Impgs->crea($vp,$mt,$bd,$ut,$tipo);} ], 
-	qw/Clientes Proveedores/,], ] , "-", 
+ ['cascade' => "Impagos", -tearoff => 0, -menuitems => opImpagos() ] , "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
 	CCmprb->crea($vp, $mt, $bd, $ut, $Rut);} ],
  ['cascade' => "Documentos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoD ,  
 	-command => sub { require prg::CDcmts; CDcmts->crea($vp,$mt,$bd,$ut,$tipoD);}], 
 	qw/Recibidos Emitidos/,],] ]
+}
+
+sub opImpagos {
+[ ['command' => "Honorarios", -command => sub { require prg::Impgs;
+	Impgs->crea($vp, $mt, $bd, $ut, $Rut, 'BoletasH');} ], 
+['command' => "Ventas", -command => sub { require prg::Impgs;
+	Impgs->crea($vp, $mt, $bd, $ut, $Rut, 'Ventas');} ], 
+['command' => "Compras", -command => sub { require prg::Impgs;
+	Impgs->crea($vp, $mt, $bd, $ut, $Rut, 'Compras');} ] ]
 }
 
 sub opProcesa {
