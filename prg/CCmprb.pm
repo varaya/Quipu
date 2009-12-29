@@ -5,24 +5,24 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 18.08.2009
+#  UM: 29.12.2009
 
 package CCmprb;
 
 use Tk::TList;
 use Tk::LabFrame;
-use Encode 'decode_utf8';
+use Encode ;
 use Number::Format;
  
 # Variables válidas dentro del archivo
 my @datos = () ;	# Lista items del comprobante
-my ($bCan, $bImp, $rutE, $cuenta) ; 
+my ($bCan, $bImp, $rutE, $cuenta, $Numero, $Empresa) ; 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rt) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rt, $emp) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -30,9 +30,10 @@ sub crea {
 
 	# Inicializa variables
 	$rutE = $rt ;
+	$Empresa = encode_utf8( $emp );
 	my %tp = $ut->tipos();
 	$Fecha = $ut->fechaHoy();
-	$mes = $nMes = $Cuenta = '';
+	$mes = $nMes = $Numero = '';
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Consulta Comprobante");
@@ -61,20 +62,23 @@ sub crea {
 	
 	$cuenta = $mBotones->LabEntry(-label => "Comprobante #: ", -width => 6,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-textvariable => \$Cuenta );
+		-textvariable => \$Numero );
 	# Define botones
 	my $bLmp = $mBotones->Button(-text => "Muestra", 
 		-command => sub { muestraC($esto,$mtA); } );
-	$bImp = $mBotones->Menubutton(-text => "Archivo", -tearoff => 0, 
+	$bArc = $mBotones->Menubutton(-text => "Archivo", -tearoff => 0, 
 	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
 	[ ['command' => "texto", -command => sub { txt($mtA);} ],
  	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
+ 	$bImp = $mBotones->Button(-text => "Imprime", -command => sub { &imprime($esto) } ); 
+
 	$bCan = $mBotones->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy(); } );
 
 	# Dibuja interfaz
 	$cuenta->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bLmp->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$bArc->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
@@ -103,7 +107,7 @@ sub muestraC {
 	$tc->{'T'} = 'Traspaso';
 	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo);
 	# Obtiene item seleccionado
-	@datos = $bd->datosCmprb($Cuenta) ;
+	@datos = $bd->datosCmprb($Numero) ;
 	if (not @datos) {
 		$Mnsj = "NO existe ese comprobante";
 		$cuenta->focus ;
@@ -167,7 +171,7 @@ sub muestraC {
 	if ( $nulo == 1) {
 		$marco->insert('end', "Anulado por Comprobante $ref\n" , 'grupo');
 	}
-	$Cuenta = '' ;
+#	$Numero = '' ;
 	$bImp->configure(-state => 'active');
 }
 
@@ -183,6 +187,82 @@ sub txt ( $ )
 	print ARCHIVO $algo ;
 	close ARCHIVO ;
 	$Mnsj = "Ver archivo '$d'"
+}
+
+sub imprime ( )
+{
+	my ($esto) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my $ut = $esto->{'mensajes'} ;
+	
+	my $tc = {};
+	$tc->{'I'} = 'Ingreso';
+	$tc->{'E'} = 'Egreso';
+	$tc->{'T'} = 'Traspaso';
+	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo);
+	@datos = $bd->datosCmprb($Numero) ;
+
+	$nmrC = $datos[0];
+	$tipoC = $tc->{$datos[3]};
+	$fecha = $ut->cFecha($datos[2]);
+	$glosa = $datos[1];
+	$total = $pesos->format_number( $datos[4] );
+	$nulo = $datos[5];
+	$ref = $datos[6];
+	
+	my $d = "var/cmprb.txt" ;
+	open ARCHIVO, "> $d" or die $! ;
+
+	my $lin = "\n$Empresa\n\nComprobante de $tipoC  # $nmrC              Fecha: $fecha\n" ;
+	print ARCHIVO $lin ;
+	print ARCHIVO "Glosa: $glosa\n\n";
+	my @data = $bd->itemsC($nmrC);
+	my ($algo, $ch, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm, $rtF, $nmb);
+	my ($tD, $tH, $tch) = (0, 0, 0);
+	$rtF = $nmb = '' ;
+	my $lin1 = "Cuenta                                       Debe        Haber"  . "\n";
+	print ARCHIVO $lin1 ;
+	my $lin2 = "-"x63;
+	print ARCHIVO $lin2 . "\n" ;
+	foreach $algo ( @data ) {
+		$cm = $algo->[1];  
+		$ncta = substr $bd->nmbCuenta($cm),0,30 ;
+		$mntD = $mntH = $pesos->format_number(0);
+		$mntD = $pesos->format_number( $algo->[2] ); 
+		$tD += $algo->[2] ;
+		$mntH = $pesos->format_number( $algo->[3] );
+		$tH += $algo->[3] ;
+		$ci = $algo->[6] ? substr $algo->[6], 0, 1 : '' ;
+		$dcm = $ci eq '' ? '' : "$algo->[6] $algo->[7]" ;
+		$rtF = $algo->[5] if $ci eq 'F';
+		if ($algo->[6] eq 'CH') {
+			$ch = $algo->[7] ;
+			$nBanco = $ncta;
+			$tch += 1 ;
+		}
+		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;
+		print ARCHIVO $lin ;
+	}
+	print ARCHIVO $lin2 . "\n";
+	$lin = sprintf("%36s %12s %12s", "Totales" ,
+			$pesos->format_number($tD), $pesos->format_number($tH) ) . "\n";
+	print ARCHIVO $lin ;
+	print ARCHIVO $lin2 . "\n\n";
+	
+	$nmb = $bd->buscaT($rtF) ;
+	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n" if $nmb;
+	if ( $tch == 1 ) {
+		print ARCHIVO "Cheque #: $ch   Banco: $nBanco \n" ;
+	} else {
+		print ARCHIVO "Cheques del Banco $nBanco\n" if $tch > 0 ;
+	}
+	
+	print ARCHIVO "\n\n__________________     _______________    __________________   ___________" ;
+	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme         RUT" ;
+	
+	close ARCHIVO ;
+	system "lp $d";
+	$Numero = ' ' ;
 }
 
 # Fin del paquete

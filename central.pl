@@ -16,7 +16,7 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "central.pl 0.93 al 08/12/2009";
+my $version = "central.pl 0.93 al 29/12/2009";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -214,7 +214,7 @@ my $tipoD = $tipo = '';
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ],  
  ['cascade' => "Impagos", -tearoff => 0, -menuitems => opImpagos() ] , "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
-	CCmprb->crea($vp, $mt, $bd, $ut, $Rut);} ],
+	CCmprb->crea($vp, $mt, $bd, $ut, $Rut,$Empr);} ],
  ['cascade' => "Documentos", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoD ,  
 	-command => sub { require prg::CDcmts; CDcmts->crea($vp,$mt,$bd,$ut,$tipoD);}], 
