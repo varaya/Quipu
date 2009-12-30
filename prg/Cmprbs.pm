@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 21.12.2009
+#  UM: 29.12.2009
 
 package Cmprbs;
 
@@ -109,10 +109,8 @@ sub crea {
 	$bCnt = $mBotonesC->Button(-text => "Contabiliza", 
 		-command => sub { &contabiliza($esto) } ); 
 #	if ( $TipoCmp eq 'E') {
-		$bImp = $mBotonesC->Button(-text => "Imprime", 
-			-command => sub { &imprime($esto) } ); 
-		$bOtr = $mBotonesC->Button(-text => "Nuevo", 
-			-command => sub { &nuevo($esto) } ); 
+	$bImp = $mBotonesC->Button(-text => "Imprime", -command => sub { &imprime($esto) } ); 
+	$bOtr = $mBotonesC->Button(-text => "Nuevo", -command => sub { &nuevo($esto) } ); 
 #	}
 	my $bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { &cancela($esto) } );
@@ -671,83 +669,18 @@ sub nuevo ( )
 	$fecha->focus;
 }
 
-sub imprime ( )
+sub imprime ( $ )
 {
 	my ($esto) = @_;
-	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'} ;
+	my $bd = $esto->{'baseDatos'};
 	
-	my $tc = {};
-	$tc->{'I'} = 'Ingreso';
-	$tc->{'E'} = 'Egreso';
-	$tc->{'T'} = 'Traspaso';
-	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo);
-	@datos = $bd->datosCmprb($Numero) ;
-	if (not @datos) {
-		$Mnsj = "NO existe ese comprobante";
+	if (not $Numero) {
+		$Mnsj = "Falta número comprobante";
 		$bImp->configure(-state => 'disable');
-		return ;
-	}
-	$nmrC = $datos[0];
-	$tipoC = $tc->{$datos[3]};
-	$fecha = $ut->cFecha($datos[2]);
-	$glosa = $datos[1];
-	$total = $pesos->format_number( $datos[4] );
-	$nulo = $datos[5];
-	$ref = $datos[6];
-	
-	my $d = "var/cmprb.txt" ;
-	open ARCHIVO, "> $d" or die $! ;
-
-	my $lin = "\n$Empresa\n\nComprobante de $tipoC  # $nmrC              Fecha: $fecha\n" ;
-	print ARCHIVO $lin ;
-	print ARCHIVO "Glosa: $glosa\n\n";
-	my @data = $bd->itemsC($nmrC);
-	my ($algo, $ch, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm, $rtF, $nmb);
-	my ($tD, $tH, $tch) = (0, 0, 0);
-	$rtF = $nmb = '' ;
-	my $lin1 = "Cuenta                                       Debe        Haber"  . "\n";
-	print ARCHIVO $lin1 ;
-	my $lin2 = "-"x63;
-	print ARCHIVO $lin2 . "\n" ;
-	foreach $algo ( @data ) {
-		$cm = $algo->[1];  
-		$ncta = substr $bd->nmbCuenta($cm),0,30 ;
-		$mntD = $mntH = $pesos->format_number(0);
-		$mntD = $pesos->format_number( $algo->[2] ); 
-		$tD += $algo->[2] ;
-		$mntH = $pesos->format_number( $algo->[3] );
-		$tH += $algo->[3] ;
-		$ci = $algo->[6] ? substr $algo->[6], 0, 1 : '' ;
-		$dcm = $ci eq '' ? '' : "$algo->[6] $algo->[7]" ;
-		$rtF = $algo->[5] if $ci eq 'F';
-		if ($algo->[6] eq 'CH') {
-			$ch = $algo->[7] ;
-			$nBanco = $ncta;
-			$tch += 1 ;
-		}
-		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;
-		print ARCHIVO $lin ;
-	}
-	print ARCHIVO $lin2 . "\n";
-	$lin = sprintf("%36s %12s %12s", "Totales" ,
-			$pesos->format_number($tD), $pesos->format_number($tH) ) . "\n";
-	print ARCHIVO $lin ;
-	print ARCHIVO $lin2 . "\n\n";
-	
-	$nmb = $bd->buscaT($rtF) ;
-	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n" if $nmb;
-	if ( $tch == 1 ) {
-		print ARCHIVO "Cheque #: $ch   Banco: $nBanco \n" ;
 	} else {
-		print ARCHIVO "Cheques del Banco $nBanco\n" if $tch > 0 ;
+		$ut->imprimirC($bd,$Numero,$Empresa);
 	}
-	
-	print ARCHIVO "\n\n__________________     _______________    __________________   ___________" ;
-	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme         RUT" ;
-	
-	close ARCHIVO ;
-	system "lp $d";
 }
 
 sub validaFecha ($ $ $ $ ) 

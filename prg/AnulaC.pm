@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 08.09.2009
+#  UM: 30.12.2009
 
 package AnulaC;
 
@@ -15,6 +15,8 @@ use Number::Format;
 # Variables válidas dentro del archivo
 my @datos = () ; # Datos comprobante
 my @data = () ; # Lista items del comprobante
+my %tabla = () ; 	# Lista de tablas según tipo de documento
+
 my ($bCan, $bImp, $rutE, $cuenta, $Cuenta, $Numero, $Fecha, $fecha) ; 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -30,9 +32,12 @@ sub crea {
 	# Inicializa variables
 	$rutE = $rt ;
 	my %tp = $ut->tipos();
+	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
+	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', 'SD' => '', '' => '' ) ;
 	$Fecha = $ut->fechaHoy();
 	$mes = $nMes = $Cuenta = '';
 	$Numero = $bd->numeroC() + 1;
+	
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
 
@@ -164,16 +169,17 @@ sub muestraC {
 		}
 		if ( $td ) {
 			$dcm = "$td $algo->[7]";
-			$tabla = tbl( $td );
-			$pago = $bd->buscaFct($tabla, $algo->[5], $algo->[7], 'Pagada')
+			$tbl = $tabla{$td} ;
+			$pago = $bd->buscaFct($tbl, $algo->[5], $algo->[7], 'Pagada') if $tbl ne '' ;
 		}
+		$dt = $dcm if  $algo->[6] eq 'CH' ;
 		$mov1 = sprintf("%-5s %-30s %11s %11s  %-15s", $cm, substr($ncta,0,30) ,
 			$mntD, $mntH, $dt ) ;
 		$mov2 = sprintf("       %-15s %-20s", $ci, $dcm ) ;
 
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
 		if ( not ($ci eq '' ) ) { #	and $dcm eq ''
-			$marco->insert('end', "$mov2\n", 'detalle' ) ;
+#			$marco->insert('end', "$mov2\n", 'detalle' ) ;
 		}
 	}
 	$marco->insert('end', "\nTotal: $total\n" , 'grupo');
@@ -251,18 +257,8 @@ sub cancela ( )
 	my $vn = $esto->{'ventana'};
 	my $bd = $esto->{'baseDatos'};
 	
-	$bd->borraTemp();
-	$vn->destroy();
+	$bd->borraTemp(); $vn->destroy();
 }
 
-sub tbl ( $ )
-{
-	my ($td) = @_;
-	
-	$tabla = 'BoletasH' if $td eq 'BH';
-	$tabla = 'Compras' if $td eq 'FC' or $td eq 'FR';
-	$tabla = 'Ventas' if $td eq 'FV' or $td eq 'FE';
-	return $tabla;
-}
 # Fin del paquete
 1;

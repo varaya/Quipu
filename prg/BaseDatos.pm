@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 28.12.2009
+#  UM: 29.12.2009
 
 package BaseDatos;
 
@@ -1872,6 +1872,32 @@ sub datosRCC( )
 	}
 	$sql->finish();
 	return @datos; 	
+}
+
+sub buscaCH( $ $ )
+{
+	my ($esto,$cmp,$chq) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	
+	my $sql = $bd->prepare("SELECT ROWID FROM ItemsC WHERE Numero = ? and Documento = ? and TipoD = ?;");
+	$sql->execute($cmp,$chq,'CH');
+	my $dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return $dato; 	
+}
+
+sub modificaCH( $ $ $ $ )
+{
+	my ($esto,$id,$chq,$na,$cmp) = @_ ;
+	my $bd = $esto->{'baseDatos'};
+	
+	my $sql = $bd->prepare("UPDATE ItemsC SET Documento = ? WHERE ROWID = ? ;");
+	$sql->execute($chq,$id);
+	$sql = $bd->prepare("UPDATE DocsE SET Numero = ? WHERE Numero = ? and Tipo = ? and Comprobante = ?");
+	$sql->execute($chq,$na, 'CH',$cmp);
+	
+	$sql->finish(); 	
 }
 
 # Termina el paquete

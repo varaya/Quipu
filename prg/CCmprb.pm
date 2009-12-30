@@ -152,9 +152,10 @@ sub muestraC {
 		if ($algo->[5]) {
 			$ci = "RUT $algo->[5]";
 		}
-		if ($algo->[6]) {
+		if ($algo->[6] ) {
 			$dcm = "$algo->[6] $algo->[7]";
 		}
+		$dt = $dcm if  $algo->[6] eq 'CH' ;
 		$mov1 = sprintf("%-5s %-30s %12s %12s  %-15s", $cm, $ncta,
 			$mntD, $mntH, $dt ) ;
 		$mov2 = sprintf("       %-15s %-20s", $ci, $dcm ) ;
@@ -189,80 +190,19 @@ sub txt ( $ )
 	$Mnsj = "Ver archivo '$d'"
 }
 
-sub imprime ( )
+sub imprime ( $ )
 {
 	my ($esto) = @_;
-	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'} ;
+	my $bd = $esto->{'baseDatos'};
 	
-	my $tc = {};
-	$tc->{'I'} = 'Ingreso';
-	$tc->{'E'} = 'Egreso';
-	$tc->{'T'} = 'Traspaso';
-	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo);
-	@datos = $bd->datosCmprb($Numero) ;
-
-	$nmrC = $datos[0];
-	$tipoC = $tc->{$datos[3]};
-	$fecha = $ut->cFecha($datos[2]);
-	$glosa = $datos[1];
-	$total = $pesos->format_number( $datos[4] );
-	$nulo = $datos[5];
-	$ref = $datos[6];
-	
-	my $d = "var/cmprb.txt" ;
-	open ARCHIVO, "> $d" or die $! ;
-
-	my $lin = "\n$Empresa\n\nComprobante de $tipoC  # $nmrC              Fecha: $fecha\n" ;
-	print ARCHIVO $lin ;
-	print ARCHIVO "Glosa: $glosa\n\n";
-	my @data = $bd->itemsC($nmrC);
-	my ($algo, $ch, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm, $rtF, $nmb);
-	my ($tD, $tH, $tch) = (0, 0, 0);
-	$rtF = $nmb = '' ;
-	my $lin1 = "Cuenta                                       Debe        Haber"  . "\n";
-	print ARCHIVO $lin1 ;
-	my $lin2 = "-"x63;
-	print ARCHIVO $lin2 . "\n" ;
-	foreach $algo ( @data ) {
-		$cm = $algo->[1];  
-		$ncta = substr $bd->nmbCuenta($cm),0,30 ;
-		$mntD = $mntH = $pesos->format_number(0);
-		$mntD = $pesos->format_number( $algo->[2] ); 
-		$tD += $algo->[2] ;
-		$mntH = $pesos->format_number( $algo->[3] );
-		$tH += $algo->[3] ;
-		$ci = $algo->[6] ? substr $algo->[6], 0, 1 : '' ;
-		$dcm = $ci eq '' ? '' : "$algo->[6] $algo->[7]" ;
-		$rtF = $algo->[5] if $ci eq 'F';
-		if ($algo->[6] eq 'CH') {
-			$ch = $algo->[7] ;
-			$nBanco = $ncta;
-			$tch += 1 ;
-		}
-		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;
-		print ARCHIVO $lin ;
-	}
-	print ARCHIVO $lin2 . "\n";
-	$lin = sprintf("%36s %12s %12s", "Totales" ,
-			$pesos->format_number($tD), $pesos->format_number($tH) ) . "\n";
-	print ARCHIVO $lin ;
-	print ARCHIVO $lin2 . "\n\n";
-	
-	$nmb = $bd->buscaT($rtF) ;
-	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n" if $nmb;
-	if ( $tch == 1 ) {
-		print ARCHIVO "Cheque #: $ch   Banco: $nBanco \n" ;
-	} else {
-		print ARCHIVO "Cheques del Banco $nBanco\n" if $tch > 0 ;
-	}
-	
-	print ARCHIVO "\n\n__________________     _______________    __________________   ___________" ;
-	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme         RUT" ;
-	
-	close ARCHIVO ;
-	system "lp $d";
-	$Numero = ' ' ;
+	if ( $Numero eq '' ) {
+		$Mnsj = "Indicar Número";
+		return ;
+	} else {	
+		$ut->imprimirC($bd,$Numero,$Empresa);
+	}	
+	$Numero = '' ;
 }
 
 # Fin del paquete

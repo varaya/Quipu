@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 28.12.2009  
+#  UM : 29.12.2009  
 
 use prg::BaseDatos;
 use strict;
@@ -160,6 +160,8 @@ sub opAjustes {
  	Ajustes->crea($vp, $bd, $ut, $mt ); } ],
  ['command' => "BH", -command => sub { require prg::AjustaBH; 
  	AjustaBH->crea($vp, $bd, $ut, $mt ); } ],
+ ['command' => "Nº CH", -command => sub { require prg::AjustaCH; 
+ 	AjustaCH->crea($vp, $bd, $ut, $mt ); } ], "-", 
  ['command' => "Asigna NC", -command => sub { require prg::AsignaNC; 
  	AsignaNC->crea($vp, $bd, $ut, $mt ); } ]]
 }

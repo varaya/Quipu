@@ -5,12 +5,13 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 20.10.2009 
+#  UM : 29.12.2009 
 
 package Utiles;
 
 use Encode 'decode_utf8';
 use Date::Simple ('ymd','today');
+use Number::Format;
 
 sub crea
 {
@@ -242,12 +243,95 @@ sub ayuda
 sub meses
 {
 	my @m = ( ['01','Enero'], ['02','Febrero'], ['03','Marzo'],
-		['04','Abril'], ['05','Mayo'], ['06','Junio'], 
-		['07','Julio'], ['08','Agosto'], ['09','Septiembre'],
-		['10','Octubre'], ['11','Noviembre'], ['12','Diciembre'],
-		['0','Todos'] ) ;
+		['04','Abril'], ['05','Mayo'], ['06','Junio'], ['07','Julio'], 
+		['08','Agosto'], ['09','Septiembre'], ['10','Octubre'], 
+		['11','Noviembre'], ['12','Diciembre'], ['0','Todos'] ) ;
 	
 	return @m ;
+}
+
+sub imprimirC ( $ $ $ ) # imprime comprobante
+{
+	my ($esto, $bd, $Numero, $Empresa) = @_;
+	
+	my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
+	my $tc = {};
+	$tc->{'I'} = 'Ingreso';
+	$tc->{'E'} = 'Egreso';
+	$tc->{'T'} = 'Traspaso';
+	my ($nmrC, $tipoC, $fecha, $glosa, $total, $nulo, $a, $mes, $dm, $ff);
+	
+	my @datos = $bd->datosCmprb($Numero) ;
+	$nmrC = $datos[0];
+	$tipoC = $tc->{$datos[3]};
+	$ff = $datos[2];
+	$a = substr $ff,0,4;
+	$mes = substr $ff,4,2;
+	$dm = substr $ff,6,2;
+	$fecha = "$dm/$mes/$a" ;
+	$glosa = $datos[1];
+	$total = $pesos->format_number( $datos[4] );
+	$nulo = $datos[5];
+	$ref = $datos[6];
+	
+	my $d = "var/cmprb.txt" ;
+	open ARCHIVO, "> $d" or die $! ;
+
+	my $lin = "\n$Empresa\n\nComprobante de $tipoC  # $nmrC              Fecha: $fecha\n" ;
+	print ARCHIVO $lin ;
+	print ARCHIVO "Glosa: $glosa\n\n";
+	my @data = $bd->itemsC($nmrC);
+	my ($algo, $ch, $cm, $ncta, $mntD, $mntH, $dt, $ci, $td, $dcm, $rtF, $nmb);
+	my ($tD, $tH, $tch) = (0, 0, 0);
+	$rtF = $nmb = $dcm = '' ;
+	my $lin1 = "Cuenta                                       Debe        Haber"  . "\n";
+	print ARCHIVO $lin1 ;
+	my $lin2 = "-"x62;
+	print ARCHIVO $lin2 . "\n" ;
+	foreach $algo ( @data ) {
+		$cm = $algo->[1];  
+		$ncta = substr $bd->nmbCuenta($cm),0,30 ;
+		$mntD = $mntH = $pesos->format_number(0);
+		$mntD = $pesos->format_number( $algo->[2] ); 
+		$tD += $algo->[2] ;
+		$mntH = $pesos->format_number( $algo->[3] );
+		$tH += $algo->[3] ;
+		$ci = $algo->[6] ? substr $algo->[6], 0, 1 : '' ;
+		$dcm = " " ;
+		if ( $ci eq 'S' and $algo->[5] ) {
+			$dcm = $bd->buscaT($algo->[5]) ;
+			$dcm = $bd->buscaP($algo->[5]) if not $dcm ;
+		} else {
+			$dcm =  "$algo->[6] $algo->[7]" ;
+		}
+		$rtF = $algo->[5] if $ci eq 'F';
+		if ($algo->[6] eq 'CH') {
+			$ch = $algo->[7] ;
+			$nBanco = $ncta;
+			$tch += 1 ;
+		}
+		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;
+		print ARCHIVO $lin ;
+	}
+	print ARCHIVO $lin2 . "\n";
+	$lin = sprintf("%36s %12s %12s", "Totales" ,
+			$pesos->format_number($tD), $pesos->format_number($tH) ) . "\n";
+	print ARCHIVO $lin ;
+	print ARCHIVO $lin2 . "\n\n";
+	
+	$nmb = $bd->buscaT($rtF) ;
+	print ARCHIVO "Pagado a: $nmb   RUT: $rtF\n" if $nmb;
+	if ( $tch == 1 ) {
+		print ARCHIVO "Cheque #: $ch   Banco: $nBanco \n" ;
+	} else {
+		print ARCHIVO "Cheques del Banco $nBanco\n" if $tch > 0 ;
+	}
+	
+	print ARCHIVO "\n\n__________________     _______________    __________________   ______________" ;
+	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme           RUT" ;
+	
+	close ARCHIVO ;
+#	system "lp $d";
 }
 
 1;
