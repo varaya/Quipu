@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 29.12.2009  
+#  UM : 03.01.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -16,7 +16,9 @@ use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
 
-my $version = "central.pl 0.93 al 29/12/2009";
+my $Ejercicio = $ARGV[0];
+
+my $version = "central.pl 0.93 al 03/01/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -27,6 +29,7 @@ $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 # Datos de configuración
 $bd = BaseDatos->crea('datosG.db3');
 @cnf = $bd->leeCnf();
+$cnf[0] = $Ejercicio ;
 $base = "$cnf[0].db3" ;	# nombre del archivo de datos (corresponde al año)
 $multiE = $cnf[3] ;  # habilita trabajar con varias empresas 
 $interE = $cnf[2] ;	# habilita empresas interrelaciondas
@@ -192,18 +195,18 @@ sub opContabiliza {
 
 sub opVentas {
 [['command' => "F. Emitidas", -command => sub { require prg::Fctrs; 
-	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0);} ], 
+	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,0,$Ejercicio,$Rut);} ], 
  ['command' => "FC Recibidas", -command => sub { require prg::Fctrs;
- 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1);} ] ]
+ 	Fctrs->crea($vp,$bd,$ut,'Ventas',$mt,$CCts,$iva,1,$Ejercicio,$Rut);} ] ]
 }
 
 sub opCompras {
 [['command' => "F. Recibidas", -command => sub { require prg::Fctrs; 
-	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,0); } ],
+	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,0,$Ejercicio,$Rut); } ],
  ['command' => "F. Especiales", -command => sub { require prg::FcmpE; 
 	FcmpE->crea($vp,$bd,$ut, $mt, $CCts, $iva) } ], 
  ['command' => "FT Emitidas", -command => sub { require prg::Fctrs;
- 	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,1);} ] ]
+ 	Fctrs->crea($vp,$bd,$ut,'Compras',$mt,$CCts,$iva,1,$Ejercicio,$Rut);} ] ]
 }
 
 sub opConsulta {
@@ -281,9 +284,9 @@ sub opListados {
 
 sub opCierre {
 [['command' => "Provisorio", -command => sub { require prg::CierreA;
- 	CierreA->crea($vp, $mt, $bd, $ut, $Rut,0);} ],
+ 	CierreA->crea($bd, $ut, $Rut,0, $Ejercicio);} ],
  ['command' => "Final", -command => sub { require prg::CierreA;
- 	CierreA->crea($vp, $mt, $bd, $ut, $Rut,1);} ] ]
+ 	CierreA->crea($bd, $ut, $Rut,1, $Ejercicio);} ] ]
 }
 
 sub opCuentas {

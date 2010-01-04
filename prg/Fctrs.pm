@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 26.11.2009
+#  UM : 03.01.2010
 
 package Fctrs;
 
@@ -20,7 +20,7 @@ use Number::Format;
 my ($Numero, $Id, $Glosa, $Fecha, $Neto, $Iva, $IvaR, $AE, $Total) ;
 my ($Codigo, $Detalle, $Monto, $DH, $CntaI, $RUT, $Dcmnt, $Cuenta, $CtaIVA2) ;
 my ($TipoCmp, $TipoD, $CtaIVA, $NombreCi, $NombreCt, $FechaV, $FechaC) ;
-my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj,$Nombre, $TipoF, $NmrI ); 
+my ($TotalI, $TablaD, $CC, $TCtaT, $Mnsj,$Nombre, $TipoF, $NmrI,$GrabaS ); 
 # Campos
 my ($codigo, $detalle, $glosa, $fecha, $neto, $iva, $ivaR, $ctaIVA) ;
 my ($monto, $rut, $tipoD, $dcmnt, $numero, $cuenta, $nombre) ;
@@ -37,7 +37,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipoF, $mt, $ucc, $pIVA, $trcr) = @_;
+	my ($esto, $vp, $bd, $ut, $tipoF, $mt, $ucc, $pIVA, $trcr, $ejer, $rtE ) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -51,6 +51,8 @@ sub crea {
 	$Numero = $bd->numeroC() + 1;
 	$NmrI = $Dcmnt = '';
 	$FechaC = $ut->fechaHoy();
+	my $aa = substr $FechaC, 6,4 ;
+	$GrabaS = $aa ne $ejer ? 1 : 0 ;
 	$RUT = $TipoF = '';
 	inicializaV();
 	$AE = 'A' ;
@@ -93,7 +95,7 @@ sub crea {
 	 
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
-
+	$bd->anexaSg("$rtE/$aa.db3") if $GrabaS ; # anexa BD del siguiente año, si corresponde
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$esto->{'ventana'} = $vnt;
@@ -714,6 +716,8 @@ sub contabiliza ( )
 	my $fv = $ut->analizaFecha($FechaV) if $FechaV ; 
 	$bd->grabaFct($TablaD, $RUT, $Dcmnt, $ff, $Total, $Iva, $Afecto, $Exento,
 		$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI, 0, 0, $IvaR);
+	$bd->grabaFAS("ant.$TablaD", $RUT, $Dcmnt, $ff, $Total, $Iva, $Afecto, $Exento,
+			$Numero, $TipoD, $fv, $fc, $CtaT, $TipoF, $NmrI, 0, 0, $IvaR) if $GrabaS ;		
 
 	limpiaCampos();
 	$bCnt->configure(-state => 'disabled');

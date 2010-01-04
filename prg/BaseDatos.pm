@@ -5,13 +5,14 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 29.12.2009
+#  UM: 03.01.2010
 
 package BaseDatos;
 
 use strict;
 use DBI;
 use Data::Dumper;
+
 sub crea
 {
   my ($esto, $nBD) = @_;
@@ -42,6 +43,14 @@ sub anexaBD
 	
 }
 
+sub anexaSg
+{
+	my ($esto,$base) = @_;
+	my $bd = $esto->{'baseDatos'};
+
+	$bd->do("ATTACH DATABASE '$base' AS ant;");
+	
+}
 
 # CONFIG: Rescata datos de configuración
 sub leeCnf( )
@@ -1140,6 +1149,16 @@ sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 	$sql->finish();
 }
 
+sub grabaFAS( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
+{
+	my ($esto,$tb,$rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$td,$fv,$fc,$cta,$tf,$no,$nl,$ie,$ivr) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,0,$nl,$cta,$tf,$no,$ie,$ivr);
+	$sql->finish();
+}
+
 sub anulaDct( $ $ $ )
 {
 	my ($esto,$rut,$dcm,$tabla) = @_;
@@ -1898,6 +1917,26 @@ sub modificaCH( $ $ $ $ )
 	$sql->execute($chq,$na, 'CH',$cmp);
 	
 	$sql->finish(); 	
+}
+
+sub copiaTablas ( $ ) # Corresponde la apertura del año siguiente 
+{
+	my ($esto, $bs ) = @_;
+	print "$bs \n";
+	my $bd = $esto->{'baseDatos'};
+	$bd->do("ATTACH DATABASE '$bs' AS ant;");
+	$bd->do("INSERT INTO ant.CCostos SELECT * FROM CCostos ");
+	$bd->do("INSERT INTO ant.Terceros SELECT * FROM Terceros ");
+	$bd->do("INSERT INTO ant.Personal SELECT * FROM Personal ");
+	$bd->do("INSERT INTO ant.CuentasI SELECT * FROM CuentasI ");
+	$bd->do("UPDATE ant.CuentasI SET Debe = 0, Haber = 0, Saldo = 0, TSaldo = '', Fecha_UM = ' ' " );
+	$bd->do("INSERT INTO ant.Mayor SELECT * FROM Mayor ");
+	$bd->do("UPDATE ant.Mayor SET Debe = 0, Haber = 0, Saldo = 0, TSaldo = '', Fecha_UM = ' ' " );
+	$bd->do("INSERT INTO ant.Compras SELECT * FROM Compras WHERE Pagada = 0 ");
+	$bd->do("UPDATE ant.Compras SET Mes = 0, Orden = 0");
+	$bd->do("INSERT INTO ant.Ventas SELECT * FROM Ventas WHERE Pagada = 0 ");
+	$bd->do("UPDATE ant.Ventas SET Mes = 0, Orden = 0");
+	$bd->do("INSERT INTO ant.Bancos SELECT * FROM Bancos");
 }
 
 # Termina el paquete

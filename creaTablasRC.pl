@@ -238,6 +238,7 @@ $bd->do("CREATE TABLE Terceros (
 	Cliente char(1),
 	Proveedor char(1),
 	Socio char(1), 
+	Honorario char(1),
 	Fecha_R char(10) )" );
 
 # Personal
