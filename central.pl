@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 03.01.2010  
+#  UM : 04.01.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -15,8 +15,10 @@ use Tk ;
 use Tk::BrowseEntry ;
 use prg::Utiles ;
 use Encode 'decode_utf8' ;
+use Date::Simple ('ymd','today');
 
-my $Ejercicio = $ARGV[0];
+my @aa = split /-/, today() ;	
+my $Ejercicio = $aa[0] ;
 
 my $version = "central.pl 0.93 al 03/01/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
@@ -131,7 +133,7 @@ if ( not $multiE ) {
 	@unaE = $bd->datosE();
 	$Rut = $unaE[1];
 	$Empr = decode_utf8($unaE[0]) ;
-	$Titulo = decode_utf8($unaE[0]) . " - $cnf[0]" ;
+	$Titulo = "$Empr  -  $cnf[0]" ;
 	activaE();
 } else {
 	$mRegistro->configure(-state => 'disabled');
@@ -172,6 +174,7 @@ sub opAjustes {
 sub opContabiliza {
  my ($tipoC, $tipoB, $tipoNC, $tipoND, $tipoA );
  $tipoC = $tipoB = $tipoNC = $tipoND = $tipoA = ' ';
+ my @x = ('Emitida', 'Recibida');
 
 [['cascade' => "Ventas", -tearoff => 0, -menuitems => opVentas() ],
  ['cascade' => "Compras", -tearoff => 0, -menuitems => opCompras() ],
@@ -180,11 +183,11 @@ sub opContabiliza {
  ['cascade' => "N. Crédito", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoNC ,  
 	-command => sub { require prg::NtsC;
-	NtsC->crea($vp,$bd,$ut,$tipoNC,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] ,
+	NtsC->crea($vp,$bd,$ut,$tipoNC,$mt,$CCts,$iva);} ], @x,],] ,
  ['cascade' => "N. Débito", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoND ,  
 	-command => sub { require prg::NtsD;
-	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], qw/Emitida Recibida/,],] , "-",
+	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], @x,],] , "-",
 ['cascade' => "Comprobante", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
 	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts,$Empr);}],
@@ -366,6 +369,11 @@ sub activaE {
 	$bd = BaseDatos->crea("$Rut/$base");
 	$bd->anexaBD();
 	datosBase() ;
+	# Busca periodos registrados
+	my @archivos = glob("$Rut/*.db3");
+	my $patron = "(.)\/([0-9]+)(.db3)";
+	my $a = @archivos - 1;
+	
 	# Agrega más opciones de menu, según la configuración
 	if ($CCts) { 
 		$mRegistro->AddItems("-", ['command' => "Centros de Costos",
@@ -389,6 +397,18 @@ sub activaE {
 		$mRegistro->command( -label => "Conciliación Banco",
 		-command => sub { use prg::RBanco; RBanco->crea($vp,$mt,$bd,$ut);} );
 	}
+	# Agrega menu para cambio de año si hay más de un archivo 
+	if ($a > 1) {
+		my $prd ;
+		my @ans = () ;
+		foreach $_ ( @archivos ) {
+			push @ans, "$2 " if /$patron/ ;
+		}
+		$mRegistro->AddItems("-",['cascade' => "Cambia Periodo", -tearoff => 0,
+ 		  -menuitems => [ map [ 'radiobutton', $_, -variable => \$prd, 
+ 		  -command => sub { cambiaP($prd);} ], @ans,],] );
+	}
+
 	$mRegistro->configure(-state => 'active');
 	$mContabiliza->configure(-state => 'active');
 	$mConsulta->configure(-state => 'active');
@@ -408,6 +428,21 @@ sub activaE {
 		$mMuestra->configure(-state => 'disabled');
 	} 
 	$ut->ayuda($mt,'G') if $datosE[10] and $cnf[1] ;
+}
+
+sub cambiaP ( $ )
+{
+	my ($p) = @_ ;
+	
+	$p =~ s/\s+$//;
+	$base = "$p.db3";
+	$Ejercicio = $p ;
+	# Cierra anterior y cambia base de datos
+	$bd->cierra();
+	$bd = BaseDatos->crea("$Rut/$base");
+	$bd->anexaBD();
+	datosBase() ;
+	$Titulo = "$Empr  -  $p";
 }
 
 sub datosBase {

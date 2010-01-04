@@ -40,7 +40,7 @@ sub crea {
 		$bd->copiaTablas($base);
 		$ut->mError("Cierre $mns procesado.");
 	} else {
-		$ut->mError("Cierre $mns NO procesado.");
+		$ut->mError("Cierre $mns YA procesado.");
 	}
 
 	bless $esto;

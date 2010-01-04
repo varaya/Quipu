@@ -1,6 +1,5 @@
 Faltantes:
 
-- Impagos
 - Conciliación Banco
 - Resultados por Centro de Costo
-- Cierre
+- Cierre final

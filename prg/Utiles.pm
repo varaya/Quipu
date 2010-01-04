@@ -331,7 +331,7 @@ sub imprimirC ( $ $ $ ) # imprime comprobante
 	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme           RUT" ;
 	
 	close ARCHIVO ;
-#	system "lp $d";
+	system "lp $d";
 }
 
 1;
