@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 25.10.2009
+#  UM: 06.01.2010
 
 package BltsH;
 
@@ -25,7 +25,7 @@ my ($bCan, $bCnt) ; 	# Botones
 	
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $mt, $ucc) = @_;
+	my ($esto, $vp, $bd, $ut, $mt, $ucc, $rtE, $ejer) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -34,12 +34,16 @@ sub crea {
   	# Inicializa variables
 	my %tp = $ut->tipos();
 	$Fecha = $ut->fechaHoy();
+	my $aa = substr $Fecha, 6,4 ;
+	$GrabaS = $aa ne $ejer ? 1 : 0 ;
+
 	$Numero = $bd->numeroC() + 1;
 	inicializaV();
 	$TipoD = "BH";
 
 	# Crea archivo temporal para registrar movimientos
 	$bd->creaTemp();
+	$bd->anexaSg("$rtE/$aa.db3") if $GrabaS ; # anexa BD del siguiente año, si corresponde
 
 	# Define ventana
 	my $vnt = $vp->Toplevel();
@@ -358,6 +362,7 @@ sub contabiliza ( $ )
 	# Graba Boleta
 	my $fv = $ut->analizaFecha($FechaV) if $FechaV ; 
 	$bd->grabaBH($RUT,$Dcmnt,$ff,$Total,$Impt,$Numero,$fv,$CtaTl,$Neto);
+	$bd->grabaAS($RUT,$Dcmnt,$ff,$Total,$Impt,$Numero,$fv,$CtaTl,$Neto) if $GrabaS ;
 
 	$bCnt->configure(-state => 'disabled');
 	

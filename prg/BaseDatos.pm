@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 03.01.2010
+#  UM: 06.01.2010
 
 package BaseDatos;
 
@@ -1475,6 +1475,17 @@ sub grabaBH( $ $ $ $ $ $ $ $ $ )
 	$sql->finish();
 }
 
+sub grabaAS( $ $ $ $ $ $ $ $ $ )
+{
+	my ($esto, $rut, $doc, $fch, $t, $im, $nmr, $fv, $cta, $nt) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("INSERT INTO ant.BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$im,$nmr,$fv,0,0,'',0,0,$cta);
+	
+	$sql->finish();
+}
+
 sub listaBH( $ )
 {
 	my ($esto, $mes) = @_;	
@@ -1936,6 +1947,8 @@ sub copiaTablas ( $ ) # Corresponde la apertura del año siguiente
 	$bd->do("UPDATE ant.Compras SET Mes = 0, Orden = 0");
 	$bd->do("INSERT INTO ant.Ventas SELECT * FROM Ventas WHERE Pagada = 0 ");
 	$bd->do("UPDATE ant.Ventas SET Mes = 0, Orden = 0");
+	$bd->do("INSERT INTO ant.BoletasH SELECT * FROM BoletasH WHERE Pagada = 0 ");
+	$bd->do("UPDATE ant.BoletasH SET Mes = 0 ");
 	$bd->do("INSERT INTO ant.Bancos SELECT * FROM Bancos");
 }
 

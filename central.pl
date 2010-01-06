@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 04.01.2010  
+#  UM : 06.01.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -179,7 +179,7 @@ sub opContabiliza {
 [['cascade' => "Ventas", -tearoff => 0, -menuitems => opVentas() ],
  ['cascade' => "Compras", -tearoff => 0, -menuitems => opCompras() ],
  ['command' => "Honorarios",	-command => sub { require prg::BltsH;
-	BltsH->crea($vp, $bd, $ut, $mt, $CCts) },],
+	BltsH->crea($vp, $bd, $ut, $mt, $CCts, $Rut, $Ejercicio) },],
  ['cascade' => "N. Crédito", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoNC ,  
 	-command => sub { require prg::NtsC;
