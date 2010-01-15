@@ -1,11 +1,11 @@
 #  AnulaC.pm - Anula comprobantes, incluyendo docs. incluidos
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2009 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 30.12.2009
+#  UM: 15.01.2010 
 
 package AnulaC;
 
@@ -147,7 +147,7 @@ sub muestraC {
 		$marco->insert('end', "Movimientos\n" , 'grupo');
 	}
 	@data = $bd->itemsC($nmrC);
-	my ($algo, $mov, $cm,$ncta, $mntD, $mntH, $dt, $ci,$td, $dcm,$pago);
+	my ($algo,$mov,$cm,$ncta,$mntD,$mntH,$dt,$ci,$td,$dcm,$pago,$tbl);
 	my $lin1 = "Cuenta                                      Debe       Haber Detalle";
 	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
@@ -160,7 +160,7 @@ sub muestraC {
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$mntH = $pesos->format_number( $algo->[3] );
 		$ci = $dcm = $dt = '' ;
-		$td =  $algo->[6] ;
+		$td =  $algo->[6] ; # Tipo de documento
 		if ($algo->[4]) {
 			$dt = decode_utf8($algo->[4]);
 		} 
@@ -169,8 +169,9 @@ sub muestraC {
 		}
 		if ( $td ) {
 			$dcm = "$td $algo->[7]";
-			$tbl = $tabla{$td} ;
+			$tbl = $tabla{$td} ; # Tabla correpondiente al tipo de documento
 			$pago = $bd->buscaFct($tbl, $algo->[5], $algo->[7], 'Pagada') if $tbl ne '' ;
+			$pago = 0 if $datos[3] eq 'E' ;
 		}
 		$dt = $dcm if  $algo->[6] eq 'CH' ;
 		$mov1 = sprintf("%-5s %-30s %11s %11s  %-15s", $cm, substr($ncta,0,30) ,
@@ -209,7 +210,7 @@ sub anula
 	$total = $datos[4] ;
 	my $aD = 0;
 	# Registra items temporales
-	my ($algo,$cm,$mntD,$mntH,$ci,$td,$dcm,$Mnt,$DH,$rut,$tabla);
+	my ($algo,$cm,$mntD,$mntH,$ci,$td,$dcm,$Mnt,$DH,$rut,$tbl);
 	foreach $algo ( @data ) {
 		$cm = $algo->[1];  # Código cuenta
 		$mntD =  $algo->[3] ; # Aquí se reversa la contabilización
@@ -232,9 +233,9 @@ sub anula
 	$bd->agregaCmp($Numero,$ff,$glosa,$total,'T',0);
 	$bd->actualizaCI($Numero,$ff);
 	# Anula documento, si corresponde
-	$tabla = tbl( $td );
-	$Mnsj = "$rut - $dcm - $tabla";
-	$bd->anulaDct($rut,$dcm,$tabla) if $aD and $tpC eq "T" ;
+	$tbl = $tabla{$td};
+	$Mnsj = "$rut - $dcm - $tbl";
+	$bd->anulaDct($rut,$dcm,$tbl) if $aD and $tpC eq "T" ;
 	# o bien elimina el pago contabilizado
 	if ($aD and $tpC eq 'I') { # Facturas de Venta, si es ingreso
 		$bd->anulaPago('Haber','FV','Ventas',$nmrC) ;
@@ -242,6 +243,7 @@ sub anula
 	if ($aD and $tpC eq 'E') { # Si es egreso Facturas de Compra o Boleta H.
 		$bd->anulaPago('Debe','FC','Compras',$nmrC) ;
 		$bd->anulaPago('Debe','BH','BoletasH',$nmrC) if $td eq 'BH' ;
+		$bd->anulaDocP($nmrC) ; # Anula cheque, si corresponde 
 	}
 	# Finalmente marca como nulo el comprobante anterior
 	$bd->anulaCmp($nmrC,$Numero);

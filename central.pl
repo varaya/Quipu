@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 #  central.pl - inicio del programa Quipu [Sistema de Contabilidad]
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2009 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;

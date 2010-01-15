@@ -1,11 +1,11 @@
 #  BaseDatos.pm - Manejo de la base de datos en SQLite 3.2 o superior
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2010 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 06.01.2010
+#  UM: 15.01.2010
 
 package BaseDatos;
 
@@ -1186,6 +1186,24 @@ sub anulaPago( $ $ $ $ )
 		$aCta->execute($algo->[2], $algo->[0], $algo->[1]);
 	}
 	# Condición de 'Pagada' se actualiza por un disparador de SQLite
+	$sql->finish();
+	$aCta->finish();
+}
+
+sub anulaDocP( $ )
+{ 
+	my ($esto, $nmr) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my ($aCta, $algo, $sql);
+	$sql = $bd->prepare("SELECT RUT, Documento FROM ItemsC
+		WHERE Numero = ? AND RUT <> '' AND TipoD = 'CH';");
+	$sql->execute($nmr);
+	$aCta = $bd->prepare("UPDATE DocsE SET Nulo = 1	WHERE RUT = ? AND Numero = ? AND Tipo = 'CH';");
+	while (my @fila = $sql->fetchrow_array) {
+		$algo = \@fila;
+		$aCta->execute($algo->[0], $algo->[1]);
+	}
 	$sql->finish();
 	$aCta->finish();
 }
