@@ -9,16 +9,17 @@ contabilidad.
 *Quipu* es un sistema de registro estadístico y contable utilizado por los 
 Incas antes de la llegada de los españoles. Consiste en un grupo de cuerdas de
 colores --cada una con distinta cantidad de nudos-- que están amarradas a una
-cuerda principal. 
+cuerda principal; se usaban en combinación con ábacos, en lo cuales se 
+hacían los cálculos aritméticos. 
 
 Por cierto se trata de un sistema algo más antiguo que la *partida 
 doble* desarrollada por Luca Paccioli, en la misma época en que Cristobal
-Colón llegaba al llamado 'Nuevo Continente'. La palabra *quipu* significa 
-*nudo* en quechua; también se suele escribir *kipu*, ya que en castellano
-se pronuncian igual. 
+Colón llegaba al llamado 'Nuevo Continente'. 
 
-Sobre este interesante sistema de registro en general sobre la cultura inca, 
-visitar el siguiente [sitio][ref] para más información. 
+La palabra *quipu* significa *nudo* en quechua; también se suele escribir *kipu*, 
+ya que en castellano se pronuncian igual. Sobre este interesante sistema de 
+registro y en general sobre la cultura inca, visitar el siguiente [sitio][ref] 
+para más información. 
 
    [ref]: http://incas.perucultural.org.pe/histec2.htm
 
@@ -84,22 +85,28 @@ Luego de haber cambiado de directorio, ejecutar el comando
 	perl modulos.pl
 	
 Esto permitirá verificar que estén instalados todos los módulos Perl que
-necesita el programa Quipu. Se falta alguno, deberá ser instalado antes 
+necesita el programa *Quipu*. Si falta alguno, deberá ser instalado antes 
 de seguir con la configuración. Se puede usar el programa `cpan` o alguna
 interfaz gráfica disponible en el sistema operativo.
 
 ### Configuración inicial
 
 Para usar el programa es necesario crear previamente una empresa y definir 
-un plan de cuentas. Esto se realiza en dos etapas:
+un plan de cuentas. Esto se realiza en las siguientes etapas:
 
 Primero, con el comando Linux
 
 	./configurar.pl &
 
 se accede a una interfaz gráfica para registrar datos básicos (año inicial,
-tasa del IVA) y crear la empresa, indicado RUT (en formato de números sin
-punto, guión y dígito verificador) y nombre.
+tasa del IVA) y crear la empresa, indicando RUT (en formato de números sin
+punto, guión y dígito verificador) y nombre de la empresa.
+
+Una vez creada la empresa, completar sus datos: activando el botón **Configura** 
+aparece una nueva ventana con tres pestañas; lo más importante es definir que 
+controles se quieren activar, haciendo las marcas correspondientes en la pestaña
+**Opciones**, ya que ello determina las funciones que deben aparecer en los
+corrientes menus del programa central.
 
 Segundo, con el comando 
 
@@ -108,12 +115,7 @@ Segundo, con el comando
 se entra la programa principal para completar la configuración inicial,
 mediante la siguientes acciones:
 
-1. Completar los datos de la empresa: opción de menú **Registra - Empresa**.
-Si se marca cualquiera de las características en la pestaña *Opciones*, una vez
-completados los datos, habrá que reiniciar el programa, para que se habiliten
-las opciones de menús correspondientes.
-
-2. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
+1. Crear el plan de cuentas, que se compone de cuentas y subgrupos de cuentas. 
 Están predefinidos los grandes grupos (Activo, Pasivo, Ingresos y Gastos) y
 un conjunto de subgrupos indispensables. Como absoluto mínimo deben existir las 
 siguientes cuentas (se indica el subgrupo; los nombres son indicativos y se pueden
@@ -129,10 +131,17 @@ modificar):
 	> + Ingresos por venta (30)
 	> + Costos de ventas (40)
 
-3. Registrar los datos de las cuentas a las que se imputa el monto total
+2. Registrar los datos de las cuentas a las que se imputa el monto total
 y el IVA, de las facturas de compra (Proveedores e IVA Crédito) y de venta 
 (Clientes e IVA Débito): opción de menú **Registra - Documento**. De esta 
 manera se facilita la contabilización de dichos documentos.
+
+Tercero: si se trata de una empresa que ya tiene una contabilidad, hay que 
+efectuar una primera apertura, para registrar los saldos iniciales y los
+documentos pendientes de pago. Para ello, utilizar el comando
+
+	./apertura.pl &
+ 
 
 ### Uso del programa
 
@@ -147,10 +156,9 @@ Para agregar nuevas empresas, se usa el comando
 
 	./configurar.pl &
 	
-y se completan sus datos desde la opción **Registra - Empresa** en el
-programa `central.pl`.
+y se completan sus datos, según lo indicado más arriba.
 
-El ingreso de los diversos documentos supone que están registrados
+El ingreso de los documentos por contabilizar supone que están registrados
 los datos básicos de los Clientes, Proveedores y Prestadores de Servicio, 
 según corresponda. Ello se realiza mediante la opción **Registra -Terceros**.
 
@@ -226,4 +234,4 @@ distribuye 'tal como está', sin garantía alguna, ya  sea directa o
 indirecta, respecto de algún uso particular o del rendimiento y calidad 
 del trabajo efectuado con él.
 
-(c) Víctor Araya R., 2009 - <varaya@programmer.net>
+(c) Víctor Araya R., 2010 - <varayar@gmail.com>
