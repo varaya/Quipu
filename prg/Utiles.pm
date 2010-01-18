@@ -5,13 +5,15 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 29.12.2009 
+#  UM : 18.01.2010 
 
 package Utiles;
 
 use Encode 'decode_utf8';
 use Date::Simple ('ymd','today');
 use Number::Format;
+
+my $valida = 1 ;
 
 sub crea
 {
@@ -107,7 +109,9 @@ sub vRut
 {
 	my ($esto, $rut) = @_;
 	
-   for ($rut) {           # elimina espacios en blanco
+	return 1 if not $valida ;
+	
+	for ($rut) {           # elimina espacios en blanco
         s/^\s+//;
         s/\s+$//;
     }
@@ -118,12 +122,12 @@ sub vRut
 	my @campos = split /-/, $rut;
 	my @digitos = (3, 2, 7, 6, 5, 4, 3, 2);
 	$rt = $campos[0];
-	$dvp = $campos[1];
+	$dvp = $campos[1] if $campos[1] ;
 	$lr = length($rt) - 1;
 	$j = @digitos;
 	$t = 0;
 
-	if ($dvp eq '' ) {return 0;}
+	return 0 if $dvp eq '' ;
 
 	# Calcula dv
 	until ($j-- == 0) {
@@ -139,6 +143,7 @@ sub vRut
 		$dvc = 0; 
 	}
 	my $res = ($dvc eq $dvp);
+	
 	return($res);
 }
 
@@ -331,7 +336,7 @@ sub imprimirC ( $ $ $ ) # imprime comprobante
 	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme           RUT" ;
 	
 	close ARCHIVO ;
-	system "lp $d";
+	system "lp -o cpi=12 $d";
 }
 
 1;

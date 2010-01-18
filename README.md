@@ -108,7 +108,7 @@ Una vez creada la empresa, completar sus datos: activando el botón **Configura*
 aparece una nueva ventana con tres pestañas; lo más importante es definir que 
 controles se quieren activar, haciendo las marcas correspondientes en la pestaña
 **Opciones**, ya que ello determina las funciones que deben aparecer en los
-corrientes menus del programa central.
+menus del programa central.
 
 Segundo, con el comando 
 
@@ -139,12 +139,13 @@ y el IVA, de las facturas de compra (Proveedores e IVA Crédito) y de venta
 manera se facilita la contabilización de dichos documentos.
 
 Tercero: si se trata de una empresa que ya tiene una contabilidad, hay que 
-efectuar una primera apertura, con el comando  
+efectuar una primera apertura; para ello usar el comando  
 
 	./apertura.pl &
 
 Este permite para ingresar los saldos iniciales y los documentos pendientes 
-de pago al inicio del periodo.
+de pago al inicio del periodo. Previamente se deben ingresar los datos de
+Clientes, Proveedores y Prestadores de Servicio (ver más abajo).
 
 
 ### Uso del programa
@@ -162,7 +163,7 @@ Para agregar nuevas empresas, se usa el comando
 	
 y se completan sus datos, según lo indicado más arriba.
 
-El ingreso de los documentos por contabilizar supone que están registrados
+Previo al ingreso de los documentos por contabilizar supone deben estar registrados
 los datos básicos de los Clientes, Proveedores y Prestadores de Servicio, 
 según corresponda. Ello se realiza mediante la opción **Registra -Terceros**.
 
@@ -184,7 +185,8 @@ en el programa, enviar sus datos al correo indicado al final.
 
 + Resultados por Centro de Costo
 + Cierre final
-+ Algunos informes anexos
++ Algunos informes anexos; y
++ Las Ayudas
 
 ##Licencia
 

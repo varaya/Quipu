@@ -5,7 +5,7 @@
 # Las bases de datos
 *.db?
 # Los informes generados
-*.pdf
+#*.pdf
 *.csv
 # Documento de trabajo OO
 *.od?

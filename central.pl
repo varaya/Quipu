@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 17.01.2010  
+#  UM : 18.01.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -20,7 +20,7 @@ use Date::Simple ('ymd','today');
 my @aa = split /-/, today() ;	
 my $Ejercicio = $aa[0] ;
 
-my $version = "central.pl 0.93 al 17/01/2010";
+my $version = "central.pl 0.93 al 18/01/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -28,6 +28,7 @@ my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,@ar
 my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$vnt2,$Titulo,$CCts,$CPto,$TipoL,@ans);
 $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 
+# Variables necesarias para cambiar año
 my $ya = 0 ;
 my $patron = "(.)\/([0-9]+)(.db3)";
 
@@ -54,7 +55,7 @@ my @ayds = ( ['G','Una Ayuda Básica'], ['O','Las Funciones'],
 # Creación de la interfaz gráfica
 my %tp = $ut->tipos();
 # Define y prepara la tamaño y ubicación de la ventana
-$vp->geometry("470x430+2+2");
+$vp->geometry("480x430+2+2");
 $vp->resizable(1,1);
 $vp->title("Quipu");
 
@@ -372,7 +373,7 @@ sub activaE {
 	
 	# Busca periodos registrados
 	@archivos = glob("$Rut/*.db3");
-	my $a = @archivos - 1;
+	my $a = @archivos ;
 	# Agrega botón para cambio de año si hay más de un archivo 
 	if ($a > 1 and not $ya) {
 		my $a = $vp->Photo(-file => "a.gif") ;
