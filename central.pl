@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 06.01.2010  
+#  UM : 17.01.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -20,13 +20,16 @@ use Date::Simple ('ymd','today');
 my @aa = split /-/, today() ;	
 my $Ejercicio = $aa[0] ;
 
-my $version = "central.pl 0.93 al 03/01/2010";
+my $version = "central.pl 0.93 al 17/01/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
-my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt);
-my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$Titulo,$CCts,$CPto,$TipoL);
+my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,@archivos);
+my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$vnt2,$Titulo,$CCts,$CPto,$TipoL,@ans);
 $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
+
+my $ya = 0 ;
+my $patron = "(.)\/([0-9]+)(.db3)";
 
 # Datos de configuración
 $bd = BaseDatos->crea('datosG.db3');
@@ -101,7 +104,6 @@ my $aydPC = $marcoAyd->Button( -text => "P.Cuentas",
 # Contenido título
 my $cEmpr = $marcoT->Label(-textvariable => \$Titulo, -bg => '#FEFFE6', 
 		-fg => '#800000',);
-$cEmpr->pack(-side => 'left', -expand => 1, -fill => 'x');
 if ($multiE) {
 	my $e = $vp->Photo(-file => "e.gif") ;
 	my $bSlc = $marcoT->Button(-image => $e, -command => sub { Empresa(); } ); 
@@ -109,7 +111,6 @@ if ($multiE) {
 }
 
 # Dibuja la interfaz gráfica
-
 # marcos
 $marcoT->pack(-side => 'top', -expand => 0, -fill => 'both');
 $marcoBM->pack(-side => 'top', -expand => 0, -fill => 'both');
@@ -321,7 +322,6 @@ sub Empresa
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
 	my $emprsT = $mDatos->Label(-text => " Empresa ");
-	require Tk::BrowseEntry ;
 	my $emprs = $mDatos->BrowseEntry( -variable => \$Empr, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -autolistwidth => 1,
@@ -369,10 +369,18 @@ sub activaE {
 	$bd = BaseDatos->crea("$Rut/$base");
 	$bd->anexaBD();
 	datosBase() ;
+	
 	# Busca periodos registrados
-	my @archivos = glob("$Rut/*.db3");
-	my $patron = "(.)\/([0-9]+)(.db3)";
+	@archivos = glob("$Rut/*.db3");
 	my $a = @archivos - 1;
+	# Agrega botón para cambio de año si hay más de un archivo 
+	if ($a > 1 and not $ya) {
+		my $a = $vp->Photo(-file => "a.gif") ;
+		my $bCP = $marcoT->Button(-image => $a, -command => sub { cambiaP(); } ); 
+		$bCP->pack(-side => 'left', -expand => 0, -fill => 'none');
+		$ya = 1 ;
+	}
+	$cEmpr->pack(-side => 'left', -expand => 1, -fill => 'x');
 	
 	# Agrega más opciones de menu, según la configuración
 	if ($CCts) { 
@@ -397,17 +405,6 @@ sub activaE {
 		$mRegistro->command( -label => "Conciliación Banco",
 		-command => sub { use prg::RBanco; RBanco->crea($vp,$mt,$bd,$ut);} );
 	}
-	# Agrega menu para cambio de año si hay más de un archivo 
-	if ($a > 1) {
-		my $prd ;
-		my @ans = () ;
-		foreach $_ ( @archivos ) {
-			push @ans, "$2 " if /$patron/ ;
-		}
-		$mRegistro->AddItems("-",['cascade' => "Cambia Periodo", -tearoff => 0,
- 		  -menuitems => [ map [ 'radiobutton', $_, -variable => \$prd, 
- 		  -command => sub { cambiaP($prd);} ], @ans,],] );
-	}
 
 	$mRegistro->configure(-state => 'active');
 	$mContabiliza->configure(-state => 'active');
@@ -430,19 +427,48 @@ sub activaE {
 	$ut->ayuda($mt,'G') if $datosE[10] and $cnf[1] ;
 }
 
-sub cambiaP ( $ )
+sub cambiaP ( )
 {
-	my ($p) = @_ ;
-	
-	$p =~ s/\s+$//;
-	$base = "$p.db3";
-	$Ejercicio = $p ;
-	# Cierra anterior y cambia base de datos
+	my ($prd, $algo) ;
+	@ans = () ;
+	foreach $_ ( @archivos ) {
+		push @ans, "$2 " if /$patron/ ;
+	}
+	# Define ventana
+	$vnt2 = $vp->Toplevel();
+	$vnt2->title("Periodo");
+	$vnt2->geometry("250x60+480+4"); # Tamaño y ubicación
+
+	my $mDatos = $vnt2->Frame(-borderwidth => 1);
+	my $mMensajes = $vnt2->Frame(-borderwidth => 2, -relief=> 'groove' );
+	my $prds = $mDatos->BrowseEntry(-variable => \$prd, -state => 'readonly',
+		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
+		-disabledforeground => '#000000', -listwidth => 20, -width => 10 ,
+		-browse2cmd => \&eligeA );
+
+	# Crea opciones para seleccionar año
+	foreach $algo ( @ans ) {
+		$prds->insert('end', $algo ) ;
+	}
+	$prds->pack(-side => "left", -anchor => "nw");
+	$mDatos->pack();
+}
+
+sub eligeA {
+
+	my ($jc, $Index) = @_;
+
+	my $prd = $ans[$Index];
+	$prd =~ s/\s+$//;
+	$base = "$prd.db3";
+	$Ejercicio = $prd ;
+	$Titulo = "$Empr  -  $prd";
+	# Cambia base de datos
 	$bd->cierra();
 	$bd = BaseDatos->crea("$Rut/$base");
 	$bd->anexaBD();
 	datosBase() ;
-	$Titulo = "$Empr  -  $p";
+	$vnt2->destroy();
 }
 
 sub datosBase {

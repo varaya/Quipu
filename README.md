@@ -9,8 +9,8 @@ contabilidad.
 *Quipu* es un sistema de registro estadístico y contable utilizado por los 
 Incas antes de la llegada de los españoles. Consiste en un grupo de cuerdas de
 colores --cada una con distinta cantidad de nudos-- que están amarradas a una
-cuerda principal; se usaban en combinación con ábacos, en lo cuales se 
-hacían los cálculos aritméticos. 
+cuerda principal; se usaba en combinación con el ábaco, que permitía efectuar 
+los cálculos aritméticos. 
 
 Por cierto se trata de un sistema algo más antiguo que la *partida 
 doble* desarrollada por Luca Paccioli, en la misma época en que Cristobal
@@ -28,14 +28,16 @@ para más información.
 
 Este programa está basado en las condiciones legales existentes en Chile,
 en especial respecto de las normas tributarias. Pero su propósito explícito
-es ir más allá y usar la contabilidad como una efectiva herramienta de 
-control.
+es usar la contabilidad como una efectiva herramienta de control.
 
 Se trata de aprovechar el obligado registro de la documentación
-mercantil (facturas, boletas, notas de débito y crédito) para registrar
-información adicional necesaria en el control de las gestión de la pequeñas
+mercantil (facturas, boletas, notas de débito y crédito y otros documentos) para 
+registrar información adicional necesaria en el control de las gestión de la pequeñas
 empresas.
 
+El programa está diseñado para lograr el control de los documentos que 
+reflejan las transacciones de la empresa en combinación con un apropiado
+plan de cuentas.
 
 ##Requisitos
 
@@ -137,11 +139,13 @@ y el IVA, de las facturas de compra (Proveedores e IVA Crédito) y de venta
 manera se facilita la contabilización de dichos documentos.
 
 Tercero: si se trata de una empresa que ya tiene una contabilidad, hay que 
-efectuar una primera apertura, para registrar los saldos iniciales y los
-documentos pendientes de pago. Para ello, utilizar el comando
+efectuar una primera apertura, con el comando  
 
 	./apertura.pl &
- 
+
+Este permite para ingresar los saldos iniciales y los documentos pendientes 
+de pago al inicio del periodo.
+
 
 ### Uso del programa
 
@@ -176,6 +180,11 @@ el comando
 en el directorio *Quipu*. Para estar informado de los cambios realizados 
 en el programa, enviar sus datos al correo indicado al final.
 
+### Faltantes
+
++ Resultados por Centro de Costo
++ Cierre final
++ Algunos informes anexos
 
 ##Licencia
 
