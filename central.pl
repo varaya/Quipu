@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 18.01.2010  
+#  UM : 25.01.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -20,7 +20,7 @@ use Date::Simple ('ymd','today');
 my @aa = split /-/, today() ;	
 my $Ejercicio = $aa[0] ;
 
-my $version = "central.pl 0.93 al 18/01/2010";
+my $version = "central.pl 0.93 al 25/01/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas

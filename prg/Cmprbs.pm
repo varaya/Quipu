@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 29.12.2009
+#  UM: 25.01.2010
 
 package Cmprbs;
 
@@ -466,6 +466,7 @@ sub buscaRut ()
 		return ;
 	}
 	$RUT = uc($RUT);
+	$Mnsj = " " ;
 	if ( not $ut->vRut($RUT) ) {
 		$Mnsj = "RUT no es válido";
 		$cuentaI->focus;
@@ -658,7 +659,6 @@ sub nuevo ( )
 	$bImp->configure(-state => 'disabled');
 	$bOtr->configure(-state => 'disabled');
 	limpiaCampos();
-	$BH = 0 ;
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 
 			-text => "No hay movimientos registrados" ) ;
@@ -721,7 +721,7 @@ sub limpiaCampos ( )
 {
 	$codigo->delete(0,'end');
 	$detalle->delete(0,'end');
-	$Monto = 0;
+	$Monto = $BH = 0;
 	$DH = $TipoD = $Documento = $RUT = $Cuenta = $cBanco = $FechaV = $Nombre = $cTipoD = '' ;
 	$NCCto = $CCto = '';
 	# Activa o no contabilizar el comprobante

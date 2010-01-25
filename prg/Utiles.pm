@@ -1,11 +1,11 @@
 #  Utiles.pm - Paquete de funciones comunes varias
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2010
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 18.01.2010 
+#  UM : 25.01.2010 
 
 package Utiles;
 
@@ -120,15 +120,14 @@ sub vRut
 	
 	$rt = $dvp = '';
 	my @campos = split /-/, $rut;
+	return 0 if not defined $campos[1]  ;
+	
 	my @digitos = (3, 2, 7, 6, 5, 4, 3, 2);
 	$rt = $campos[0];
-	$dvp = $campos[1] if $campos[1] ;
+	$dvp = $campos[1]  ;
 	$lr = length($rt) - 1;
 	$j = @digitos;
 	$t = 0;
-
-	return 0 if $dvp eq '' ;
-
 	# Calcula dv
 	until ($j-- == 0) {
 	  last if $lr lt 0;
@@ -336,7 +335,7 @@ sub imprimirC ( $ $ $ ) # imprime comprobante
 	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme           RUT" ;
 	
 	close ARCHIVO ;
-	system "lp -o cpi=12 $d";
+#	system "lp -o cpi=12 $d";
 }
 
 1;
