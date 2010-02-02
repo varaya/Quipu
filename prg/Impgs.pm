@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 28.12.2009
+#  UM: 02.02.2010
 
 package Impgs;
 
@@ -15,14 +15,14 @@ use Encode 'decode_utf8';
 use Number::Format;
 	
 # Variables válidas dentro del archivo
-my ($bImp,$bCan,$Mnsj,@cnf,$empr,$ord,$rutE, $tabla) ; 	
+my ($bImp,$bCan,$Mnsj,$ejerc,$empr,$ord,$rutE, $tabla) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE, $arc) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $arc, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -30,7 +30,7 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
-	@cnf = $bd->leeCnf();
+	$ejerc = $prd ;
 	$Cuenta = '';
 	$rutE = $rtE ;
 	$tabla = $arc ;
@@ -271,7 +271,7 @@ return ;
 	open ARCHIVO, "> $d" or die $! ;
 	$l =  '"'."$empr".'"';
 	print ARCHIVO "$l\n";
-	$l =  '"'."Libro Mayor  $cnf[0]  $nMes".'"';
+	$l =  '"'."Libro Mayor  $ejerc  $nMes".'"';
 	print ARCHIVO "$l\n";
 	$l = '"'."Cuenta: $Cuenta - $nmC".'"';
 	print ARCHIVO "$l\n";
@@ -289,7 +289,7 @@ return ;
 		$mntH = $saldoI;
 		$siHaber += $saldoI;
 	}
-	$fchI = "01/01/$cnf[0]";
+	$fchI = "01/01/$ejerc";
 	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	

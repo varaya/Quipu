@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 20.10.2009 
+#  UM : 02.02.2010 
 
 package Compras;
 
@@ -14,7 +14,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 use Data::Dumper;
 # Variables válidas dentro del archivo
-my ($Mnsj, $mes, $nMes, @cnf, $empr, $rutE) ;	# Variables
+my ($Mnsj, $mes, $nMes, $empr, $rutE, $ejerc) ;	# Variables
 my ($Tt,$Iva,$Aft,$Ext,$IEsp,$TDcmt, $IvaR);
 my @lMeses = () ;;
 my ($bCan, $bImp) ; # Botones
@@ -23,7 +23,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -32,7 +32,7 @@ sub crea {
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	$FechaI = $ut->fechaHoy();
-	@cnf = $bd->leeCnf();
+	$ejerc = $prd ;
 	$nMes = '' ;
 	$rutE = $rtE ;
 	
@@ -144,7 +144,7 @@ sub informe ( $ $ ) {
 	$empr = decode_utf8($datosE[0]); 
 	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
-	$marco->insert('end', "Libro Compras  $nMes $cnf[0]\n", 'negrita');
+	$marco->insert('end', "Libro Compras  $nMes $ejerc\n", 'negrita');
 	my $lin1 = "\nNº  Fecha        Número  RUT        Proveedor                ";
 	my $lin1b = "      Afecto      Exento      IVA-CF    I.Espec.     IVA-DF       Total";
 	$lin1 .= $lin1b ;
@@ -161,7 +161,7 @@ sub informe ( $ $ ) {
 	# Notas de Débito
 	detalles($marco,$lin1,$lin2,$ut,$bd,'ND','', $nd{ND} );
 	# Resumen mes
-	$marco->insert('end', "\nResumen $nMes $cnf[0]\n\n", 'negrita');
+	$marco->insert('end', "\nResumen $nMes $ejerc\n\n", 'negrita');
 	
 	$lin1 = "Tipo de Documento              Cant." . $lin1b ;
 	$lin2 = "-"x107;
@@ -283,7 +283,7 @@ sub csv ( $ )
 	open ARCHIVO, "> $d" or die $! ;
 	my $l = "$empr\n";
 	print ARCHIVO $l ;
-	$l = "Libro Compras  $nMes $cnf[0]\n";
+	$l = "Libro Compras  $nMes $ejerc\n";
 	print ARCHIVO $l ;
 	$l = "Nº,Fecha,Factura,RUT,Proveedor,Afecto,Exento,IVA-CF,IEspec.,IVA-DF,Total\n";
 	print ARCHIVO $l ;
@@ -294,7 +294,7 @@ sub csv ( $ )
 	detalleCSV($ut,$bd,'NC','',$nd{NC});
 	detalleCSV($ut,$bd,'ND','',$nd{ND});
 	# Resumen
-	$l = "\n,,,,Resumen $nMes $cnf[0]\n";
+	$l = "\n,,,,Resumen $nMes $ejerc\n";
 	print ARCHIVO $l ;
 	$l = ",,,,Tipo de Documento,Afecto,Exento,IVA-CF,I.Espec.,IVA-DF,Total,Cant.\n";
 	print ARCHIVO $l ;

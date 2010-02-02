@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 25.01.2010  
+#  UM : 02.02.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -217,11 +217,11 @@ sub opCompras {
 sub opConsulta {
 my $tipoD = $tipo = '';
 [ ['command' => "Balance inicial", -command => sub { require prg::BalanceI;
-	BalanceI->crea($vp, $mt, $bd, $ut, $Rut);} ],
+	BalanceI->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],
   ['command' => "Balance al día", -command => sub { require prg::Balance;
-	Balance->crea($vp, $mt, $bd, $ut, $Rut);} ], "-",
+	Balance->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], "-",
  ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
-	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut);} ],  
+	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],  
  ['cascade' => "Impagos", -tearoff => 0, -menuitems => opImpagos() ] , "-", 
  ['command' => "Comprobantes", -command => sub { require prg::CCmprb;
 	CCmprb->crea($vp, $mt, $bd, $ut, $Rut,$Empr);} ],
@@ -244,27 +244,27 @@ sub opProcesa {
 [['cascade' => "Balances",-tearoff => 0, -menuitems => opBalances() ],
  ['cascade' => "Resultados",-tearoff => 0, -menuitems => opResultados() ],"-",
  ['command' => "Libro Diario", -command => sub { require prg::Diario;
-	Diario->crea($vp, $mt, $bd, $ut, $Rut);} ], 
+	Diario->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], 
  ['cascade' => "Libro Mayor", -tearoff => 0, -menuitems => opLMayor() ], "-",
  ['command' => "Libro Ventas", -command => sub { require prg::Ventas;
-	Ventas->crea($vp, $mt, $bd, $ut, $Rut);} ],
+	Ventas->crea($vp, $mt, $bd, $ut, $Rut,$Ejercicio);} ],
  ['command' => "Libro Compras",	-command => sub { require prg::Compras;
-	Compras->crea($vp, $mt, $bd, $ut, $Rut);} ],
+	Compras->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],
  ['command' => "Libro Honorarios",	-command => sub { require prg::Honorarios;
-	Honorarios->crea($vp, $mt, $bd, $ut, $Rut);} ],"-",
+	Honorarios->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],"-",
  ['cascade' => "Listados", -tearoff => 0, -menuitems => opListados() ] ]
 }
 
 sub opLMayor {
 [['command' => "por mes", -command => sub { require prg::Mayor;
-	Mayor->crea($vp, $mt, $bd, $ut, $Rut);} ],
+	Mayor->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],
 ['command' => "entre fechas", -command => sub { require prg::MayorF;
-	MayorF->crea($vp, $mt, $bd, $ut, $Rut);} ] ]
+	MayorF->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ] ]
 }
 
 sub opBalances {
 [['command' => "Mensuales", -command => sub { require prg::CierreM;
-	CierreM->crea($vp, $mt, $bd, $ut, $Rut);} ], 
+	CierreM->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], 
  ['command' => "Clasificado", -command => sub { require prg::Trcrs;
  	Trcrs->crea($vp, $mt, $bd, $ut);} ],
  ['command' => "-Otros", -command => sub { require prg::Prsnl;
@@ -273,9 +273,9 @@ sub opBalances {
 
 sub opResultados {
 [['command' => "Mensuales", -command => sub { require prg::Rsltds;
-	Rsltds->crea($vp, $mt, $bd, $ut, $Rut);} ], 
+	Rsltds->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], 
  ['command' => "por Centros de Costos", -command => sub { require prg::CCCsts;
- 	CCCsts->crea($vp, $mt, $bd, $ut, $Rut);} ] ]
+ 	CCCsts->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ] ]
 }
 
 sub opListados {

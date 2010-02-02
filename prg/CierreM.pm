@@ -13,12 +13,12 @@ use Encode 'decode_utf8';
 use Number::Format;
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
-my ($empr,@cnf, $rutE, $mes);
+my ($empr, $ejerc, $rutE, $mes);
 my @data = ();
 
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -26,6 +26,7 @@ sub crea {
 
   	# Inicializa variables
 	$rutE = $rtE;
+	$ejerc = $prd ;
 	my %tp = $ut->tipos();
 	$nMes = '' ;
 	
@@ -137,7 +138,7 @@ sub csv ( $ )
 	open ARCHIVO, "> $d" or die $! ;
 
 	print ARCHIVO "$empr\n";
-	$l = "Balance Tributario  $cnf[0]";
+	$l = "Balance Tributario  $ejerc";
 	print ARCHIVO "$l\n";
 	$l = "Cod.,Cuenta,Debe,Haber,Deudor,Acreedor,Activo,Pasivo,Pérdidas,Ganancias";
 	print ARCHIVO "$l\n";
@@ -219,12 +220,11 @@ sub muestra ( $ $ )
 	# Datos generales
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
-	@cnf = $bd->leeCnf(); 
 
 	# Muestra el Balance
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
-	$mt->insert('end', "Balance a $nMes $cnf[0]\n\n", 'negrita');
+	$mt->insert('end', "Balance a $nMes $ejerc\n\n", 'negrita');
 	my $lin1 = sprintf("%-5s %-21s", 'Cod.', 'Cuenta') ;
 	$lin1 .= "           Debe          Haber        Deudor      Acreedor",
 	$lin1 .= "        Activo       Pasivo      Pérdidas    Ganancias";

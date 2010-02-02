@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 21.07.2009
+#  UM: 02.02.2010
 
 package Balance;
 
@@ -13,12 +13,12 @@ use Encode 'decode_utf8';
 use Number::Format;
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
-my ($empr,@cnf, $rutE);
+my ($empr, $ejerc, $rutE);
 my @data = ();
 
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -26,6 +26,7 @@ sub crea {
 
   	# Inicializa variables
 	$rutE = $rtE;
+	$ejerc = $prd ;
 	my %tp = $ut->tipos();
 
 	# Obtiene lista de cuentas con movimiento
@@ -105,7 +106,7 @@ sub csv ( $ )
 	open ARCHIVO, "> $d" or die $! ;
 
 	print ARCHIVO "$empr\n";
-	$l = "Balance Tributario  $cnf[0]";
+	$l = "Balance Tributario  $ejerc";
 	print ARCHIVO "$l\n";
 	$l = "Cod.,Cuenta,Debe,Haber,Deudor,Acreedor,Activo,Pasivo,Pérdidas,Ganancias";
 	print ARCHIVO "$l\n";
@@ -176,11 +177,10 @@ sub muestra ( $ $ )
 	# Datos generales
 	@datosE = $bd->datosEmpresa($rutE);
 	$empr = decode_utf8($datosE[0]); 
-	@cnf = $bd->leeCnf(); 
 
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
-	$mt->insert('end', "Balance Tributario  $cnf[0]\n\n", 'negrita');
+	$mt->insert('end', "Balance Tributario  $ejerc\n\n", 'negrita');
 	my $lin1 = sprintf("%-5s %-21s", 'Cod.', 'Cuenta') ;
 	$lin1 .= "           Debe          Haber        Deudor      Acreedor",
 	$lin1 .= "        Activo       Pasivo      Pérdidas    Ganancias";

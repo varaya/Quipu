@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 21.12.2009
+#  UM : 02.02.2010
 
 package CIndvdl;
 
@@ -14,7 +14,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 
 # Variables válidas dentro del archivo
-my ($Mnsj, $rut, $RUT, @cnf, $empr, $Tipo, $Nombre, $rutE) ;	# Variables
+my ($Mnsj, $rut, $RUT, $ejerc, $empr, $Tipo, $Nombre, $rutE) ;	# Variables
 my @lMeses = () ;
 my @datos = () ;
 my @data = () ;
@@ -25,14 +25,14 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
 	$esto->{'mensajes'} = $ut;
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	$FechaI = $ut->fechaHoy();
-	@cnf = $bd->leeCnf();
+	$ejerc = $prd ;
 	$RUT = $Tipo = '' ;
 	$rutE = $rtE;
 	%tabla = ('BH' => 'Boletas Honorarios' ,'FC' => 'Facturas de Compras' ,
@@ -237,7 +237,7 @@ sub informeH ( $ $ ) {
 	my $fechaUM = $datosCI[5];
 	my $lst = "-"x64 ;
 	my $movST = sprintf("%17s %-62s",'',$lst) ;
-	$marco->insert('end', "$empr  $cnf[0]\n", 'negrita');
+	$marco->insert('end', "$empr  $ejerc\n", 'negrita');
 	$marco->insert('end', "Cuenta Corriente $Nombre  Rut: $RUT\n\n", 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 	my $lin1 = "   # T Fecha      Glosa                                 ";
@@ -257,7 +257,7 @@ sub informeH ( $ $ ) {
 		$tHaber += $saldoI;
 	}
 	$mov = sprintf("%4s %-1s %10s %-40s %11s %11s",
-		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
+		'','',"01/01/$ejerc",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n\n", 'detalle' ) ;
 	my ($stD, $stH, $nmbC, $aTd, $Td );
 	$nmbC = $aTd = '' ;
@@ -385,7 +385,7 @@ sub csvH ( $ )
 	
 	$d = "$rutE/csv/cc$RUT.csv" ;
 	open ARCHIVO, "> $d" or die $! ;
-	$l =  '"'."$empr  $cnf[0]".'"';
+	$l =  '"'."$empr  $ejerc".'"';
 	print ARCHIVO "$l\n";
 	$l = '"'."Cuenta Corriente  $Nombre  Rut: $RUT".'"';
 	print ARCHIVO "$l\n";
@@ -402,7 +402,7 @@ sub csvH ( $ )
 		$mntH = $saldoI;
 		$tHaber += $saldoI;
 	}
-	$fchI = "01/01/$cnf[0]";
+	$fchI = "01/01/$ejerc";
 	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	

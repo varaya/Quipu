@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 21.07.2009
+#  UM: 02.02.2010
 
 package Diario;
 
@@ -15,7 +15,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 
 # Variables válidas dentro del archivo
-my ($FechaI, $FechaF, $tc, $Mnsj, @cnf, $rutE, $tgD, $tgH) ;	# Variables
+my ($FechaI, $FechaF, $tc, $Mnsj, $ejerc, $rutE, $tgD, $tgH) ;	# Variables
 my ($fechaI, $fechaF) ; # Campos
 
 my ($bCan, $bImp) ; # Botones
@@ -24,7 +24,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -32,9 +32,9 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
-	@cnf = $bd->leeCnf();
+	$ejerc = $prd ;
 	$rutE = $rtE ;
-	$FechaI = "1/1/$cnf[0]";
+	$FechaI = "1/1/$ejerc";
 	$FechaF = $ut->fechaHoy();
 	$tc->{'I'} = 'Ingreso';
 	$tc->{'E'} = 'Egreso';
@@ -171,7 +171,7 @@ sub informe ( $ $  $) {
 	}
 	$tgD = $tgH = 0;
 	$marco->delete('0.0','end');
-	$marco->insert('end', "Libro Diario  $cnf[0]  -  $empr\n", 'negrita');
+	$marco->insert('end', "Libro Diario  $ejerc  -  $empr\n", 'negrita');
 	my $lin1 = "\nFecha      Detalle                            Código        Debe        Haber";
 	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
@@ -270,7 +270,7 @@ sub csv
 
 	$d = "$rutE/csv/diario.csv" ;
 	open ARCHIVO, "> $d" or die $! ;
-	$l =  '"'."Libro Diario  $cnf[0]  -  $empr".'"';
+	$l =  '"'."Libro Diario  $ejerc  -  $empr".'"';
 	print ARCHIVO "$l\n";
 	$l = "Fecha,Detalle,Código,Debe,Haber";
 	print ARCHIVO "$l\n";

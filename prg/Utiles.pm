@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 25.01.2010 
+#  UM : 02.02.2010 
 
 package Utiles;
 
@@ -306,7 +306,8 @@ sub imprimirC ( $ $ $ ) # imprime comprobante
 			$dcm = $bd->buscaT($algo->[5]) ;
 			$dcm = $bd->buscaP($algo->[5]) if not $dcm ;
 		} else {
-			$dcm =  "$algo->[6] $algo->[7]" ;
+			$dcm =  "$algo->[6] $algo->[7]" if $algo->[7] ;
+			$dcm = $algo->[4] if $ci eq '' or $algo->[6] eq 'XZ';
 		}
 		$rtF = $algo->[5] if $ci eq 'F';
 		if ($algo->[6] eq 'CH') {

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 11.11.2009
+#  UM: 02.02.2010
 
 package MayorF;
 
@@ -15,14 +15,14 @@ use Encode 'decode_utf8';
 use Number::Format;
 	
 # Variables válidas dentro del archivo
-my ($bImp,$bCan,$fechaF,$fechaI,$Mnsj,$Cuenta,@cnf,$empr,$rutE,$FechaI,$FechaF,$cuenta) ; 	
+my ($bImp,$bCan,$fechaF,$fechaI,$Mnsj,$Cuenta,$ejerc,$empr,$rutE,$FechaI,$FechaF,$cuenta) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -30,11 +30,11 @@ sub crea {
 
 	# Inicializa variables
 	my %tp = $ut->tipos();
-	@cnf = $bd->leeCnf();
+	$ejerc = $prd ;
 	$Cuenta = '';
 	$rutE = $rtE ;
 #	$FechaI = $FechaF = "";
-	$FechaI = "1/1/$cnf[0]";
+	$FechaI = "1/1/$ejerc";
 	$FechaF = $ut->fechaHoy();
 
 	# Define ventana
@@ -237,7 +237,7 @@ sub muestraM ( $ $ $ $)
 	$empr = decode_utf8($datosE[0]); 
 	$marco->delete('0.0','end');
 	$marco->insert('end', "$empr\n", 'negrita');
-	$marco->insert('end', "Libro Mayor  $cnf[0] del $FechaI al $FechaF\n", 'negrita');
+	$marco->insert('end', "Libro Mayor  $ejerc del $FechaI al $FechaF\n", 'negrita');
 	$marco->insert('end', "Cuenta: $Cuenta - $nmC\n\n" , 'grupo');
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 
@@ -262,7 +262,7 @@ sub muestraM ( $ $ $ $)
 		$siHaber += $saldoI;
 	}
 	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",
-		'','',"01/01/$cnf[0]",$dt,$mntD,$mntH) ;
+		'','',"01/01/$ejerc",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
@@ -367,7 +367,7 @@ sub csv ( )
 	open ARCHIVO, "> $d" or die $! ;
 	$l =  '"'."$empr".'"';
 	print ARCHIVO "$l\n";
-	$l =  '"'."Libro Mayor  $cnf[0]  $nMes".'"';
+	$l =  '"'."Libro Mayor  $ejerc  $nMes".'"';
 	print ARCHIVO "$l\n";
 	$l = '"'."Cuenta: $Cuenta - $nmC".'"';
 	print ARCHIVO "$l\n";
@@ -385,7 +385,7 @@ sub csv ( )
 		$mntH = $saldoI;
 		$siHaber += $saldoI;
 	}
-	$fchI = "01/01/$cnf[0]";
+	$fchI = "01/01/$ejerc";
 	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	

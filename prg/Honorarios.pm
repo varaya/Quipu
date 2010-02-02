@@ -14,7 +14,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 
 # Variables válidas dentro del archivo
-my ($Mnsj, $mes, $nMes, @cnf, $empr, $rutE) ;	# Variables
+my ($Mnsj, $mes, $nMes, $empr, $rutE, $ejerc) ;	# Variables
 my ($Tt, $Im, $Nt);
 my @lMeses = () ;
 my @datos = ();
@@ -24,7 +24,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -33,7 +33,7 @@ sub crea {
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	$FechaI = $ut->fechaHoy();
-	@cnf = $bd->leeCnf();
+	$ejerc = $prd ;
 	$nMes = '' ;
 	$rutE = $rtE ;
 	
@@ -141,7 +141,7 @@ sub informe ( $ $ ) {
 	$empr = decode_utf8($datosE[0]); 
 	# Titulares
 	$marco->insert('end', "$empr\n", 'negrita');
-	$marco->insert('end', "Libro Honorarios  $nMes $cnf[0]\n", 'negrita');
+	$marco->insert('end', "Libro Honorarios  $nMes $ejerc\n", 'negrita');
 	my $lin1 = "\nFecha        Número  RUT       Prestador                        ";
 	$lin1 .= "          Neto   Retención       Total";
 	my $lin2 = "-"x102;
@@ -210,7 +210,7 @@ sub csv ( $ )
 	open ARCHIVO, "> $d" or die $! ;
 	my $l = "$empr\n";
 	print ARCHIVO $l ;
-	$l = "Libro Honorarios  $nMes $cnf[0]\n";
+	$l = "Libro Honorarios  $nMes $ejerc\n";
 	print ARCHIVO $l ;
 	$l = "Fecha,Número,RUT,Prestador,Neto,Retención,Total\n";
 	print ARCHIVO $l ;

@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 25.09.2009
+#  UM: 02.02.2010
 
 package CCCsts;
 
@@ -13,12 +13,12 @@ use Encode 'decode_utf8';
 use Number::Format;
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
-my ($empr ,@cnf, $rutE, $mes, @total, $tg);
+my ($empr, $ejerc, $rutE, $mes, @total, $tg);
 my @data = ();
 
 sub crea {
 
-	my ($esto, $vp, $mt, $bd, $ut, $rtE) = @_;
+	my ($esto, $vp, $mt, $bd, $ut, $rtE, $prd) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -26,6 +26,7 @@ sub crea {
 
   	# Inicializa variables
 	$rutE = $rtE;
+	$ejerc = $prd ;
 	my %tp = $ut->tipos();
 	$nMes = '' ;
 	
@@ -135,7 +136,7 @@ sub csv ( $ )
 	open ARCHIVO, "> $d" or die $! ;
 
 	print ARCHIVO "$empr\n";
-	$l = "Estados de Resultados a $nMes $cnf[0]";
+	$l = "Estados de Resultados a $nMes $ejerc";
 	print ARCHIVO "$l\n";
 	$l = "Cod.,Cuenta";
 	foreach ( @i ) {
@@ -206,7 +207,7 @@ sub muestra ( $ $ )
 	# Muestra el Estado de Resultados por CC
 	$mt->delete('0.0','end');
 	$mt->insert('end', "$empr\n", 'negrita');
-	$mt->insert('end', "Resultados por Centros de Costos a $nMes $cnf[0]\n", 'negrita');
+	$mt->insert('end', "Resultados por Centros de Costos a $nMes $ejerc\n", 'negrita');
 	$mt->insert('end', "Cifras en miles de pesos\n");
 	my $lin1 = sprintf("%-5s %-21s", 'Cod.', 'Cuenta') ;
 	foreach ( @i ) {
