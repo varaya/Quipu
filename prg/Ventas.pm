@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 02.02.2010 
+#  UM : 07.04.2010 
 
 package Ventas;
 
@@ -341,15 +341,14 @@ sub detalleCSV ( )
 		$nulo = $a->[7]; 
 		$ni = $a->[9];
 		$cmpr = $a->[10];
-		if ( not $nulo ) {
-			$l = "$ni,$fch,$nm,$rt,$nmb,$a->[5],$a->[6],$a->[4],$a->[11],$a->[3],$cmpr\n";
-			print ARCHIVO $l ;
-			$Tt += $a->[3] ;
-			$Iva += $a->[4] ;
-			$Aft += $a->[5] ;
-			$Ext += $a->[6] ;
-			$IvaR += $a->[11];
-		}
+		$a->[11] = 0 if not $a->[11] ;
+		$l = "$ni,$fch,$nm,$rt,$nmb,$a->[5],$a->[6],$a->[4],$a->[11],$a->[3],$cmpr\n";
+		print ARCHIVO $l ;
+		$Tt += $a->[3] ;
+		$Iva += $a->[4] ;
+		$Aft += $a->[5] ;
+		$Ext += $a->[6] ;
+		$IvaR += $a->[11] ;
 	}
 	$l = ",,,,Totales,$Aft,$Ext,$Iva,$IvaR,$Tt\n";
 	print ARCHIVO $l ;

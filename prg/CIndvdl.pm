@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 02.02.2010
+#  UM : 07.04.2010
 
 package CIndvdl;
 
@@ -174,6 +174,12 @@ sub informeP ( $ $ $ ) {
 	if (@data) {
 		$h = 1 ;
 		detalle($marco, $ut, $tbl, $h) ;
+	}
+	$tbl = "DocsE"  ;
+	@data = $bd->datosDcs($RUT,$tbl,'LT',1);
+	if (@data) {
+		$h = 0 ;
+		detalle($marco, $ut, 'Letras', $h) ;
 	}
 	if ( $c + $v + $h == 0 ) {
 		$marco->insert('end', "NO hay documentos pendientes\n\n", 'grupo');

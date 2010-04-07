@@ -1427,6 +1427,24 @@ sub datosFacts( $ $ )
 	return @datos; 
 }	
 
+sub datosDcs( $ $ $ $ )
+{
+	my ($esto, $Rut, $tbl, $tp, $impg) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	my @datos = ();
+	my $cns = "SELECT Numero,FechaE,Monto,Abonos,FechaV,Comprobante,Nulo,Abonos,Tipo,Cuenta FROM $tbl WHERE RUT = ? AND Tipo = ? " ;
+	$cns .= " AND Abonos < Monto ORDER BY FechaE " if $impg ;
+	my $sql = $bd->prepare($cns);
+	$sql->execute($Rut, $tp);
+	# crea una lista con referencias a las listas de registros
+	while (my @fila = $sql->fetchrow_array) {
+		push @datos, \@fila;
+	}
+	$sql->finish();
+	
+	return @datos; 
+}	
+
 sub datosImps( $ $ )
 {
 	my ($esto, $tbl, $ord) = @_;	

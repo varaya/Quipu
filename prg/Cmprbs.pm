@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 25.01.2010
+#  UM: 07.04.2010
 
 package Cmprbs;
 
@@ -15,6 +15,7 @@ use Tk::LabFrame;
 use Tk::BrowseEntry;
 use Encode ;
 use Number::Format;
+use Date::Simple ('today');
 
 # Variables válidas dentro del archivo
 # Datos a registrar
@@ -33,6 +34,7 @@ my @datos = () ;	# Li$fecha->focus;sta items del comprobante
 my @listaD = () ;	# Lista tipos de documentos
 my @bancos = () ;	# Lista nombre de bancos
 my %tabla = () ; 	# Lista de tablas según tipo de documento
+my @aa = split /-/, today() ;
 
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -49,7 +51,7 @@ sub crea {
 	$Empresa = encode_utf8( $emp );
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
-	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', 'SD' => '', '' => '' ) ;
+	'ND' => 'Compras', 'NC' => '', 'LT' => 'DocsE', 'CH' => '', 'SD' => '', '' => '' ) ;
 	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
 	$Numero = $bd->numeroC() + 1;
@@ -422,6 +424,7 @@ sub validaD ( $ )
 	my ($bd) = @_;
 	
 	my $tbl = $tabla{$cTipoD} ;
+	$Mnsj = " " ;
 	if ( not $TipoD ) {
 		$Mnsj = "Seleccione un tipo de documento";
 		$tipoD->focus;
@@ -648,6 +651,7 @@ sub contabiliza ( )
 	$bCnt->configure(-state => 'disabled');
 	$bImp->configure(-state => 'active');
 	$bOtr->configure(-state => 'active');
+	$bNvo->configure(-state => 'disabled');
 }
 
 sub nuevo ( )
@@ -658,6 +662,7 @@ sub nuevo ( )
 
 	$bImp->configure(-state => 'disabled');
 	$bOtr->configure(-state => 'disabled');
+	$bNvo->configure(-state => 'normal');
 	limpiaCampos();
 	$listaS->delete(0,'end');
 	$listaS->insert('end', -itemtype => 'text', 
@@ -703,6 +708,12 @@ sub validaFecha ($ $ $ $ )
 	} elsif ( not $ut->analizaFecha($$v) ) {
 		$Mnsj = "Fecha incorrecta";
 		$$c->focus;
+	}
+	# Compara años
+	my $ax = substr $$v,6,4 ;
+	if (not $ax == $aa[0] ) {
+		$Mnsj = "Año NO corresponde";
+		$$c->focus;		
 	}
 }
 
