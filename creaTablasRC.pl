@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 30.09.2009 
+#  UM : 11.04.2010 
 
 use DBI;
 use strict;
@@ -180,7 +180,7 @@ $bd->do("CREATE TABLE DocsE (
 	Cuenta int(4) ,
 	RUT char(10),
 	FechaE char(10),
-	Monto int(8),
+	Total int(8),
 	Comprobante int(5),
 	FechaV char(10),
 	Abonos int(8),
@@ -189,13 +189,19 @@ $bd->do("CREATE TABLE DocsE (
 	Nulo int(1),
 	Tipo char(2) )" );
 
+$bd->do("CREATE TRIGGER PagoDE AFTER UPDATE OF Abonos ON DocsE
+  BEGIN
+    UPDATE DocsE SET Estado = CASE WHEN Abonos == Total THEN 'P'
+		ELSE Estado END ;
+  END " );
+
 # Documentos recibidos (cheques y letras)
 $bd->do("CREATE TABLE DocsR (
 	Numero char(10),
 	Cuenta int(4) ,
 	RUT char(10),
 	FechaE char(10),
-	Monto int(8),
+	Total int(8),
 	Comprobante int(5),
 	FechaV char(10),
 	Abonos int(8),
@@ -203,6 +209,12 @@ $bd->do("CREATE TABLE DocsR (
 	Estado char(1) ,
 	Nulo int(1),
 	Tipo char(2) )" );
+
+$bd->do("CREATE TRIGGER PagoDR AFTER UPDATE OF Abonos ON DocsR
+  BEGIN
+    UPDATE DocsR SET Estado = CASE WHEN Abonos == Total THEN 'P'
+		ELSE Estado END ;
+  END " );
 
 # Impuestos especiales
 $bd->do("CREATE TABLE ImptosE (

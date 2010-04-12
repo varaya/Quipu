@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 15.01.2010
+#  UM: 11.04.2010
 
 package BaseDatos;
 
@@ -828,11 +828,13 @@ sub agregaCmp( $ $ $ $ $ $ )
 	if ($Tipo eq 'I') { # Facturas de Venta, si es ingreso
 		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha) ;
 		actualizaP($bd,'Haber','ND','Ventas',$Numero,$Fecha) ;
+		actualizaP($bd,'Haber','LT','DocsR',$Numero,$Fecha) ;
 	}
 	if ($Tipo eq 'E') { # Si es egreso Factura Compra o Boleta Honorarios
 		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha) ;
 		actualizaP($bd,'Debe','ND','Compras',$Numero,$Fecha) ;
 		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha) if $bh ;
+		actualizaP($bd,'Debe','LT','DocsE',$Numero,$Fecha) ;
 	}
 }
 
@@ -1432,8 +1434,8 @@ sub datosDcs( $ $ $ $ )
 	my ($esto, $Rut, $tbl, $tp, $impg) = @_;	
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
-	my $cns = "SELECT Numero,FechaE,Monto,Abonos,FechaV,Comprobante,Nulo,Abonos,Tipo,Cuenta FROM $tbl WHERE RUT = ? AND Tipo = ? " ;
-	$cns .= " AND Abonos < Monto ORDER BY FechaE " if $impg ;
+	my $cns = "SELECT Numero,FechaE,Total,Abonos,FechaV,Comprobante,Nulo,Abonos,Tipo,Cuenta FROM $tbl WHERE RUT = ? AND Tipo = ? " ;
+	$cns .= " AND Abonos < Total ORDER BY FechaE " if $impg ;
 	my $sql = $bd->prepare($cns);
 	$sql->execute($Rut, $tp);
 	# crea una lista con referencias a las listas de registros

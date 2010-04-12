@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 07.04.2010
+#  UM: 11.04.2010
 
 package Cmprbs;
 
@@ -51,7 +51,7 @@ sub crea {
 	$Empresa = encode_utf8( $emp );
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
-	'ND' => 'Compras', 'NC' => '', 'LT' => 'DocsE', 'CH' => '', 'SD' => '', '' => '' ) ;
+	'ND' => 'Compras', 'NC' => '', 'LT' => 'DocsE', 'CH' => 'DocsE', 'SD' => '', '' => '' ) ;
 	$Nombre = "";
 	$Fecha = $ut->fechaHoy();
 	$Numero = $bd->numeroC() + 1;
@@ -110,10 +110,8 @@ sub crea {
 		-command => sub { &agrega($esto) } ); 
 	$bCnt = $mBotonesC->Button(-text => "Contabiliza", 
 		-command => sub { &contabiliza($esto) } ); 
-#	if ( $TipoCmp eq 'E') {
 	$bImp = $mBotonesC->Button(-text => "Imprime", -command => sub { &imprime($esto) } ); 
 	$bOtr = $mBotonesC->Button(-text => "Nuevo", -command => sub { &nuevo($esto) } ); 
-#	}
 	my $bCan = $mBotonesC->Button(-text => "Cancela", 
 		-command => sub { &cancela($esto) } );
 
@@ -424,7 +422,7 @@ sub validaD ( $ )
 	my ($bd) = @_;
 	
 	my $tbl = $tabla{$cTipoD} ;
-	$Mnsj = " " ;
+#	$Mnsj = " " ;
 	if ( not $TipoD ) {
 		$Mnsj = "Seleccione un tipo de documento";
 		$tipoD->focus;
@@ -436,7 +434,9 @@ sub validaD ( $ )
 			$documento->focus;
 			return 0;
 		}
-		if ( $bd->buscaFct($tbl, $RUT, $Documento, 'Pagada') ) {
+		my $cmp = 'Pagada' ;
+		$cmp = 'Estado' if $tbl eq 'DocsE' ;
+		if ( $bd->buscaFct($tbl, $RUT, $Documento, $cmp ) ) {
 			$Mnsj = "Ese documento ya está pagado.";
 			$documento->focus;
 			return 0;
@@ -451,7 +451,7 @@ sub validaD ( $ )
 		if ( $Monto > $mnt ) {
 			my $mt = $pesos->format_number( $mnt );
 			$Mnsj = "Monto documento es: \$ $mt";
-			$documento->focus;
+			$monto->focus;
 			return 0;
 		}
 	}
@@ -469,7 +469,7 @@ sub buscaRut ()
 		return ;
 	}
 	$RUT = uc($RUT);
-	$Mnsj = " " ;
+#	$Mnsj = " " ;
 	if ( not $ut->vRut($RUT) ) {
 		$Mnsj = "RUT no es válido";
 		$cuentaI->focus;
