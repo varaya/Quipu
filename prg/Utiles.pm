@@ -336,7 +336,7 @@ sub imprimirC ( $ $ $ ) # imprime comprobante
 	print ARCHIVO "\n    Emitido                 Vº Bº          Recibo Conforme           RUT" ;
 	
 	close ARCHIVO ;
-#	system "lp -o cpi=12 $d";
+	system "lp -o cpi=12 $d";
 }
 
 1;

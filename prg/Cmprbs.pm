@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 11.04.2010
+#  UM: 14.04.2010
 
 package Cmprbs;
 
@@ -420,6 +420,9 @@ sub agrega ( )
 sub validaD ( $ )
 {
 	my ($bd) = @_;
+
+	# no valida en caso de pago con letras
+	return 1 if $DH eq 'H' and $cTipoD eq 'LT' ; 
 	
 	my $tbl = $tabla{$cTipoD} ;
 #	$Mnsj = " " ;
