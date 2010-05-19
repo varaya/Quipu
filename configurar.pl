@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 07.12.2009
+#  UM: 19.05.2010
 
 use prg::BaseDatos;
 use Tk;
@@ -18,9 +18,9 @@ use Encode 'decode_utf8';
 
 use prg::Utiles;
 
-my ($nbd, $Nombre, $Rut, $Mnsj, $Prd, $Multi, $ne, $IVA, $base); # Variables
-my ($nombre, $rut, $prd, $multi, $iva ); # Campos
-my ($bCan, $bNvo) ; # Botones
+my ($nbd, $Nombre, $Rut, $Mnsj, $Prd, $Multi, $ne, $IVA, $base, $Cierre); # Variables
+my ($nombre, $rut, $prd, $multi, $iva, $cierre ); # Campos
+my ($bCan, $bNvo, $bAct) ; # Botones
 my @datos = () ;	# Lista de empresas
 $nbd = 'datosG.db3' ;
 if (not -e $nbd) {
@@ -31,6 +31,7 @@ my @cnf = $bd->leeCnf();
 $Prd = $cnf[0];
 $Multi = $cnf[3];
 $IVA = $cnf[4];
+$Cierre = $cnf[5];
 $Nombre = $Rut = '';
 $base = "$cnf[0].db3" ;
 
@@ -72,14 +73,19 @@ $bCan = $mBtns->Button(-text => "Termina",
 	-command => sub { $vnt->destroy(); $bd->cierra();});
 $bCfg = $mBtns->Button(-text => "Configura", 
 	-command => sub { &datos() });
+$bAct = $mBtns->Button(-text => "Actualiza", 
+	-command => sub { $bd->actualizaCnf($Multi,$Prd,$IVA,$Cierre) });
 
 # Parametros
-$prd = $mParametros->LabEntry(-label => " Año inicial", -width => 5,
+$prd = $mParametros->LabEntry(-label => " Inicio", -width => 5,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 	-textvariable => \$Prd );
 $iva = $mParametros->LabEntry(-label => "  IVA", -width => 3,
 	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 	-textvariable => \$IVA );
+$cierre = $mParametros->LabEntry(-label => "  Cierre", -width => 5,
+	-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+	-textvariable => \$Cierre );
 $multi = $mParametros->Checkbutton(-variable => \$Multi, 
 		 -text => "Multiempresa",);
 # Define campos para registro de datos de la empresa
@@ -96,13 +102,15 @@ $nombre->bind("<FocusIn>", sub { &buscaRUT($esto) } );
 $mMensajes->pack(-expand => 1, -fill => 'both');
 $prd->pack(-side => 'left', -expand => 0, -fill => 'none');
 $iva->pack(-side => 'left', -expand => 0, -fill => 'none');
+$cierre->pack(-side => 'left', -expand => 0, -fill => 'none');
 $multi->pack(-side => 'left', -expand => 0, -fill => 'none');
 $rut->grid(-row => 0, -column => 0, -columnspan => 2, -sticky => 'nw');	
 $nombre->grid(-row => 1, -column => 0, -columnspan => 2, -sticky => 'nw');
 
 $bNvo->pack(-side => 'left', -expand => 0, -fill => 'none');
+$bCfg->pack(-side => 'left', -expand => 0, -fill => 'none');
+$bAct->pack(-side => 'left', -expand => 0, -fill => 'none');
 $bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
-$bCfg->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 $mParametros->pack(-expand => 1);
 $listaS->pack();
@@ -195,7 +203,7 @@ sub agrega ()
 
 	# Graba datos
 	$bd->agregaE($Rut,$Nombre,$Multi,$Prd);
-	$bd->grabaCnf($Multi,$Prd,$IVA) if not $ne ;
+	$bd->grabaCnf($Multi,$Prd,$IVA,$Cierre) if not $ne ;
 	# Crea tablas
 	system "./creaTablasRC.pl", $Rut, $Prd ;
 

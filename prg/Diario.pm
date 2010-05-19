@@ -17,7 +17,7 @@ use Number::Format;
 # Variables válidas dentro del archivo
 my ($FechaI, $FechaF, $tc, $Mnsj, $ejerc, $rutE, $tgD, $tgH) ;	# Variables
 my ($fechaI, $fechaF) ; # Campos
-
+my $totalItemes ;
 my ($bCan, $bImp) ; # Botones
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -144,6 +144,8 @@ sub valida ( $ )
 		$fechaI->focus;
 		return;
 	}
+	$TotalItemes = 0 ;
+	$tgD = $tgH = 0;
 	# Si todo está bien, muestra informe
 	informe($esto,$mt,$fi,$ff);
 }
@@ -169,7 +171,6 @@ sub informe ( $ $  $) {
 	if (@datosE) {
 		$empr = decode_utf8($datosE[0]); 
 	}
-	$tgD = $tgH = 0;
 	$marco->delete('0.0','end');
 	$marco->insert('end', "Libro Diario  $ejerc  -  $empr\n", 'negrita');
 	my $lin1 = "\nFecha      Detalle                            Código        Debe        Haber";
@@ -193,6 +194,8 @@ sub informe ( $ $  $) {
 	$mov1 = sprintf("           %-35s %-5s %12s  %12s", 'Totales', '', $ttD, $ttH) ;
 	$marco->insert('end', "$mov1\n", 'detalle' ) ;
 	$marco->insert('end',"$lin2\n",'detalle');
+	$mov1 = "Total: $totalItemes ";
+	$marco->insert('end', "$mov1\n", 'detalle' ) ;
 	$bImp->configure(-state => 'active');
 }
 
@@ -222,13 +225,14 @@ sub asiento ( $ $ $ $ $ ) {
 			$ci = "RUT $algo->[5]";
 		}
 		if ($algo->[6]) {
-			$dcm = "$algo->[6] $algo->[7]";
+			$dcm = $algo->[7] ? "$algo->[6] $algo->[7]" : '' ;
 		}
 		# el texto en el item puede ser $dt o $ncnta
 		$mov1 = sprintf("           %-35s %-5s %12s  %12s", $dt, 
 			$cm, $mntD, $mntH) ;
 		$mov2 = sprintf("            %-15s %-20s", $ci, $dcm ) ;
 		$marco->insert('end', "$mov1\n", 'detalle' ) ;
+		$totalItemes += 1 ;
 	}
 	$marco->insert('end', "            $gl\n" , 'detalle');
 	if ( not ($ci eq '' ) ) { #	and $dcm eq ''

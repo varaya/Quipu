@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 11.04.2010 
+#  UM : 16.04.2010 
 
 use DBI;
 use strict;
@@ -102,7 +102,8 @@ $bd->do("CREATE TABLE Compras (
 	TF char(1),
 	Orden int(2),
 	IEspec int(8),
-	IRetenido int(8) )" );
+	IRetenido int(8),
+	DocPago char(15))" );
 
 # Actualización de Pagada en F. Compras
 $bd->do("CREATE TRIGGER PagoFC AFTER UPDATE OF Abonos ON Compras
@@ -132,7 +133,8 @@ $bd->do("CREATE TABLE Ventas (
 	TF char(1),
 	Orden int(2),
 	IEspec int(8),
-	IRetenido int(8) )" );
+	IRetenido int(8),
+	DocPago char(15) )" );
 
 # Actualización de Pagada en F. Ventas
 $bd->do("CREATE TRIGGER PagoFV AFTER UPDATE OF Abonos ON Ventas
@@ -165,7 +167,8 @@ $bd->do("CREATE TABLE BoletasH (
 	FechaP char(10),
 	Mes int(2),
 	Nulo int(1),
-	Cuenta int(4) )" );
+	Cuenta int(4),
+	DocPago char(15) )" );
 
 # Actualización de Pagada en B. Honorarios
 $bd->do("CREATE TRIGGER PagoBH AFTER UPDATE OF Abonos ON BoletasH
@@ -187,7 +190,8 @@ $bd->do("CREATE TABLE DocsE (
 	FechaP char(10),
 	Estado char(1) ,
 	Nulo int(1),
-	Tipo char(2) )" );
+	Tipo char(2),
+	DocPago char(15) )" );
 
 $bd->do("CREATE TRIGGER PagoDE AFTER UPDATE OF Abonos ON DocsE
   BEGIN
@@ -208,7 +212,8 @@ $bd->do("CREATE TABLE DocsR (
 	FechaP char(10),
 	Estado char(1) ,
 	Nulo int(1),
-	Tipo char(2) )" );
+	Tipo char(2),
+	DocPago char(15) )" );
 
 $bd->do("CREATE TRIGGER PagoDR AFTER UPDATE OF Abonos ON DocsR
   BEGIN

@@ -8,8 +8,8 @@ run_cmd=
 
 [files]
 current_page=4
-FILE_NAME_0=8679;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
-FILE_NAME_1=18145;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
-FILE_NAME_2=8178;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
-FILE_NAME_3=6861;3;0;0;1;1;0;/home/varaya/cntb/prg/CIndvdl.pm;
-FILE_NAME_4=19756;3;0;0;1;1;0;/home/varaya/cntb/prg/Cmprbs.pm;
+FILE_NAME_0=12338;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
+FILE_NAME_1=51140;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
+FILE_NAME_2=4593;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
+FILE_NAME_3=21813;3;0;0;1;1;0;/home/varaya/cntb/prg/Cmprbs.pm;
+FILE_NAME_4=152;3;0;0;1;1;0;/home/varaya/cntb/prg/CierreA.pm;

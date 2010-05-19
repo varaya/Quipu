@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 15.01.2010 
+#  UM: 27.04.2010 
 
 package AnulaC;
 
@@ -33,7 +33,7 @@ sub crea {
 	$rutE = $rt ;
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
-	'ND' => 'Compras', 'NC' => '', 'LT' => '', 'CH' => '', 'SD' => '', '' => '' ) ;
+	'ND' => 'Compras', 'NC' => '', 'LT' => 'DocsE', 'CH' => 'DocsE', 'SD' => '', '' => '' ) ;
 	$Fecha = $ut->fechaHoy();
 	$mes = $nMes = $Cuenta = '';
 	$Numero = $bd->numeroC() + 1;

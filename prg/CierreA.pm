@@ -1,11 +1,11 @@
 #  CierreA.pm - Efectúa el cierre del año contable
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2010 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 03.01.2010 
+#  UM : 19.05.2010 
 
 package CierreA;
 
@@ -14,7 +14,7 @@ use DBI;
 
 sub crea {
 
-	my ($esto, $bd, $ut, $rut, $final, $ejer) = @_;
+	my ($esto, $bd, $ut, $rut, $final, $ejer, $cierre) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -28,11 +28,13 @@ sub crea {
 		$ut->mError("NO se puede efectuar el cierre durante el mismo año.");
 		return ;		
 	}
+	my $base = "$rut/$prd.db3";
 	if ($final) {
-		$ut->mError("Cierre $mns pendiente.");
+		print "Copiando saldos\n";
+		$bd->copiaSaldos($base,$cierre) ;
+		$ut->mError("Cierre $mns procesado.");
 		return ;
 	}
-	my $base = "$rut/$prd.db3";
 	if (not -e $base ) {
 		print "Creando $base\n";
 		system "./creaTablasRC.pl", $rut, $prd ;

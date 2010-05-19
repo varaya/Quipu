@@ -1,0 +1,13 @@
+Cambios efectuados
+
+1. Agrega campo DocPago en tablas:
+	- Compras
+	- Ventas
+	- BoletasH
+	- DocsE
+	- DocsR
+
+2. Actualiza dicho campo al contabilizar en Egreso
+
+3. Muestra DocPago en la Cuenta de Mayor
+

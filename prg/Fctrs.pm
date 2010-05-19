@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la
 #  licencia incluida en este paquete 
-#  UM : 03.01.2010
+#  UM : 19.05.2010
 
 package Fctrs;
 
@@ -52,7 +52,13 @@ sub crea {
 	$NmrI = $Dcmnt = '';
 	$FechaC = $ut->fechaHoy();
 	my $aa = substr $FechaC, 6,4 ;
-	$GrabaS = $aa ne $ejer ? 1 : 0 ;
+	# verifica si se contabiliza el año anterior
+	if ( $aa ne $ejer ) {
+		$GrabaS = 1 ;
+		$FechaC = "31/12/$ejer";
+	} else {
+		$GrabaS = 0 ;
+	}
 	$RUT = $TipoF = '';
 	inicializaV();
 	$AE = 'A' ;

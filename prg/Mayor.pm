@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 02.02.2010
+#  UM: 28.04.2010
 
 package Mayor;
 
@@ -15,7 +15,7 @@ use Encode 'decode_utf8';
 use Number::Format;
 	
 # Variables válidas dentro del archivo
-my ($bImp,$bCan,$mes,$nMes,$Mnsj,$Cuenta,$ejerc,$empr,$rutE) ; 	
+my ($bImp,$bCan,$mes,$nMes,$Mnsj,$Cuenta,$ejerc,$empr,$rutE,$cuenta,$meses) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -34,10 +34,11 @@ sub crea {
 	@cnf = $bd->leeCnf();
 	$Cuenta = '';
 	$rutE = $rtE ;
+
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Procesa Libro Mayor");
-	$vnt->geometry("600x430+475+4"); # Tamaño y ubicación
+	$vnt->geometry("690x430+475+4"); # Tamaño y ubicación
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -59,12 +60,12 @@ sub crea {
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
-	my $cuenta = $mBotones->LabEntry(-label => "Cuenta: ", -width => 5,
+	$cuenta = $mBotones->LabEntry(-label => "Cuenta: ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$Cuenta );
 	# Define campo para seleccionar mes
 	my $tMes = $mBotones->Label(-text => "Mes ") ;
-	my $meses = $mBotones->BrowseEntry(-variable => \$nMes, -state => 'readonly',
+	$meses = $mBotones->BrowseEntry(-variable => \$nMes, -state => 'readonly',
 		-disabledbackground => '#FFFFFC', -autolimitheight => 1,
 		-disabledforeground => '#000000', -autolistwidth => 1,
 		-browse2cmd => \&selecciona );
@@ -161,6 +162,7 @@ sub resumen ( $ $ )
 
 	my ($algo,$cd,$nm,$sldI,$tSld,$siD,$siH,$lin,$mntD,$mntH,$gtD,$gtH,$msd);
 	($gtD,$gtH) = (0,0);
+	my $frm = "%4s %-35s %14s %14s %13s" ;
 	foreach $algo ( @datos ) {
 		$cd = $algo->[1] ;
 		$sldI = $algo->[4];
@@ -180,14 +182,14 @@ sub resumen ( $ $ )
 			$mntD = $pesos->format_number( $TotalD ); 
 			$mntH = $pesos->format_number( $TotalH );
 			$msd = $pesos->format_number( $TotalD - $TotalH );
-			$lin = sprintf("%-5s %-35s  %11s  %11s %11s", $cd,$nm,$mntD,$mntH,$msd);
+			$lin = sprintf($frm,$cd,$nm,$mntD,$mntH,$msd);
 			$m->insert('end', "$lin\n", 'detalle' ) ;
 		}
 	}
 	$mntD = $mntH = $pesos->format_number(0);
 	$mntD = $pesos->format_number( $gtD ); 
 	$mntH = $pesos->format_number( $gtH ); 
-	$lin = sprintf("%-5s %-35s  %11s  %11s ", '', 'Totales', $mntD, $mntH);
+	$lin = sprintf($frm, '', 'Totales', $mntD, $mntH,'');
 	$m->insert('end', "$lin\n", 'detalle' ) ;
 
 }
@@ -223,12 +225,12 @@ sub muestraM ( $ $ )
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 
 	my @data = $bd->itemsM($Cuenta,$mes);
-
+	my $frm = "%4s %-1s  %10s  %-35s %13s %13s" ;
 	my ($algo,$mov,$nCmp,$mntD,$mntH,$dt,$ci,$tDebe,$tHaber,$dcm,$siDebe,$siHaber);
 	my($tC, $fecha, $nulo );
 	my $lin1 = "   # T  Fecha       Detalle                               ";
-	$lin1 .= "     Debe       Haber";
-	my $lin2 = "-"x79;
+	$lin1 .= "      Debe         Haber";
+	my $lin2 = "-"x83;
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = $siDebe = $siHaber = 0 ;
@@ -242,8 +244,7 @@ sub muestraM ( $ $ )
 		$mntH = $pesos->format_number( $saldoI );
 		$siHaber += $saldoI;
 	}
-	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",
-		'','',"01/01/$ejerc",$dt,$mntD,$mntH) ;
+	$mov = sprintf($frm, '','',"01/01/$ejerc",$dt,$mntD,$mntH) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
@@ -263,20 +264,18 @@ sub muestraM ( $ $ )
 			$ci = "RUT $algo->[5]";
 		}
 		if ($algo->[6]) {
-			$dcm = "$algo->[6] $algo->[7]";
+			my $tabla = 'Compras' ;
+			$dcm = $bd->buscaDP($algo->[5], $algo->[7], $tabla);
 		}
-		if ( not ($ci eq '' ) ) {
-			$dt = "$ci $dcm"; 
-		}
-		$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s", $nCmp, $tC, 
-			$fecha, $dt, $mntD, $mntH ) ;
+		$dt = "$ci " if $dt eq '' ; 
+		$mov = sprintf($frm, $nCmp, $tC, $fecha, $dt, $mntD, $mntH, $dcm ) ;
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
 	$dt = "Totales mes";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
-	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm,'','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
 	$dt = "Saldo $nMes";
@@ -284,7 +283,7 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	my ($TotalD,$TotalH) = $bd->totales($Cuenta,$mes);
 	$TotalD += $siDebe ;
@@ -293,7 +292,7 @@ sub muestraM ( $ $ )
 	$dt = "Totales acumulados";
 	$mntD = $pesos->format_number( $TotalD ); 
 	$mntH = $pesos->format_number( $TotalH ); 
-	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 
 	$dt = "Saldo acumulado";
@@ -301,7 +300,7 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($TotalD - $TotalH) if $TotalD > $TotalH ;
 	$mntH = $pesos->format_number($TotalH - $TotalD) if $TotalD < $TotalH ;
 	
-	$mov = sprintf("%4s %-1s  %10s  %-35s %11s %11s",'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	
 	$bImp->configure(-state => 'active');

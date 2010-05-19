@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 11.04.2010
+#  UM: 19.05.2010
 
 package BaseDatos;
 
@@ -66,13 +66,23 @@ sub leeCnf( )
 	return @dts; 
 }
 
-sub grabaCnf($ $ $)
+sub grabaCnf( $ $ $ $ )
 {
-	my ($esto, $me, $prd, $iva) = @_;
+	my ($esto, $me, $prd, $iva, $cierre) = @_;
 	my $bd = $esto->{'baseDatos'};
 
-	my $sql = $bd->prepare("INSERT OR IGNORE INTO Config VALUES(?,0,0,?,?);");
-	$sql->execute($prd, $me, $iva);
+	my $sql = $bd->prepare("INSERT OR IGNORE INTO Config VALUES(?,0,0,?,?,?);");
+	$sql->execute($prd, $me, $iva, $cierre);
+	$sql->finish();	 
+}
+
+sub actualizaCnf( $ $ $ $ )
+{
+	my ($esto, $me, $prd, $iva, $cierre) = @_;
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("UPDATE Config SET Periodo=?, MultiE=?, IVA=?, Cierre=?;");
+	$sql->execute($prd, $me, $iva, $cierre);
 	$sql->finish();	 
 }
 
@@ -580,9 +590,9 @@ sub itemsM( $ ) # Movimientos de cuentas de mayor por mes
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado 
+	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado
 		FROM ItemsC AS i, DatosC AS d WHERE i.CuentaM = ? AND i.Numero = d.Numero
-		AND Mes = ?;");
+		AND i.Mes = ?;");
 	$sql->execute($NmrC,$mes);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -822,36 +832,45 @@ sub agregaCmp( $ $ $ $ $ $ )
 	# Graba items desde el archivo temporal
 	$bd->do("INSERT INTO ItemsC SELECT Numero, CuentaM, Debe, Haber, Detalle,  
 		RUT, TipoD, Documento,CCosto, Mes FROM ItemsT WHERE Numero = $Numero ;") ;
-	# Las Cuentas de Mayor las actualiza SQLite [trigger]
+	# Las Cuentas de Mayor las actualiza un 'disparador' de SQLite
 	$bd->do("DELETE FROM ItemsT");
 	# Actualiza pago de documentos 
 	if ($Tipo eq 'I') { # Facturas de Venta, si es ingreso
-		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha) ;
-		actualizaP($bd,'Haber','ND','Ventas',$Numero,$Fecha) ;
-		actualizaP($bd,'Haber','LT','DocsR',$Numero,$Fecha) ;
+		actualizaP($bd,'Haber','FV','Ventas',$Numero,$Fecha,$Tipo) ;
+		actualizaP($bd,'Haber','ND','Ventas',$Numero,$Fecha,$Tipo) ;
+		actualizaP($bd,'Haber','LT','DocsR',$Numero,$Fecha,$Tipo) ;
 	}
 	if ($Tipo eq 'E') { # Si es egreso Factura Compra o Boleta Honorarios
-		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha) ;
-		actualizaP($bd,'Debe','ND','Compras',$Numero,$Fecha) ;
-		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha) if $bh ;
-		actualizaP($bd,'Debe','LT','DocsE',$Numero,$Fecha) ;
+		actualizaP($bd,'Debe','FC','Compras',$Numero,$Fecha,$Tipo) ;
+		actualizaP($bd,'Debe','ND','Compras',$Numero,$Fecha,$Tipo) ;
+		actualizaP($bd,'Debe','BH','BoletasH',$Numero,$Fecha,$Tipo) if $bh ;
+		actualizaP($bd,'Debe','LT','DocsE',$Numero,$Fecha,$Tipo) ;
 	}
 }
 
 sub actualizaP ( $ $ $ $ $ $)
 {
-	my ($bd, $cm, $td, $tbl, $nmr, $fch) = @_;	
-	my ($aCta, $algo, $sql, $i);
+	my ($bd, $cm, $td, $tbl, $nmr, $fch, $tc) = @_;	
+	my ($aCta, $algo, $sql, $i, $docP);
 
+	$docP = '' ;
+	if ( $tc eq 'E') { # busca cheque con que se pagó
+		$sql = $bd->prepare("SELECT TipoD, Documento FROM ItemsC
+			WHERE Numero = ? AND Haber > 0;");
+		$sql->execute($nmr);
+		my @dp = $sql->fetchrow_array ;
+		$docP = "$dp[0] $dp[1]";
+		$sql->finish();
+	}
 	$sql = $bd->prepare("SELECT RUT, Documento, $cm FROM ItemsC
 		WHERE Numero = ? AND RUT <> '' AND TipoD = ?;");
 	$sql->execute($nmr,$td);
-	$aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos + ?, FechaP = ? 
+	$aCta = $bd->prepare("UPDATE $tbl SET Abonos = Abonos + ?, FechaP = ?, DocPago = ? 
 		WHERE RUT = ? AND Numero = ?;");
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
-#		print "$algo->[2], $fch, $algo->[0], $algo->[1] \n";
-		$aCta->execute($algo->[2], $fch, $algo->[0], $algo->[1]);
+		print "$docP \n";
+		$aCta->execute($algo->[2], $fch, $algo->[0], $algo->[1],$docP);
 	}
 	# Condición de 'Pagada' se actualiza por un disparador de SQLite
 	$sql->finish();
@@ -875,7 +894,7 @@ sub pagaF ( $ $ $ $ $ )
 	$aCta->finish();
 }
 
-sub agregaDP ( $ $ $ $ )
+sub agregaDP ( $ $ $ $ $ )
 {
 	my ($esto, $nmr, $ff, $tabla, $fv ) = @_;	
 	my $bd = $esto->{'baseDatos'};
@@ -886,16 +905,16 @@ sub agregaDP ( $ $ $ $ )
 		WHERE Numero = ? AND TipoD = ?;");
 	# Busca cheques y agrega docs
 	$sql->execute($nmr,'CH');
-	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?,?);");
+	$rDoc = $bd->prepare("INSERT OR IGNORE INTO $tabla VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
 	while (my @fila = $sql->fetchrow_array) {
 		$x = \@fila;
-		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,$fv,0,'','',0,'CH');
+		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,$fv,0,'','',0,'CH','');
 	}
 	# Busca letras y agrega, si existen
 	$sql->execute($nmr,'LT');
 	while (my @fila = $sql->fetchrow_array) {
 		$x = \@fila;
-		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,$fv,0,'','',0,'LT');
+		$rDoc->execute($x->[0],$x->[1],$x->[2],$ff,$x->[3],$nmr,$fv,0,'','',0,'LT','');
 	}
 	$sql->finish();
 	$rDoc->finish();
@@ -1134,8 +1153,8 @@ sub grabaFct( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 
 	$mes = substr $fc,4,2 ; # Extrae mes
 	$mes =~ s/^0// ; # Elimina '0' al inicio
-	$sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,$mes,$nl,$cta,$tf,$no,$ie,$ivr);
+	$sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,$mes,$nl,$cta,$tf,$no,$ie,$ivr,'');
 	
 	# Actualiza cuenta individual
 	$mnD = $mnH = 0;
@@ -1156,8 +1175,8 @@ sub grabaFAS( $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $ $)
 	my ($esto,$tb,$rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$td,$fv,$fc,$cta,$tf,$no,$nl,$ie,$ivr) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
-	my $sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,0,$nl,$cta,$tf,$no,$ie,$ivr);
+	my $sql = $bd->prepare("INSERT INTO $tb VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$i,$af,$ex,$nmr,$fv,0,0,'',$td,0,$nl,$cta,$tf,$no,$ie,$ivr,'');
 	$sql->finish();
 }
 
@@ -1254,6 +1273,24 @@ sub listaFct( $ $ $ $)
 	
 	return @datos; 
 }	
+
+sub buscaDP ( $ $ $ ) 
+{
+	my ($esto,$Rut,$Num,$tbl) =  @_ ;
+	my $bd = $esto->{'baseDatos'};
+#	print "$Rut : $Num $tbl - ";
+	my $sql = $bd->prepare("SELECT DocPago FROM Compras WHERE RUT = ? AND Numero = ?;");
+	$sql->execute($Rut,$Num);
+	
+	my $dato = $sql->fetchrow_array;
+	$sql->finish();
+	
+	if ($dato) {
+		return $dato ;
+	} else {
+		return " ";
+	}
+}
 
 sub cambiaDcm ( ) 
 {
@@ -1503,8 +1540,8 @@ sub grabaBH( $ $ $ $ $ $ $ $ $ )
 	my ($ms,$sql);
 
 	$ms = substr $fch,4,2 ; # Extrae mes
-	$sql = $bd->prepare("INSERT INTO BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$im,$nmr,$fv,0,0,'',$ms,0,$cta);
+	$sql = $bd->prepare("INSERT INTO BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$im,$nmr,$fv,0,0,'',$ms,0,$cta,'');
 	
 	# Actualiza cuenta individual
 	$sql = $bd->prepare("UPDATE CuentasI SET Haber = Haber + ?, Fecha_UM = ?
@@ -1518,8 +1555,8 @@ sub grabaAS( $ $ $ $ $ $ $ $ $ )
 	my ($esto, $rut, $doc, $fch, $t, $im, $nmr, $fv, $cta, $nt) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
-	my $sql = $bd->prepare("INSERT INTO ant.BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);");
-	$sql->execute($rut,$doc,$fch,$t,$im,$nmr,$fv,0,0,'',0,0,$cta);
+	my $sql = $bd->prepare("INSERT INTO ant.BoletasH VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	$sql->execute($rut,$doc,$fch,$t,$im,$nmr,$fv,0,0,'',0,0,$cta,'');
 	
 	$sql->finish();
 }
@@ -1988,6 +2025,43 @@ sub copiaTablas ( $ ) # Corresponde la apertura del año siguiente
 	$bd->do("INSERT INTO ant.BoletasH SELECT * FROM BoletasH WHERE Pagada = 0 ");
 	$bd->do("UPDATE ant.BoletasH SET Mes = 0 ");
 	$bd->do("INSERT INTO ant.Bancos SELECT * FROM Bancos");
+}
+
+sub copiaSaldos ( $ $ )
+{
+	my ($esto, $bs, $cc ) = @_;
+	my $bd = $esto->{'baseDatos'};
+	my ($cd,$sla,$tsa,$nsl,$nts);
+	
+	$bd->do("ATTACH DATABASE '$bs' AS sig;");
+	my $sql1 = $bd->prepare("SELECT * FROM Mayor WHERE Codigo < '3000' ;");
+	my $sql2 = $bd->prepare("UPDATE sig.Mayor SET Saldo = ?, TSaldo = ? WHERE Codigo = ?;");
+	
+	$sql1->execute();
+	while (my @fila = $sql1->fetchrow_array) {
+		$cd = $fila[0];
+		$sla = $fila[3];
+		$tsa = $fila[4];
+		$nsl = $fila[1] - $fila[2] ;
+		$nsl = $nsl + $sla if $tsa eq "D";
+		$nsl = $nsl - $sla if $tsa eq "A";
+		$nts = "D" if $nsl > 0 ;
+		$nts = "A" if $nsl < 0 ;
+		$nts = " " if $nsl == 0 ;
+		$nsl = - $nsl if $nts eq "A" ;
+		$sql2->execute($nsl,$nts,$cd) ;
+	}
+	$sql2->finish();
+	# calcula y registra resultado
+	$sql1 = $bd->prepare("SELECT sum(Saldo) FROM sig.Mayor WHERE TSaldo = ?;");
+	$sql1->execute('D');
+	my $td = $sql1->fetchrow_array ;
+	$sql1->execute('A');
+	my $ta = $sql1->fetchrow_array ;
+	my $rs = $td - $ta ;
+	$sql1 = $bd->prepare("UPDATE sig.Mayor SET Saldo = Saldo + ?, TSaldo = ? WHERE Codigo = ?;");
+	$sql1->execute($rs,'A',$cc);
+	$sql1->finish();	
 }
 
 # Termina el paquete

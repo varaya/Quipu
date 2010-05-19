@@ -24,7 +24,7 @@ my $version = "central.pl 0.935 al 07/04/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
-my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,@archivos);
+my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,@archivos,$ctaCierre);
 my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$vnt2,$Titulo,$CCts,$CPto,$TipoL,@ans);
 $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 
@@ -40,6 +40,7 @@ $base = "$cnf[0].db3" ;	# nombre del archivo de datos (corresponde al año)
 $multiE = $cnf[3] ;  # habilita trabajar con varias empresas 
 $interE = $cnf[2] ;	# habilita empresas interrelaciondas
 $iva = $cnf[4] ;
+$ctaCierre = $cnf[5]; 
 
 # Crea la ventana principal
 my $vp = MainWindow->new();
@@ -289,9 +290,9 @@ sub opListados {
 
 sub opCierre {
 [['command' => "Provisorio", -command => sub { require prg::CierreA;
- 	CierreA->crea($bd, $ut, $Rut,0, $Ejercicio);} ],
+ 	CierreA->crea($bd, $ut, $Rut,0, $Ejercicio, $ctaCierre );} ],
  ['command' => "Final", -command => sub { require prg::CierreA;
- 	CierreA->crea($bd, $ut, $Rut,1, $Ejercicio);} ] ]
+ 	CierreA->crea($bd, $ut, $Rut,1, $Ejercicio, $ctaCierre);} ] ]
 }
 
 sub opCuentas {

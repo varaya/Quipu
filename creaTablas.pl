@@ -7,7 +7,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 16.10.2009
+#  UM: 19.05.2010
 
 use DBI;
 use strict;
@@ -23,7 +23,8 @@ $bd->do("CREATE TABLE Config (
 	PlanC int(1),
 	InterE int(1),
 	MultiE int(1),
-	IVA int(2) )" );
+	IVA int(2),
+	Cierre char(5) )" );
 
 $bd->do("CREATE TABLE DatosE (
 	Nombre text(30),

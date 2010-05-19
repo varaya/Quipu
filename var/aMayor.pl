@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # Actualiza Mayor, indicado último mes contabilizado
-# UM: 05/10/2009
+# UM: 27/04/2010
 
 use DBI;
 use strict;
@@ -13,10 +13,11 @@ my ($mes, $sql, $algo, $aCta);
 $bd->do("UPDATE Mayor SET Debe = 0, Haber = 0, Saldo = 0");
 my @meses = (1..$nm);
 for $mes (@meses) {
+	print "$mes - " ;
 	$sql = $bd->prepare("SELECT CuentaM, Debe, Haber FROM ItemsC 
 		WHERE Mes = ? ;");
 	$sql->execute($mes);
-	$aCta = $bd->prepare("UPDATE $tabla SET Debe = Debe + ?, Haber = Haber + ?
+	$aCta = $bd->prepare("UPDATE Mayor SET Debe = Debe + ?, Haber = Haber + ?
 		 WHERE Codigo = ?;");
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
