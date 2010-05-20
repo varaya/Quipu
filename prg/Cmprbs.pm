@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 14.04.2010
+#  UM: 20.05.2010
 
 package Cmprbs;
 
@@ -24,7 +24,7 @@ my ($Codigo,$Detalle,$Monto,$DH,$RUT,$Documento,$Cuenta,$Nombre,$FechaV) ;
 my ($TipoCmp,$TipoD,$cTipoD,$BH,$Bco,$nBanco,$cBanco,$mBco,$Mnsj,$Empresa) ; 
 # Campos
 my ($codigo,$detalle,$glosa,$fecha,$totalD,$totalH,$bcos,$nombre,$fechaV ) ;
-my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta) ;
+my ($monto,$debe,$haber,$cuentaI,$tipoD,$documento,$numero,$cuenta,$prd) ;
 # Centro de costos
 my ($CCto, $cCto, $NCCto) ;
 
@@ -41,7 +41,7 @@ my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
 			
 sub crea {
 
-	my ($esto, $vp, $bd, $ut, $tipoC, $mt, $ucc, $emp) = @_;
+	my ($esto, $vp, $bd, $ut, $tipoC, $mt, $ucc, $emp, $ejer) = @_;
 
 	$esto = {};
 	$esto->{'baseDatos'} = $bd;
@@ -49,6 +49,7 @@ sub crea {
 
 	# Inicializa variables
 	$Empresa = encode_utf8( $emp );
+	$prd = $ejer ;
 	my %tp = $ut->tipos();
 	%tabla = ('BH' => 'BoletasH' ,'FC' => 'Compras' ,'FV' => 'Ventas', 'DB' => '',
 	'ND' => 'Compras', 'NC' => '', 'LT' => 'DocsE', 'CH' => 'DocsE', 'SD' => '', '' => '' ) ;
@@ -713,8 +714,8 @@ sub validaFecha ($ $ $ $ )
 		$$c->focus;
 	}
 	# Compara años
-	my $ax = substr $$v,6,4 ;
-	if (not $ax == $aa[0] ) {
+	my @fch = split /\//, $$v ;
+	if (not $fch[2] eq $prd ) {
 		$Mnsj = "Año NO corresponde";
 		$$c->focus;		
 	}

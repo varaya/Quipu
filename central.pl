@@ -193,7 +193,7 @@ sub opContabiliza {
 	NtsD->crea($vp,$bd,$ut,$tipoND,$mt,$CCts,$iva);} ], @x,],] , "-",
 ['cascade' => "Comprobante", -tearoff => 0,
  	-menuitems => [ map [ 'radiobutton', $_, -variable => \$tipoC ,
-	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts,$Empr);}],
+	-command => sub { require prg::Cmprbs; Cmprbs->crea($vp,$bd,$ut,$tipoC,$mt,$CCts,$Empr,$Ejercicio);}],
 		 qw/Ingreso Egreso Traspaso/,], ], "-",
 ['command' => "Anula", -command => sub { require prg::AnulaC; 
 	AnulaC->crea($vp, $mt, $bd, $ut);} ] ]

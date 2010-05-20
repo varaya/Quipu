@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 19.05.2010
+#  UM: 20.05.2010
 
 package BaseDatos;
 
@@ -813,6 +813,20 @@ sub totales( $ $ )
 	return ( $dato[0], $dato[1] ); 
 }
 
+sub totalesF( $ $ $)
+{
+	my ($esto, $cta, $fi, $ff) = @_;	
+	my $bd = $esto->{'baseDatos'};
+
+	my $sql = $bd->prepare("SELECT sum(i.Debe),sum(i.Haber) FROM ItemsC AS i, DatosC AS d 
+		WHERE i.CuentaM = ? AND i.Numero = d.Numero AND d.Fecha >= ? AND d.Fecha <= ?;");
+	$sql->execute($cta,$fi,$ff);
+	my @dato = $sql->fetchrow_array;
+	$sql->finish();
+
+	return ( $dato[0], $dato[1] ); 
+}
+
 sub agregaCmp( $ $ $ $ $ $ )
 {
 	my ($esto, $Numero, $Fecha, $Glosa, $Total, $Tipo, $bh) = @_;	
@@ -848,7 +862,7 @@ sub agregaCmp( $ $ $ $ $ $ )
 	}
 }
 
-sub actualizaP ( $ $ $ $ $ $)
+sub actualizaP ( $ $ $ $ $ $ )
 {
 	my ($bd, $cm, $td, $tbl, $nmr, $fch, $tc) = @_;	
 	my ($aCta, $algo, $sql, $i, $docP);
@@ -870,7 +884,7 @@ sub actualizaP ( $ $ $ $ $ $)
 	while (my @fila = $sql->fetchrow_array) {
 		$algo = \@fila;
 		print "$docP \n";
-		$aCta->execute($algo->[2], $fch, $algo->[0], $algo->[1],$docP);
+		$aCta->execute($algo->[2],$fch,$docP,$algo->[0],$algo->[1]);
 	}
 	# Condición de 'Pagada' se actualiza por un disparador de SQLite
 	$sql->finish();
@@ -2052,15 +2066,24 @@ sub copiaSaldos ( $ $ )
 		$sql2->execute($nsl,$nts,$cd) ;
 	}
 	$sql2->finish();
-	# calcula y registra resultado
+	# calcula resultado del balance
 	$sql1 = $bd->prepare("SELECT sum(Saldo) FROM sig.Mayor WHERE TSaldo = ?;");
 	$sql1->execute('D');
 	my $td = $sql1->fetchrow_array ;
 	$sql1->execute('A');
 	my $ta = $sql1->fetchrow_array ;
 	my $rs = $td - $ta ;
-	$sql1 = $bd->prepare("UPDATE sig.Mayor SET Saldo = Saldo + ?, TSaldo = ? WHERE Codigo = ?;");
-	$sql1->execute($rs,'A',$cc);
+	# lee el resultado anterior
+	$sql1 = $bd->prepare("SELECT Debe, Haber, Saldo, TSaldo FROM Mayor WHERE Codigo = ?");
+	$sql1->execute($cc);
+	my @dato = $sql1->fetchrow_array ;
+	$sla = $dato[3] eq 'A' ? $dato[2] : -$dato[2] ;
+	$nsl = $dato[1] - $dato[0] + $sla ;
+	# registra resultado del ejercicio
+	$rs += $nsl ;
+	$tsa = $rs < 0 ? 'D' : 'A' ;
+	$sql1 = $bd->prepare("UPDATE sig.Mayor SET Saldo=?, TSaldo=? WHERE Codigo=?;");
+	$sql1->execute($rs,$tsa,$cc);
 	$sql1->finish();	
 }
 

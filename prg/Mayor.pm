@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 28.04.2010
+#  UM: 20.05.2010
 
 package Mayor;
 
@@ -38,7 +38,7 @@ sub crea {
 	# Define ventana
 	my $vnt = $vp->Toplevel();
 	$vnt->title("Procesa Libro Mayor");
-	$vnt->geometry("690x430+475+4"); # Tamaño y ubicación
+	$vnt->geometry("720x430+475+4"); # Tamaño y ubicación
 	# Define marco para mostrar resultado
 	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
 	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
@@ -225,7 +225,7 @@ sub muestraM ( $ $ )
 	$marco->insert('end', "Comprobante\n" , 'detalle');
 
 	my @data = $bd->itemsM($Cuenta,$mes);
-	my $frm = "%4s %-1s  %10s  %-35s %13s %13s" ;
+	my $frm = "%4s %-1s  %10s  %-35s %13s %13s %-15s" ;
 	my ($algo,$mov,$nCmp,$mntD,$mntH,$dt,$ci,$tDebe,$tHaber,$dcm,$siDebe,$siHaber);
 	my($tC, $fecha, $nulo );
 	my $lin1 = "   # T  Fecha       Detalle                               ";
@@ -244,7 +244,7 @@ sub muestraM ( $ $ )
 		$mntH = $pesos->format_number( $saldoI );
 		$siHaber += $saldoI;
 	}
-	$mov = sprintf($frm, '','',"01/01/$ejerc",$dt,$mntD,$mntH) ;
+	$mov = sprintf($frm, '','',"01/01/$ejerc",$dt,$mntD,$mntH,'') ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
@@ -275,7 +275,7 @@ sub muestraM ( $ $ )
 	$dt = "Totales mes";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
-	$mov = sprintf($frm,'','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm,'','','',$dt,$mntD,$mntH,'') ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	# Nuevo saldo
 	$dt = "Saldo $nMes";
@@ -283,7 +283,7 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($tDebe - $tHaber) if $tDebe > $tHaber ;
 	$mntH = $pesos->format_number($tHaber - $tDebe) if $tDebe < $tHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH,'' ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	my ($TotalD,$TotalH) = $bd->totales($Cuenta,$mes);
 	$TotalD += $siDebe ;
@@ -292,7 +292,7 @@ sub muestraM ( $ $ )
 	$dt = "Totales acumulados";
 	$mntD = $pesos->format_number( $TotalD ); 
 	$mntH = $pesos->format_number( $TotalH ); 
-	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH,'') ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 
 	$dt = "Saldo acumulado";
@@ -300,7 +300,7 @@ sub muestraM ( $ $ )
 	$mntD = $pesos->format_number($TotalD - $TotalH) if $TotalD > $TotalH ;
 	$mntH = $pesos->format_number($TotalH - $TotalD) if $TotalD < $TotalH ;
 	
-	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH ) ;
+	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH,'') ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	
 	$bImp->configure(-state => 'active');
