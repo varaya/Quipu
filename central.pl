@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete  # use Data::Dumper ;
-#  UM : 07.04.2010  
+#  UM : 26.05.2010  
 
 use prg::BaseDatos;
 use strict;
@@ -25,7 +25,7 @@ my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
 my ($tipo,$Ayd,$Rut,$Empr,$bd, @cnf,$base,$multiE,$interE,$iva,$CBco,$lp,$lt,@archivos,$ctaCierre);
-my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$vnt2,$Titulo,$CCts,$CPto,$TipoL,@ans);
+my (@datosE,$BltsCV,$OtrosI,$Mnsj,@listaE,@unaE,$vnt,$vnt2,$Titulo,$CCts,$CPto,$TipoL,@ans,$Cierre);
 $tipo = $Ayd = $Rut = $Empr = $Titulo = $TipoL = '';
 
 # Variables necesarias para cambiar año
@@ -413,7 +413,6 @@ sub activaE {
 	$mConsulta->configure(-state => 'active');
 	$mMuestra->configure(-state => 'active');
 	$aydPC->configure(-state => 'active');
-
 	# Muestra información inicial: si faltan datos, deshabilita menues
 	if (not $cnf[1] ) {
 		$mContabiliza->configure(-state => 'disabled');
@@ -470,12 +469,19 @@ sub eligeA {
 	$bd = BaseDatos->crea("$Rut/$base");
 	$bd->anexaBD();
 	datosBase() ;
+	if ($Ejercicio <= $Cierre ) {
+		$mRegistro->configure(-state => 'disabled');
+		$mContabiliza->configure(-state => 'disabled');		
+	} else {
+		$mRegistro->configure(-state => 'normal');
+		$mContabiliza->configure(-state => 'normal');				
+	}
 	$vnt2->destroy();
 }
 
 sub datosBase {
 
-	$OtrosI = $BltsCV = $CBco = $CCts = $CPto = 0;
+	$OtrosI = $BltsCV = $CBco = $CCts = $CPto = $Cierre = 0;
 	@datosE = $bd->datosEmpresa($Rut);
 	if (@datosE) {
 		$OtrosI = $datosE[5]; # registra otros impuestos: ILAs, Especial
@@ -483,6 +489,7 @@ sub datosBase {
 		$CBco = $datosE[7]; # Bancos como subcuentas
 		$CCts = $datosE[8]; # usa centros de costos
 		$CPto = $datosE[9];
+		$Cierre = $datosE[11];
 	}
 }
 

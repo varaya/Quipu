@@ -168,6 +168,12 @@ sub agregaE($ $ $ $ )
 	$sql->finish();
 } 
 
+sub cierreA( $ )
+{
+	my ($esto, $rut, $prd) = @_;	
+	my $bd = $esto->{'baseDatos'};
+	 
+}
 
 # PERSONAL: Lee, agrega y actualiza datos del Personal
 sub datosP( )
@@ -2041,9 +2047,9 @@ sub copiaTablas ( $ ) # Corresponde la apertura del año siguiente
 	$bd->do("INSERT INTO ant.Bancos SELECT * FROM Bancos");
 }
 
-sub copiaSaldos ( $ $ )
+sub copiaSaldos ( $ $ $ $)
 {
-	my ($esto, $bs, $cc ) = @_;
+	my ($esto, $bs, $cc, $rut, $prd ) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my ($cd,$sla,$tsa,$nsl,$nts);
 	
@@ -2084,7 +2090,10 @@ sub copiaSaldos ( $ $ )
 	$tsa = $rs < 0 ? 'D' : 'A' ;
 	$sql1 = $bd->prepare("UPDATE sig.Mayor SET Saldo=?, TSaldo=? WHERE Codigo=?;");
 	$sql1->execute($rs,$tsa,$cc);
+	$sql1 = $bd->prepare("UPDATE dg.DatosE SET Inicio = ? WHERE Rut = ? ;");
+	$sql1->execute($prd,$rut);
 	$sql1->finish();	
+
 }
 
 # Termina el paquete

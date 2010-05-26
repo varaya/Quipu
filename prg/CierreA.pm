@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM : 19.05.2010 
+#  UM : 26.05.2010 
 
 package CierreA;
 
@@ -30,8 +30,8 @@ sub crea {
 	}
 	my $base = "$rut/$prd.db3";
 	if ($final) {
-		print "Copiando saldos\n";
-		$bd->copiaSaldos($base,$cierre) ;
+		print "Copiando saldos $rut $ejer\n";
+		$bd->copiaSaldos($base,$cierre,$rut,$ejer) ;
 		$ut->mError("Cierre $mns procesado.");
 		return ;
 	}
