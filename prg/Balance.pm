@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 02.02.2010
+#  UM: 03.06.2010
 
 package Balance;
 

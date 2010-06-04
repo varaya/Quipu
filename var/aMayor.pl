@@ -10,7 +10,7 @@ my ($Rut, $base) = ('96537850-2','2009.db3');
 my $bd = DBI->connect( "dbi:SQLite:$Rut/$base", { RaiseError => 1, AutoCommit => 0 }) ;
 my ($mes, $sql, $algo, $aCta);
 
-$bd->do("UPDATE Mayor SET Debe = 0, Haber = 0, Saldo = 0");
+$bd->do("UPDATE Mayor SET Debe = 0, Haber = 0");
 my @meses = (1..$nm);
 for $mes (@meses) {
 	print "$mes - " ;

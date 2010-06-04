@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 20.05.2010
+#  UM: 03.06.2010
 
 package BaseDatos;
 
@@ -410,10 +410,9 @@ sub datosCcM( $ ) # Lista de cuentas con movimiento
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $cnd = $saldo ? "m.Saldo > 0" : "m.Debe + m.Haber > 0" ;
+	my $cnd = $saldo ? "m.Saldo > 0 " : "m.Debe + m.Haber + m.Saldo > 0" ;
 	my $sql = $bd->prepare("SELECT c.Cuenta, m.* FROM Mayor AS m, 
-		dg.Cuentas AS c WHERE $cnd AND m.Codigo = c.Codigo
-		ORDER BY m.Codigo ;");
+		dg.Cuentas AS c WHERE $cnd AND m.Codigo = c.Codigo ORDER BY m.Codigo ;");
 	$sql->execute();
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
@@ -1743,7 +1742,7 @@ sub datosBM ( )
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT c.Cuenta, m.* FROM BMensual AS m, 
-		dg.Cuentas AS c WHERE m.Debe + m.Haber > 0 AND m.Codigo = c.Codigo
+		dg.Cuentas AS c WHERE m.Debe + m.Haber + m.Saldo > 0 AND m.Codigo = c.Codigo
 		ORDER BY m.Codigo ;");
 	$sql->execute();
 	# crea una lista con referencias a las listas de registros
