@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 27.04.2010 
+#  UM: 07.05.2010 
 
 package AnulaC;
 
@@ -147,7 +147,7 @@ sub muestraC {
 		$marco->insert('end', "Movimientos\n" , 'grupo');
 	}
 	@data = $bd->itemsC($nmrC);
-	my ($algo,$mov,$cm,$ncta,$mntD,$mntH,$dt,$ci,$td,$dcm,$pago,$tbl);
+	my ($algo,$mov,$cm,$ncta,$mntD,$mntH,$dt,$ci,$td,$dcm,$pago,$tbl,$pgd);
 	my $lin1 = "Cuenta                                      Debe       Haber Detalle";
 	my $lin2 = "-"x80;
 	$marco->insert('end',"$lin1\n",'detalle');
@@ -170,7 +170,9 @@ sub muestraC {
 		if ( $td ) {
 			$dcm = "$td $algo->[7]";
 			$tbl = $tabla{$td} ; # Tabla correpondiente al tipo de documento
-			$pago = $bd->buscaFct($tbl, $algo->[5], $algo->[7], 'Pagada') if $tbl ne '' ;
+			$pgd = 'Pagada' ;
+			if ( $tbl eq 'DocsE' or $tbl eq 'DocsR') { $pgd = 'FechaP' ; }
+			$pago = $bd->buscaFct($tbl, $algo->[5], $algo->[7],$pgd) if $tbl ne '' ;
 			$pago = 0 if $datos[3] eq 'E' ;
 		}
 		$dt = $dcm if  $algo->[6] eq 'CH' ;
@@ -234,7 +236,7 @@ sub anula
 	$bd->actualizaCI($Numero,$ff);
 	# Anula documento, si corresponde
 	$tbl = $tabla{$td};
-	$Mnsj = "$rut - $dcm - $tbl";
+#	$Mnsj = "$rut - $dcm - $tbl";
 	$bd->anulaDct($rut,$dcm,$tbl) if $aD and $tpC eq "T" ;
 	# o bien elimina el pago contabilizado
 	if ($aD and $tpC eq 'I') { # Facturas de Venta, si es ingreso

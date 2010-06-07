@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM: 03.06.2010
+#  UM: 07.06.2010
 
 package BaseDatos;
 
@@ -614,7 +614,7 @@ sub itemsMF( $ $ $ ) # Movimientos de cuentas de mayor por fecha
 	my $bd = $esto->{'baseDatos'};
 	my @datos = ();
 
-	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado 
+	my $sql = $bd->prepare("SELECT i.*, d.Fecha, d.TipoC, d.Anulado, d.Glosa 
 		FROM ItemsC AS i, DatosC AS d WHERE i.CuentaM = ? AND i.Numero = d.Numero
 		AND d.Fecha >= ? AND d.Fecha <= ? ORDER BY d.Fecha;");
 	$sql->execute($NmrC,$fi,$ff);
