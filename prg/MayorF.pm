@@ -1,11 +1,11 @@
 #  MayorF.pm - Procesa cuenta de mayor entre fechas
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2009 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 20.05.2010
+#  UM: 07.06.2010
 
 package MayorF;
 
@@ -218,7 +218,7 @@ sub muestraM ( $ $ $ $)
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($saldoI,$tSaldo,$fechaUM);
+	my ($saldoI,$tSaldo,$fechaUM,$tipoCta);
 	# Datos cuenta
 	foreach $algo ( @datos ) {
 		if ( $Cuenta eq $algo->[1]) {
@@ -226,6 +226,7 @@ sub muestraM ( $ $ $ $)
 			$saldoI = $algo->[4];
 			$tSaldo = $algo->[5];
 			$fechaUM = $algo->[6]; 
+			$tipoCta = $algo->[7];
 			last if $Cuenta eq $algo->[1] ;		
 		} 
 	}
@@ -279,12 +280,12 @@ sub muestraM ( $ $ $ $)
 		if ($algo->[4]) {
 			$dt = substr decode_utf8($algo->[4]),0,35 ;
 		} 
-#		if ($algo->[5]) {
-#			$ci = "RUT $algo->[5]";
-#		}
 		if ($algo->[6]) {
 			my $tabla = 'Compras' ;
 			$dcm = $bd->buscaDP($algo->[5], $algo->[7], $tabla);
+			if ($tipoCta eq 'B') {
+				$dcm = " $algo->[6] $algo->[7]";
+			}
 		}
 		$dt = "$glosaC " if $dt eq '' ; 
 		$mov = sprintf($frm, $nCmp, $tC, $fecha, $dt, $mntD, $mntH, $dcm ) ;

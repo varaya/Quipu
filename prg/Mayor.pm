@@ -1,11 +1,11 @@
 #  Mayor.pm - Procesa cuenta de mayor por mes
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2010 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 20.05.2010
+#  UM: 07.06.2010
 
 package Mayor;
 
@@ -200,7 +200,7 @@ sub muestraM ( $ $ )
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
-	my ($saldoI,$tSaldo,$fechaUM);
+	my ($saldoI,$tSaldo,$fechaUM,$tipoCta);
 	# Datos cuenta
 	foreach $algo ( @datos ) {
 		if ( $Cuenta eq $algo->[1]) {
@@ -208,6 +208,7 @@ sub muestraM ( $ $ )
 			$saldoI = $algo->[4];
 			$tSaldo = $algo->[5];
 			$fechaUM = $algo->[6]; 
+			$tipoCta = $algo->[7];
 			last if $Cuenta eq $algo->[1] ;		
 		} 
 	}
@@ -227,7 +228,7 @@ sub muestraM ( $ $ )
 	my @data = $bd->itemsM($Cuenta,$mes);
 	my $frm = "%4s %-1s  %10s  %-35s %13s %13s %-15s" ;
 	my ($algo,$mov,$nCmp,$mntD,$mntH,$dt,$ci,$tDebe,$tHaber,$dcm,$siDebe,$siHaber);
-	my($tC, $fecha, $nulo );
+	my($tC, $fecha, $nulo, $glosaC );
 	my $lin1 = "   # T  Fecha       Detalle                               ";
 	$lin1 .= "      Debe         Haber";
 	my $lin2 = "-"x83;
@@ -251,6 +252,7 @@ sub muestraM ( $ $ )
 		$fecha = $ut->cFecha($algo->[10]);
 		$tC = $algo->[11];
 		$nulo = $algo->[12];
+		$glosaC = $algo->[13];
 		$mntD = $mntH = $pesos->format_number(0);
 		$mntD = $pesos->format_number( $algo->[2] ); 
 		$tDebe += $algo->[2];
@@ -260,14 +262,14 @@ sub muestraM ( $ $ )
 		if ($algo->[4]) {
 			$dt = substr decode_utf8($algo->[4]),0,35 ;
 		} 
-		if ($algo->[5]) {
-			$ci = "RUT $algo->[5]";
-		}
 		if ($algo->[6]) {
 			my $tabla = 'Compras' ;
 			$dcm = $bd->buscaDP($algo->[5], $algo->[7], $tabla);
+			if ($tipoCta eq 'B') {
+				$dcm = " $algo->[6] $algo->[7]";
+			}
 		}
-		$dt = "$ci " if $dt eq '' ; 
+		$dt = "$glosaC " if $dt eq '' ; 
 		$mov = sprintf($frm, $nCmp, $tC, $fecha, $dt, $mntD, $mntH, $dcm ) ;
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
