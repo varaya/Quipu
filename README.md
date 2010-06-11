@@ -79,6 +79,13 @@ ejecutar
 
 	cd Quipu
 
+### Otro método de instalación
+
+También se puede instalar el programa descargando un archivo comprimido desde 
+esta página ( http://github.com/varaya/Quipu ), presionando el botón 
+**Download Source**. AL descomprimirlo, se crea el directorio Quipu y se continúa
+el proceso de instalación y configuración.
+
 
 ### Verificar los requisitos
 
@@ -100,7 +107,7 @@ Primero, con el comando Linux
 
 	./configurar.pl &
 
-se accede a una interfaz gráfica para registrar datos básicos (año inicial,
+se accede a una ventana que pemite registrar datos básicos (año inicial,
 tasa del IVA) y crear la empresa, indicando RUT (en formato de números sin
 punto, guión y dígito verificador) y nombre de la empresa.
 
@@ -183,9 +190,9 @@ en el programa, enviar sus datos al correo indicado al final.
 
 ### Faltantes
 
-+ Resultados por Centro de Costo
-+ Cierre final
-+ Algunos informes anexos; y
++ Resultados por Centro de Costo; 
++ Balance Clasificado
++ Algunos listados anexos; y
 + Las Ayudas
 
 ##Licencia

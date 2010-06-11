@@ -217,10 +217,11 @@ sub opCompras {
 
 sub opConsulta {
 my $tipoD = $tipo = '';
-[ ['command' => "Balance inicial", -command => sub { require prg::BalanceI;
-	BalanceI->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],
+[ 
   ['command' => "Balance al día", -command => sub { require prg::Balance;
-	Balance->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], "-",
+	Balance->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],
+  ['command' => "Balance inicial", -command => sub { require prg::BalanceI;
+	BalanceI->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], "-",
  ['command' => "Cuenta Individual", -command => sub { require prg::CIndvdl;
 	CIndvdl->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],  
  ['cascade' => "Impagos", -tearoff => 0, -menuitems => opImpagos() ] , "-", 
@@ -266,10 +267,8 @@ sub opLMayor {
 sub opBalances {
 [['command' => "Mensuales", -command => sub { require prg::CierreM;
 	CierreM->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], 
- ['command' => "Clasificado", -command => sub { require prg::Trcrs;
- 	Trcrs->crea($vp, $mt, $bd, $ut);} ],
- ['command' => "-Otros", -command => sub { require prg::Prsnl;
- 	Prsnl->crea($vp, $mt, $bd, $ut);} ] ]
+ ['command' => "Clasificado", -command => sub { require prg::Clasificado;
+ 	Clasificado->crea($vp, $mt, $bd, $ut);} ] ]
 }
 
 sub opResultados {
