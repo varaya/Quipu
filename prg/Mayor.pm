@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 07.06.2010
+#  UM: 16.06.2010
 
 package Mayor;
 
@@ -336,6 +336,7 @@ sub csv (  )
 			$saldoI = $algo->[4];
 			$tSaldo = $algo->[5];
 			$fechaUM = $algo->[6]; 
+			$tipoCta = $algo->[7];
 			last if $Cuenta == $algo->[1] ;		
 		} 
 	}
