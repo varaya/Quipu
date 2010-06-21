@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 16.06.2010
+#  UM: 21.06.2010
 
 package MayorF;
 
@@ -189,7 +189,7 @@ sub resumen ( $ $ )
 		$nm = substr decode_utf8($algo->[0]),0,35 ;
 		$siD += $sldI if $tSld eq 'D';
 		$siH += $sldI if $tSld eq 'A';
-		($TotalD,$TotalH) = $bd->totales($cd,$mes);
+		($TotalD,$TotalH) = $bd->totalesF($cd,$fi,$ff);
 		$TotalD += $siD ;
 		$TotalH += $siH ;
 		if ($TotalD + $TotalH > 0) {

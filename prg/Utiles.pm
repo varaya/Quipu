@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 02.02.2010 
+#  UM : 21.06.2010 
 
 package Utiles;
 
@@ -315,6 +315,7 @@ sub imprimirC ( $ $ $ ) # imprime comprobante
 			$nBanco = $ncta;
 			$tch += 1 ;
 		}
+		$dcm = substr $dcm,0,32 ;
 		$lin = sprintf("%-5s %-30s %12s %12s  %-12s", $cm, $ncta, $mntD, $mntH, $dcm )  . "\n" ;
 		print ARCHIVO $lin ;
 	}
