@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 21.06.2010
+#  UM: 25.06.2010
 
 package MayorF;
 
@@ -15,7 +15,8 @@ use Encode 'decode_utf8';
 use Number::Format;
 	
 # Variables válidas dentro del archivo
-my ($bImp,$bCan,$fechaF,$fechaI,$Mnsj,$Cuenta,$ejerc,$empr,$rutE,$FechaI,$FechaF,$cuenta) ; 	
+my ($bImp,$bCan,$fechaF,$fechaI,$Mnsj,$Cuenta,$ejerc,$empr,$rutE) ;
+my ($FechaI,$FechaIA,$FechaF,$cuenta) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -33,8 +34,8 @@ sub crea {
 	$ejerc = $prd ;
 	$Cuenta = '';
 	$rutE = $rtE ;
-#	$FechaI = $FechaF = "";
 	$FechaI = "01/01/$ejerc";
+	$FechaIA = "01/01/$ejerc";
 	$FechaF = $ut->fechaHoy();
 
 	# Define ventana
@@ -253,17 +254,24 @@ sub muestraM ( $ $ $ $)
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = $siDebe = $siHaber = 0 ;
-	$dt = "Saldo inicial";
+	my $diaA = $ut->diaAnterior($fi);
+	$dt = "Saldo al $FechaIA";
+	my $fa = $ut->analizaFecha($diaA);
+	my $fia = $ut->analizaFecha($FechaIA);
+	if ( $fa > $fia ) {
+		$dt = "Acumulado al $diaA";
+		($siDebe, $siHaber) = $bd->totalesF($Cuenta,$fia,$fa) ;
+	}
 	$mntD = $mntH = $pesos->format_number(0);
 	if ( $tSaldo eq 'D') {
-		$mntD = $pesos->format_number( $saldoI ); 
 		$siDebe += $saldoI;
 	}
 	if ($tSaldo eq 'A') {
-		$mntH = $pesos->format_number( $saldoI );
 		$siHaber += $saldoI;
 	}
-	$mov = sprintf($frm, '','',"01/01/$ejerc",$dt,$mntD,$mntH,'') ;
+	$mntH = $pesos->format_number( $siHaber );
+	$mntD = $pesos->format_number( $siDebe ); 
+	$mov = sprintf($frm, '','',"",$dt,$mntD,$mntH,'') ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
@@ -292,7 +300,7 @@ sub muestraM ( $ $ $ $)
 		$marco->insert('end', "$mov\n", 'detalle' ) ;
 	}
 	$marco->insert('end',"$lin2\n",'detalle');
-	$dt = "Totales";
+	$dt = "Totales período";
 	$mntD = $pesos->format_number( $tDebe ); 
 	$mntH = $pesos->format_number( $tHaber ); 
 	$mov = sprintf($frm,'','','',$dt,$mntD,$mntH,'') ;
@@ -309,7 +317,7 @@ sub muestraM ( $ $ $ $)
 	$TotalD += $siDebe ;
 	$TotalH += $siHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
-	$dt = "Totales acumulados";
+	$dt = "Totales acumulados al $FechaF";
 	$mntD = $pesos->format_number( $TotalD ); 
 	$mntH = $pesos->format_number( $TotalH ); 
 	$mov = sprintf($frm,'','','',$dt,$mntD,$mntH,'') ;
@@ -360,7 +368,6 @@ sub csv ( )
 			last if $Cuenta == $algo->[1] ;		
 		} 
 	}
-	print "$fi - $ff \n";
 	my @data = $bd->itemsMF($Cuenta,$fi,$ff);
 	
 	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d,$siDebe,$siHaber);
@@ -378,16 +385,24 @@ sub csv ( )
 	print ARCHIVO "$l\n";
 
 	$tDebe = $tHaber = $mntD = $mntH =  $siDebe = $siHaber = 0 ;
+	my $diaA = $ut->diaAnterior($fi);
+	$dt = "Saldo al $FechaIA";
+	my $fa = $ut->analizaFecha($diaA);
+	my $fia = $ut->analizaFecha($FechaIA);
+	if ( $fa > $fia ) {
+		$dt = "Acumulado al $diaA";
+		($siDebe, $siHaber) = $bd->totalesF($Cuenta,$fia,$fa) ;
+	}
+	$mntD = $mntH = $pesos->format_number(0);
 	if ( $tSaldo eq 'D') {
-		$mntD = $saldoI; 
 		$siDebe += $saldoI;
 	}
 	if ($tSaldo eq 'A') {
-		$mntH = $saldoI;
 		$siHaber += $saldoI;
 	}
-	$fchI = "01/01/$ejerc";
-	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
+	$mntH = $pesos->format_number( $siHaber );
+	$mntD = $pesos->format_number( $siDebe ); 
+	$l = ",,,".'"'."$dt".'"'.",$mntD,$mntH" ;
 	print ARCHIVO "$l\n";
 	
 	foreach $algo ( @data ) {
@@ -413,7 +428,7 @@ sub csv ( )
 			}
 		}
 		$dt = "$glosaC " if $dt eq '' ; 
-		$l = "$nCmp,$tC,$fecha,".'"'."$dt".'"'.",$mntD,$mntH" ;
+		$l = "$nCmp,$tC,$fecha,".'"'."$dt".'"'.",$mntD,$mntH,$dcm" ;
 		print ARCHIVO "$l\n";
 	}
 	$l = ",,,Totales mes,$tDebe,$tHaber" ;

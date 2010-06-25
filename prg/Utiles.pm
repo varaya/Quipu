@@ -5,12 +5,12 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete 
-#  UM : 21.06.2010 
+#  UM : 25.06.2010 
 
 package Utiles;
 
 use Encode 'decode_utf8';
-use Date::Simple ('ymd','today');
+use Date::Simple ('ymd','today','d8');
 use Number::Format;
 
 my $valida = 1 ;
@@ -221,6 +221,14 @@ sub analizaFecha ( $ )
 	# Convierte a formato AAAAMMDD si es válida
 	$ff =~ s/-//g if $ff ;
 	return $ff ;
+}
+
+sub diaAnterior ( $ )
+{
+	my ($esto, $ff) = @_;
+	my $date = d8($ff);
+	my @cmp = split /-/, $date - 1 ;
+	return "$cmp[2]/$cmp[1]/$cmp[0]" ;
 }
 
 sub ayuda 
