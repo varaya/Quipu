@@ -5,7 +5,7 @@
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 16.06.2010
+#  UM: 25.06.2010
 
 package Mayor;
 
@@ -235,17 +235,18 @@ sub muestraM ( $ $ )
 	$marco->insert('end',"$lin1\n",'detalle');
 	$marco->insert('end',"$lin2\n",'detalle');
 	$tDebe = $tHaber = $siDebe = $siHaber = 0 ;
-	$dt = "Saldo inicial";
+	$dt = $mes == 1 ? "Saldo inicial" : "Totales acumulados ";
+	($siDebe,$siHaber) = $bd->totales($Cuenta,$mes - 1,"<=") if  $mes > 1;
 	$mntD = $mntH = $pesos->format_number(0);
 	if ( $tSaldo eq 'D') {
-		$mntD = $pesos->format_number( $saldoI ); 
 		$siDebe += $saldoI;
 	}
 	if ($tSaldo eq 'A') {
-		$mntH = $pesos->format_number( $saldoI );
 		$siHaber += $saldoI;
 	}
-	$mov = sprintf($frm, '','',"01/01/$ejerc",$dt,$mntD,$mntH,'') ;
+	$mntD = $pesos->format_number( $siDebe );
+	$mntH = $pesos->format_number( $siHaber ); 
+	$mov = sprintf($frm, '','',"",$dt,$mntD,$mntH,'') ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
 	foreach $algo ( @data ) {
 		$nCmp = $algo->[0];  # Numero comprobante
@@ -287,9 +288,8 @@ sub muestraM ( $ $ )
 	$marco->insert('end',"$lin2\n",'detalle');
 	$mov = sprintf($frm, '','','',$dt,$mntD,$mntH,'' ) ;
 	$marco->insert('end', "$mov\n", 'detalle' ) ;
-	my ($TotalD,$TotalH) = $bd->totales($Cuenta,$mes);
-	$TotalD += $siDebe ;
-	$TotalH += $siHaber ;
+	$TotalD = $tDebe + $siDebe ;
+	$TotalH = $tHaber + $siHaber ;
 	$marco->insert('end',"$lin2\n",'detalle');
 	$dt = "Totales acumulados";
 	$mntD = $pesos->format_number( $TotalD ); 
@@ -342,7 +342,8 @@ sub csv (  )
 	}
 	my @data = $bd->itemsM($Cuenta,$mes);
 	
-	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d,$siDebe,$siHaber);
+	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d);
+	my ($glosaC,$siDebe,$siHaber);
 	$d = "$rutE/csv/myr$Cuenta.csv";
 	open ARCHIVO, "> $d" or die $! ;
 	$l =  '"'."$empr".'"';
@@ -357,16 +358,15 @@ sub csv (  )
 	print ARCHIVO "$l\n";
 
 	$tDebe = $tHaber = $mntD = $mntH =  $siDebe = $siHaber = 0 ;
+	$dt = $mes == 1 ? "Saldo inicial" : "Totales acumulados ";
+	($siDebe,$siHaber) = $bd->totales($Cuenta,$mes - 1,"<=") if  $mes > 1;
 	if ( $tSaldo eq 'D') {
-		$mntD = $saldoI; 
 		$siDebe += $saldoI;
 	}
 	if ($tSaldo eq 'A') {
-		$mntH = $saldoI;
 		$siHaber += $saldoI;
 	}
-	$fchI = "01/01/$ejerc";
-	$l = ",,$fchI,".'"'."Saldo inicial".'"'.",$mntD,$mntH" ;
+	$l = ",,,".'"'."$dt".'"'.",$siDebe,$siHaber" ;
 	print ARCHIVO "$l\n";
 	
 	foreach $algo ( @data ) {
@@ -374,6 +374,7 @@ sub csv (  )
 		$fecha = $ut->cFecha($algo->[10]);
 		$tC = $algo->[11];
 		$nulo = $algo->[12];
+		$glosaC = $algo->[13];
 		$mntD = $mntH = 0;
 		$mntD = $algo->[2]; 
 		$tDebe += $algo->[2];
@@ -381,31 +382,29 @@ sub csv (  )
 		$tHaber += $algo->[3];
 		$ci = $dcm = $dt = '' ;
 		if ($algo->[4]) {
-			$dt = decode_utf8($algo->[4]);
+			$dt = substr decode_utf8($algo->[4]),0,35 ;
 		} 
-		if ($algo->[5]) {
-			$ci = "RUT $algo->[5]";
-		}
 		if ($algo->[6]) {
-			$dcm = "$algo->[6] $algo->[7]";
+			my $tabla = 'Compras' ;
+			$dcm = $bd->buscaDP($algo->[5], $algo->[7], $tabla);
+			if ($tipoCta eq 'B') {
+				$dcm = " $algo->[6] $algo->[7]";
+			}
 		}
-		if ( not ($ci eq '' ) ) {
-			$dt = "$ci $dcm"; 
-		}
+		$dt = "$glosaC " if $dt eq '' ; 
 		$l = "$nCmp,$tC,$fecha,".'"'."$dt".'"'.",$mntD,$mntH" ;
 		print ARCHIVO "$l\n";
 	}
 	$l = ",,,Totales mes,$tDebe,$tHaber" ;
 	print ARCHIVO "$l\n";
-	$dt = '"'."Saldo $mes".'"';
+	$dt = '"'."Saldo $nMes".'"';
 	$mntD = $mntH = '';
 	$mntD = $tDebe - $tHaber if $tDebe > $tHaber ;
 	$mntH = $tHaber - $tDebe if $tDebe < $tHaber ;
 	$l = ",,,$dt,$mntD,$mntH";
 	print ARCHIVO "$l\n";
-	my ($TotalD,$TotalH) = $bd->totales($Cuenta,$mes);
-	$TotalD += $siDebe ;
-	$TotalH += $siHaber ;
+	$TotalD = $tDebe + $siDebe ;
+	$TotalH = $tHaber + $siHaber ;
 	$l = ",,,Totales acumulados,$TotalD,$TotalH" ;
 	print ARCHIVO "$l\n";
 	$dt = "Saldo acumulado";

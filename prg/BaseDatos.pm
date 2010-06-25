@@ -804,13 +804,13 @@ sub sumas( $ )
 	return ( $dato[0], $dato[1] ); 
 }
 
-sub totales( $ $ )
+sub totales( $ $ $)
 {
-	my ($esto, $cta, $mes) = @_;	
+	my ($esto, $cta, $mes, $op ) = @_;	
 	my $bd = $esto->{'baseDatos'};
 
 	my $sql = $bd->prepare("SELECT sum(Debe),sum(Haber) FROM ItemsC
-		WHERE CuentaM = ? AND Mes <= ?;");
+		WHERE CuentaM = ? AND Mes $op ?;");
 	$sql->execute($cta,$mes);
 	my @dato = $sql->fetchrow_array;
 	$sql->finish();
