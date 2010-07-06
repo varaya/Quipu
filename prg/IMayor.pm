@@ -1,13 +1,13 @@
-#  MayorF.pm - Procesa cuenta de mayor entre fechas
+#  IMayor.pm - Imprime cuenta de mayor entre fechas
 #  Forma parte del programa Quipu
 #
 #  Derechos de Autor: Víctor Araya R., 2010 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 25.06.2010
+#  UM: 05.07.2010
 
-package MayorF;
+package IMayor;
 
 use Tk::TList;
 use Tk::LabFrame;
@@ -15,8 +15,8 @@ use Encode 'decode_utf8';
 use Number::Format;
 	
 # Variables válidas dentro del archivo
-my ($bImp,$bCan,$bLpr,$fechaF,$fechaI,$Mnsj,$Cuenta,$ejerc,$empr,$rutE) ;
-my ($FechaI,$FechaIA,$FechaF,$cuenta) ; 	
+my ($bCan,$bLpr,$fechaF,$fechaI,$Mnsj,$CuentaI,$CuentaF,$ejerc,$empr,$rutE) ;
+my ($FechaI,$FechaIA,$FechaF,$cuentaI,$cuentaF) ; 	
 my @datos = () ;		# Lista de cuentas
 # Formato de números
 my $pesos = new Number::Format(-thousands_sep => '.', -decimal_point => ',');
@@ -32,7 +32,7 @@ sub crea {
 	# Inicializa variables
 	my %tp = $ut->tipos();
 	$ejerc = $prd ;
-	$Cuenta = '';
+	$CuentaI = $CuentaF = '';
 	$rutE = $rtE ;
 	$FechaI = "01/01/$ejerc";
 	$FechaIA = "01/01/$ejerc";
@@ -40,15 +40,11 @@ sub crea {
 
 	# Define ventana
 	my $vnt = $vp->Toplevel();
-	$vnt->title("Procesa Libro Mayor entre Fechas");
-	$vnt->geometry("720x430+475+4"); # Tamaño y ubicación
-	# Define marco para mostrar resultado
-	my $mtA = $vnt->Scrolled('Text', -scrollbars=> 'e', -bg=> 'white', -height=> 420 );
-	$mtA->tagConfigure('negrita', -font => $tp{ng}) ;
-	$mtA->tagConfigure('detalle', -font => $tp{fx}) ;
-	$mtA->tagConfigure('grupo', -font => $tp{gr}, -foreground => 'brown') ;
+	$vnt->title("Imprime Libro Mayor entre Fechas");
+	$vnt->geometry("550x90+475+4"); # Tamaño y ubicación
 
 	# Defime marcos
+	my $mCmnds = $vnt->Frame(-borderwidth => 1);
 	my $mBotones = $vnt->Frame(-borderwidth => 1);
 	my $mMensajes = $vnt->Frame(-borderwidth => 2, -relief=> 'groove' );
 
@@ -63,47 +59,41 @@ sub crea {
 
 	$Mnsj = "Para ver Ayuda presione botón 'i'.";
 	
-	$cuenta = $mBotones->LabEntry(-label => "Cuenta: ", -width => 5,
+	$cuentaI = $mCmnds->LabEntry(-label => "   Cuentas: Inicio ", -width => 5,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
-		-textvariable => \$Cuenta );
+		-textvariable => \$CuentaI );
+	$cuentaF = $mCmnds->LabEntry(-label => " Fin ", -width => 5,
+		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
+		-textvariable => \$CuentaF );
+
 	# Define opciones de seleccion
-	$fechaI = $mBotones->LabEntry(-label => "Inicial ", -width => 10,
+	$fechaI = $mCmnds->LabEntry(-label => "Inicial ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaI );
-	$fechaF = $mBotones->LabEntry(-label => "Final ", -width => 10,
+	$fechaF = $mCmnds->LabEntry(-label => "  Final ", -width => 10,
 		-labelPack => [-side => "left", -anchor => "w"], -bg => '#FFFFCC',
 		-textvariable => \$FechaF );
 	# Define botones
-	my $bLmp = $mBotones->Button(-text => "Muestra", 
-		-command => sub { valida($esto,$mtA); } );
-	$bImp = $mBotones->Menubutton(-text => "Archivo", -tearoff => 0, 
-	-underline => 0, -indicatoron => 1, -relief => 'raised',-menuitems => 
-	[ ['command' => "texto", -command => sub { txt($mtA);} ],
- 	  ['command' => "planilla", -command => sub { csv($esto);} ] ] );
 	$bLpr = $mBotones->Button(-text => "Imprime", 
-		-command => sub { imp($mtA); } );
+		-command => sub { valida($esto); } );
 	$bCan = $mBotones->Button(-text => "Cancela", 
 		-command => sub { $vnt->destroy(); } );
 
 	# Dibuja interfaz
-	$cuenta->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$fechaI->pack(-side => "left", -anchor => "w");
 	$fechaF->pack(-side => "left", -anchor => "w");
-	$bLmp->pack(-side => 'left', -expand => 0, -fill => 'none');
-	$bImp->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$cuentaI->pack(-side => 'left', -expand => 0, -fill => 'none');
+	$cuentaF->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bLpr->pack(-side => 'left', -expand => 0, -fill => 'none');
 	$bCan->pack(-side => 'right', -expand => 0, -fill => 'none');
 
 	$mMensajes->pack(-expand => 1, -fill => 'both');
+	$mCmnds->pack(-expand => 1);
 	$mBotones->pack(-expand => 1);
-	$mtA->pack(-fill => 'both');
 	
-	# Inicialmente deshabilita botón Registra
-	$bImp->configure(-state => 'disabled');
-	$bLpr->configure(-state => 'disabled');
 	$mt->delete('0.0','end');
 	muestraLista($esto,$mt);
-	$cuenta->focus;
+	$fechaI->focus;
 	
 	bless $esto;
 	return $esto;
@@ -111,14 +101,19 @@ sub crea {
 
 sub valida ( $ ) 
 {
-	my ($esto,$mt) = @_;
+	my ($esto) = @_;
 	my $ut = $esto->{'mensajes'};
 	my ($fi, $ff);
 	$Mnsj = '' ;
 	# Verifica cuenta
-	if ($Cuenta eq '' ) {		
-		$Mnsj = "Indique una cuenta."; 
-		$cuenta->focus;
+	if ($CuentaI eq '' ) {		
+		$Mnsj = "Indique primera cuenta."; 
+		$cuentaI->focus;
+		return;
+	}	
+	if ($CuentaF eq '' ) {		
+		$Mnsj = "Indique última cuenta."; 
+		$cuentaF->focus;
 		return;
 	}	
 	# Fecha inicial
@@ -157,8 +152,8 @@ sub valida ( $ )
 		$fechaI->focus;
 		return;
 	}
-	# Si todo está bien, muestra informe
-	muestraM($esto,$mt,$fi,$ff);
+	# Si todo está bien, graba informe
+	graba($esto,$fi,$ff);
 }
 
 sub muestraLista ( $ $ ) 
@@ -178,48 +173,9 @@ sub muestraLista ( $ $ )
 	}
 }
 
-sub resumen ( $ $ ) 
+sub graba ( $ $ $ )
 {
-	my ($esto, $m) = @_;
-	my $bd = $esto->{'baseDatos'};
-	my $ut = $esto->{'mensajes'};
-
-	my ($algo,$cd,$nm,$sldI,$tSld,$siD,$siH,$lin,$mntD,$mntH,$gtD,$gtH,$msd);
-	($gtD,$gtH) = (0,0);
-	foreach $algo ( @datos ) {
-		$cd = $algo->[1] ;
-		$sldI = $algo->[4];
-		$tSld = $algo->[5];
-		$siD = $siH = $sd = 0 ;
-		$nm = substr decode_utf8($algo->[0]),0,35 ;
-		$siD += $sldI if $tSld eq 'D';
-		$siH += $sldI if $tSld eq 'A';
-		($TotalD,$TotalH) = $bd->totalesF($cd,$fi,$ff);
-		$TotalD += $siD ;
-		$TotalH += $siH ;
-		if ($TotalD + $TotalH > 0) {
-			$sd = $TotalD - $TotalH ;
-			$gtD += $TotalD ;
-			$gtH += $TotalH ;
-			$mntD = $mntH = $msd = $pesos->format_number(0);
-			$mntD = $pesos->format_number( $TotalD ); 
-			$mntH = $pesos->format_number( $TotalH );
-			$msd = $pesos->format_number( $TotalD - $TotalH );
-			$lin = sprintf("%-5s %-35s  %11s  %11s %11s", $cd,$nm,$mntD,$mntH,$msd);
-			$m->insert('end', "$lin\n", 'detalle' ) ;
-		}
-	}
-	$mntD = $mntH = $pesos->format_number(0);
-	$mntD = $pesos->format_number( $gtD ); 
-	$mntH = $pesos->format_number( $gtH ); 
-	$lin = sprintf("%-5s %-35s  %11s  %11s ", '', 'Totales', $mntD, $mntH);
-	$m->insert('end', "$lin\n", 'detalle' ) ;
-
-}
-
-sub muestraM ( $ $ $ $)
-{
-	my ($esto, $marco, $fi, $ff) = @_;
+	my ($esto, $fi, $ff) = @_;
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 
@@ -375,126 +331,6 @@ sub imp ( $ )
 	close MAYOR ;
 	$Mnsj = "Imprimiendo";
 #	system "lp -o cpi=16 $m";
-}
-
-sub txt ( $ )
-{
-	my ($marco) = @_;	
-	
-	my $algo = $marco->get('0.0','end');
-	# Genera archivo de texto
-	my $d = "$rutE/txt/myr$Cuenta.txt" ;
-	open ARCHIVO, "> $d" or die $! ;
-	print ARCHIVO $algo ;
-	close ARCHIVO ;
-
-	$Mnsj = "Ver archivo '$d'";
-}
-
-sub csv ( )
-{
-	my ($esto) = @_;
-	my $ut = $esto->{'mensajes'};
-	my $bd = $esto->{'baseDatos'};
-	
-	my $fi = $ut->analizaFecha($FechaI);
-	my $ff = $ut->analizaFecha($FechaF);
-	# Datos cuenta
-	foreach $algo ( @datos ) {
-		if ( $Cuenta == $algo->[1]) {
-			$nmC = decode_utf8($algo->[0]);
-			$saldoI = $algo->[4];
-			$tSaldo = $algo->[5];
-			$fechaUM = $algo->[6]; 
-			$tipoCta = $algo->[7];
-			last if $Cuenta == $algo->[1] ;		
-		} 
-	}
-	my @data = $bd->itemsMF($Cuenta,$fi,$ff);
-	
-	my ($tDebe,$tHaber,$fchI,$mntD,$mntH,$dt,$nCmp,$fecha,$tC,$nulo,$ci,$dcm,$d,$siDebe,$siHaber);
-	$d = "$rutE/csv/myr$Cuenta.csv";
-	open ARCHIVO, "> $d" or die $! ;
-	$l =  '"'."$empr".'"';
-	print ARCHIVO "$l\n";
-	$l =  '"'."Libro Mayor  $ejerc ".'"';
-	print ARCHIVO "$l\n";
-	$l = '"'."Cuenta: $Cuenta - $nmC".'"';
-	print ARCHIVO "$l\n";
-	$l = "Comprobante";
-	print ARCHIVO "$l\n";
-	$l = "#,T,Fecha,Detalle,Debe,Haber";
-	print ARCHIVO "$l\n";
-
-	$tDebe = $tHaber = $mntD = $mntH =  $siDebe = $siHaber = 0 ;
-	my $diaA = $ut->diaAnterior($fi);
-	$dt = "Saldo al $FechaIA";
-	my $fa = $ut->analizaFecha($diaA);
-	my $fia = $ut->analizaFecha($FechaIA);
-	if ( $fa > $fia ) {
-		$dt = "Acumulado al $diaA";
-		($siDebe, $siHaber) = $bd->totalesF($Cuenta,$fia,$fa) ;
-	}
-	$mntD = $mntH = $pesos->format_number(0);
-	if ( $tSaldo eq 'D') {
-		$siDebe += $saldoI;
-	}
-	if ($tSaldo eq 'A') {
-		$siHaber += $saldoI;
-	}
-	$mntH = $pesos->format_number( $siHaber );
-	$mntD = $pesos->format_number( $siDebe ); 
-	$l = ",,,".'"'."$dt".'"'.",$mntD,$mntH" ;
-	print ARCHIVO "$l\n";
-	
-	foreach $algo ( @data ) {
-		$nCmp = $algo->[0];  # Numero comprobante
-		$fecha = $ut->cFecha($algo->[10]);
-		$tC = $algo->[11];
-		$nulo = $algo->[12];
-		$glosaC = $algo->[13];
-		$mntD = $mntH = 0;
-		$mntD = $algo->[2]; 
-		$tDebe += $algo->[2];
-		$mntH = $algo->[3] ;
-		$tHaber += $algo->[3];
-		$ci = $dcm = $dt = '' ;
-		if ($algo->[4]) {
-			$dt = substr decode_utf8($algo->[4]),0,32 ;
-		} 
-		if ($algo->[6]) {
-			my $tabla = 'Compras' ;
-			$dcm = $bd->buscaDP($algo->[5], $algo->[7], $tabla);
-			if ($tipoCta eq 'B') {
-				$dcm = " $algo->[6] $algo->[7]";
-			}
-		}
-		$dt = "$glosaC " if $dt eq '' ; 
-		$l = "$nCmp,$tC,$fecha,".'"'."$dt".'"'.",$mntD,$mntH,$dcm" ;
-		print ARCHIVO "$l\n";
-	}
-	$l = ",,,Totales mes,$tDebe,$tHaber" ;
-	print ARCHIVO "$l\n";
-	$dt = '"'."Saldo al $FechaF".'"';
-	$mntD = $mntH = '';
-	$mntD = $tDebe - $tHaber if $tDebe > $tHaber ;
-	$mntH = $tHaber - $tDebe if $tDebe < $tHaber ;
-	$l = ",,,$dt,$mntD,$mntH";
-	print ARCHIVO "$l\n";
-	my ($TotalD,$TotalH) = $bd->totalesF($Cuenta,$fi,$ff);
-	$TotalD += $siDebe ;
-	$TotalH += $siHaber ;
-	$l = ",,,Totales acumulados,$TotalD,$TotalH" ;
-	print ARCHIVO "$l\n";
-	$dt = "Saldo acumulado";
-	$mntD = $mntH = '';
-	$mntD = $TotalD - $TotalH if $TotalD > $TotalH ;
-	$mntH = $TotalH - $TotalD if $TotalD < $TotalH ;
-	$l = ",,,$dt,$mntD,$mntH";
-	print ARCHIVO "$l\n";
-
-	close ARCHIVO ;
-	$Mnsj = "Grabado en '$d'";
 }
 
 # Fin del paquete

@@ -20,7 +20,7 @@ use Date::Simple ('ymd','today');
 my @aa = split /-/, today() ;	
 my $Ejercicio = $aa[0] ;
 
-my $version = "central.pl 0.935 al 07/04/2010";
+my $version = "central.pl 0.935 al 07/07/2010";
 my $pv = sprintf("Perl %vd", $^V) ;
 
 # Define variables básicas
@@ -261,7 +261,9 @@ sub opLMayor {
 [['command' => "por mes", -command => sub { require prg::Mayor;
 	Mayor->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ],
 ['command' => "entre fechas", -command => sub { require prg::MayorF;
-	MayorF->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ] ]
+	MayorF->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);} ], '-' ,
+['command' => "imprime", -command => sub { require prg::IMayor;
+	IMayor->crea($vp, $mt, $bd, $ut, $Rut, $Ejercicio);}] ]
 }
 
 sub opBalances {

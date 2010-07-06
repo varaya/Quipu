@@ -1,11 +1,11 @@
 #  Diario.pm - Consulta e imprime Libro Diario
 #  Forma parte del programa Quipu
 #
-#  Derechos de Autor: Víctor Araya R., 2009 [varaya@programmer.net]
+#  Derechos de Autor: Víctor Araya R., 2009 [varayar@gmail.com]
 #  
 #  Puede ser utilizado y distribuido en los términos previstos en la 
 #  licencia incluida en este paquete
-#  UM: 02.02.2010
+#  UM: 06.07.2010
 
 package Diario;
 
@@ -262,7 +262,7 @@ sub csv
 	my $bd = $esto->{'baseDatos'};
 	my $ut = $esto->{'mensajes'};
 	
-	my ($Numero, $Tipo, $Fecha, $Total, $Nulo, $Ref) = (0 .. 6);
+	my ($Numero, $Tipo, $Fecha, $Total, $Glosa, $Nulo, $Ref) = (0 .. 6);
 
 	$fi = $ut->analizaFecha($FechaI) ;
 	$ff = $ut->analizaFecha($FechaF) ;
@@ -276,7 +276,7 @@ sub csv
 	open ARCHIVO, "> $d" or die $! ;
 	$l =  '"'."Libro Diario  $ejerc  -  $empr".'"';
 	print ARCHIVO "$l\n";
-	$l = "Fecha,Detalle,Código,Debe,Haber";
+	$l = "Fecha,Cuenta,Código,Debe,Haber,Detalle";
 	print ARCHIVO "$l\n";
 	foreach $algo ( @datosC ) {
 		$tg += $algo->[$Total] ;
@@ -315,20 +315,16 @@ sub asientoCSV ( $ $ $ ) {
 			$dt = '"'.decode_utf8($algo->[4]).'"';
 		} 
 		if ($algo->[5]) {
-			$ci = '"'."RUT $algo->[5]".'"';
+			$ci = '"'."RUT $algo->[5]".'"' ;
 		}
 		if ($algo->[6]) {
-			$dcm = '"'."$algo->[6] $algo->[7]".'"';
+			$dt = '"'."$algo->[6] $algo->[7]".'"';
 		}
-		$l = ",$ncta, $cm, $mntD, $mntH" ;
+		$l = ",$ncta, $cm, $mntD, $mntH, $dt" ;
 		print ARCHIVO "$l\n";
 	}
 	$l = ",$gl" ;
 	print ARCHIVO "$l\n";
-	if ( not ($ci eq '' ) ) { #	and $dcm eq ''
-		$l = ",$ci $dcm" ;
-		print ARCHIVO "$l\n";
-	}
 }
 
 # Fin del paquete

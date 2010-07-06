@@ -7,8 +7,10 @@ description=Sistema de Control de Gestión basado en la contabilidad
 run_cmd=
 
 [files]
-current_page=2
-FILE_NAME_0=11333;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
-FILE_NAME_1=18541;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
-FILE_NAME_2=5669;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
-FILE_NAME_3=11276;3;0;0;1;1;0;/home/varaya/cntb/prg/MayorF.pm;
+current_page=0
+FILE_NAME_0=610;3;0;0;1;1;0;/home/varaya/cntb/central.pl;
+FILE_NAME_1=9692;3;0;0;1;1;0;/home/varaya/cntb/prg/BaseDatos.pm;
+FILE_NAME_2=8353;3;0;0;1;1;0;/home/varaya/cntb/prg/Utiles.pm;
+FILE_NAME_3=2667;3;0;0;1;1;0;/home/varaya/cntb/prg/MayorF.pm;
+FILE_NAME_4=8933;3;0;0;1;1;0;/home/varaya/cntb/prg/Diario.pm;
+FILE_NAME_5=0;3;0;16;1;1;0;/home/varaya/cntb/creaTablasRC.pl;

@@ -688,7 +688,8 @@ sub diario( $ $ )
 	my @datos = ();
 
 	my $sql = $bd->prepare("SELECT Numero, TipoC, Fecha, Total, Glosa, 
-		Anulado, Ref FROM DatosC WHERE Fecha >= ? AND Fecha <= ? AND Anulado < 2;");
+		Anulado, Ref FROM DatosC WHERE Fecha >= ? AND Fecha <= ? AND Anulado < 2
+		ORDER BY Fecha ;");
 	$sql->execute($fi, $ff);
 	# crea una lista con referencias a las listas de registros
 	while (my @fila = $sql->fetchrow_array) {
